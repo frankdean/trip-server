@@ -18,9 +18,9 @@ In the event of contact being lost, the plans and tracking information can be
 passed to rescue services etc., to assist with locating the missing
 adventurer.
 
-The web client is an [AngularJS][] single-page application ([SPA][]) which can
-be served as static files using a web server such as [Apache][], or served by
-the TRIP server application itself.
+The [web client][trip-web-client] is an [AngularJS][] single-page application
+([SPA][]) which can be served as static files using a web server such as
+[Apache][], or served by the TRIP server application itself.
 
 The following features are provided:
 
@@ -74,9 +74,9 @@ configured to run behind an [Apache web server][Apache] using HTTPS.
 		$ cd /usr/local/trip-server
 		$ npm install
 
-1.  Download the `trip-web-client` and install it in an appropriate folder,
-    ideally outside the server's folder, with a symlink from the `app`
-    sub-directory of the server to the client's top-level folder.
+1.  Clone the [trip-web-client][] to an appropriate folder, ideally outside
+    the server's folder, with a symlink from the `app` sub-directory of the
+    server to the client's top-level folder.
     e.g. `/usr/local/trip-web-client`.
 
 		$ cd /usr/local/trip-server
@@ -477,6 +477,7 @@ upgrading to the next release.
 n/a
 
 
+[trip-web-client]: https://github.com/frankdean/trip-web-client
 [AngularJS]: https://angularjs.org
 [Apache]: http://httpd.apache.org
 [Debian]: https://www.debian.org "a free operating system (OS) for your computer"
