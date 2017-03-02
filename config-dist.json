@@ -1,0 +1,77 @@
+{
+  "app": {
+    "version": "0.11.0",
+    "json": {
+      "indent": {
+        "level": 0
+      }
+    },
+    "autoQuit": {
+      "timeOut": 300
+    }
+  },
+  "jwt": {
+    "signingKey": "secret"
+  },
+  "tile": {
+    "cache": {
+      "maxAge": 0
+    },
+    "providers": [
+      {
+        "help": " see http://wiki.openstreetmap.org/wiki/Tile_usage_policy",
+        "userAgentInfo": "(mailto:your.contact@email.address)",
+        "refererInfo": "http://link_to_deployed_application_information",
+        "options": {
+          "protocol": "http:",
+          "host": "tile.openstreetmap.org",
+          "port": "80",
+          "path": "/{z}/{x}/{y}.png",
+          "method": "GET"
+        },
+        "mapLayer": {
+          "name": "OSM Mapnik",
+          "type": "xyz",
+          "tileAttributions": [
+            {
+              "text": "Map data &copy; "
+            },
+            {
+              "text": "OpenStreetMap",
+              "link": "http://openstreetmap.org"
+            },
+            {
+              "text": " contributors, "
+            },
+            {
+              "text": "CC-BY-SA",
+              "link": "http://creativecommons.org/licenses/by-sa/2.0/"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "db": {
+    "uri": "postgresql://trip:secret@localhost/trip",
+    "poolSize": 25,
+    "poolIdleTimeout": 30000,
+    "reapIntervalMillis": 1000
+  },
+  "staticFiles": {
+    "allow": true
+  },
+  "debug": false,
+  "log": {
+    "level": "info"
+  },
+  "reporting": {
+    "metrics": {
+      "tile": {
+        "count": {
+          "frequency": 100
+        }
+      }
+    }
+  }
+}

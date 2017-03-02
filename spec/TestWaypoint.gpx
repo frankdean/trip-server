@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" creator="TRIP" version="1.1" xmlns="http://www.topografix.com/GPX/1/1" xmlns:gpxx="http://www.garmin.com/xmlschemas/GpxExtensions/v3" xmlns:wptx1="http://www.garmin.com/xmlschemas/WaypointExtension/v1" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www8.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/WaypointExtension/v1 http://www8.garmin.com/xmlschemas/WaypointExtensionv1.xsd">
+  <metadata>
+    <time>2017-01-17T12:45:34.920Z</time>
+  </metadata>
+  <wpt lon="-0.13483334" lat="51.51743317">
+    <time>2016-11-02T19:28:50.000Z</time>
+    <ele>100.00000</ele>
+    <name>London</name>
+    <cmt>Test Comment 1</cmt>
+    <desc>Test description 1</desc>
+    <sym>City (Capitol)</sym>
+    <type>My Type</type>
+    <extensions>
+      <color>#b400842b</color>
+      <wptx1:WaypointExtension>
+        <wptx1:Samples>1</wptx1:Samples>
+      </wptx1:WaypointExtension>
+    </extensions>
+  </wpt>
+</gpx>

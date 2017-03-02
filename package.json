@@ -1,0 +1,43 @@
+{
+  "name": "trip-server",
+  "version": "0.0.0",
+  "description": "TRIP - Trip Recording and Itinerary Planner RESTful server",
+  "author": {
+	"name": "Frank Dean",
+	"email": "frank@fdsd.co.uk"
+  },
+  "license": "GPL-3.0+",
+  "private": true,
+  "keywords": [
+    "track",
+	"logging",
+	"recording",
+	"itinerary",
+	"planner",
+    "GPS"
+  ],
+  "devDependencies": {
+    "jasmine": "^2.4.1",
+    "jshint": "^2.9.4"
+  },
+  "scripts": {
+    "test": "jasmine",
+    "lint": "jshint *.js spec/*.js"
+  },
+  "dependencies": {
+    "@turf/line-distance": "^3.10.3",
+    "autoquit": "^0.1.6",
+    "bcrypt": "^1.0.2",
+    "formidable": "^1.0.17",
+    "jsonwebtoken": "^7.0.0",
+    "node-static": "^0.7.7",
+    "pg": "^6.1.0",
+    "sax": "^1.2.1",
+    "socket.io": "^1.4.6",
+    "systemd": "^0.2.6",
+    "uuid": "^3.0.1",
+    "validator": "^6.0.0",
+    "winston": "^2.2.0",
+    "xmlbuilder": "^8.2.2"
+  }
+}

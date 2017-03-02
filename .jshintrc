@@ -1,0 +1,21 @@
+{
+  "globalstrict": true,
+  "globals": {
+  	"Buffer": false,
+	"jasmine": false,
+    "describe": false,
+	"pending": false,
+    "it": false,
+    "expect": false,
+    "beforeEach": false,
+    "afterEach": false,
+	"spyOn": false,
+    "module": false,
+    "inject": false,
+	"process": false,
+	"require": false,
+	"setTimeout": false,
+	"setInterval": false,
+	"clearInterval": false
+  }
+}
