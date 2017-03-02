@@ -85,6 +85,12 @@ configured to run behind an [Apache web server][Apache] using HTTPS.
 	On systems that do not support symlinks, it can be installed in the `app`
     sub-folder for running as a standalone development server.
 
+	Alternatively, download a release build of the web client from the GitHub
+    trip-web-client
+    [releases page.](https://github.com/frankdean/trip-web-client/releases)
+    and extract the contents to the `app` sub-folder of the trip-server
+    application.
+
 1.  Install the packages required by `trip-web-client`:
 
 		$ cd /usr/local/trip-server/app
@@ -489,5 +495,6 @@ n/a
 [PostgreSQL]: https://www.postgresql.org "A powerful, open source object-relational database system"
 [RaspberryPi]: https://www.raspberrypi.org
 [gpx]: https://en.wikipedia.org/wiki/GPS_Exchange_Format "GPS Exchange Format"
+[semver]: http://semver.org
 [spa]: https://en.wikipedia.org/wiki/Single-page_application "Single-page application"
 [Traccar Client]: https://www.traccar.org/client/
