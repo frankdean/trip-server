@@ -1,4 +1,4 @@
-<!-- -*- mode: markdown; -*- -->
+!-- -*- mode: markdown; -*- -->
 
 # TRIP - Trip Recording and Itinerary Planner
 
@@ -55,7 +55,7 @@ This option provides a working example of the application running in a
 [operating systems supported][vagrant-download] by [Vagrant][].  This also
 provides a complete example of running the application behind the [Nginx][]
 [engine x] HTTP reverse proxy server.  It is suitable for development or
-demonstration not not as a production system.
+demonstration, but not as a production system.
 
 **Note:** Installing all the required software, including the Vagrant box
 involves downloading approximately 600MB of data.  Perhaps more of an
