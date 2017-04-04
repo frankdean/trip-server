@@ -25,7 +25,10 @@
     "lint": "jshint *.js spec/*.js"
   },
   "dependencies": {
-    "@turf/line-distance": "^3.10.3",
+    "@turf/line-distance": "3.10.3",
+    "@turf/distance": "3.10.3",
+    "@turf/invariant": "3.10.0",
+    "@turf/helpers": "3.10.3",
     "autoquit": "^0.1.6",
     "bcrypt": "^1.0.2",
     "formidable": "^1.0.17",
