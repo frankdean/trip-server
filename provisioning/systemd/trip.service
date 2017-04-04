@@ -1,0 +1,18 @@
+[Unit]
+Description=Trip Server
+#After=postgresql.service
+
+[Service]
+ExecStart=/usr/local/bin/node /usr/local/trip-server/index.js
+WorkingDirectory=/usr/local/trip-server
+#Restart=always
+#RestartSec=10
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=trip-server
+User=vagrant
+Group=vagrant
+#Environment=NODE_ENV=production PORT=8080
+
+#[Install]
+#WantedBy=multi-user.target

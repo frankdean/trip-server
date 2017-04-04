@@ -2,3 +2,5 @@
 /node_modules/
 /app
 /npm-debug.log
+.DS_Store
+.vagrant/
