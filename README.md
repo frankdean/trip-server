@@ -4,9 +4,9 @@
 
 ## Introduction
 
-TRIP is a web-based application supporting trip recording and itinerary
-planning.  It is designed to be a lightweight server application such that it
-can be run on relatively low power devices like the
+TRIP is a JavaScript web-based application supporting trip recording and
+itinerary planning.  It is designed to be a lightweight server application
+such that it can be run on relatively low power devices like the
 [Raspberry Pi][raspberrypi].
 
 The intended use is for a hiker, mountain-biker or other adventurer, to be
@@ -48,10 +48,104 @@ The following features are provided:
 * [PostgreSQL][] database server - (Known to run on version 9.4)
 
 
-## Initial Setup and Configuration
+## Quick Start Using [Vagrant][]
 
-The application can be run as a standalone [Node.js][] server, or behind an
-[Apache][] proxy server.
+This option provides a working example of the application running in a
+[VirtualBox][] virtual machine (VM) for those
+[operating systems supported][vagrant-download] by [Vagrant][].  This also
+provides a complete example of running the application behind the [Nginx][]
+[engine x] HTTP reverse proxy server.  It is suitable for development or
+demonstration not not as a production system.
+
+**Note:** Installing all the required software, including the Vagrant box
+involves downloading approximately 600MB of data.  Perhaps more of an
+"easy-start" rather than a "quick-start".
+
+[vagrant-download]: https://www.vagrantup.com/downloads.html "Vagrant Downloads"
+
+1.  Download and install [VirtualBox][]
+
+1.  Download and install [Vagrant][]
+
+1.  Clone this repository to a suitable location on the machine you are going
+    to use to host the application and VM:
+
+		$ cd ~/projects
+		$ git clone https://github.com/frankdean/trip-server.git
+
+1.  Clone the TRIP web client application to have the same parent folder as
+    the TRIP server
+
+		$ cd ~/projects
+		$ git clone https://github.com/frankdean/trip-web-client.git
+
+1.  Start the Vagrant VM
+
+		$ cd ~/projects/trip-server
+		$ vagrant up
+
+	The first time this is run, it will download a
+    [Vagrant box](https://www.vagrantup.com/docs/boxes.html) containing a
+    [Debian][] Linux distribution, then install the required Debian packages,
+    modify the default configuration and start the TRIP server running behind
+    an [Nginx][] web-server
+
+1.  Make a note of the trip-server admin user credentials displayed at the end
+    of the startup process
+	
+1.  Use your browser to navigate to <http://localhost:8080/> on the same
+    machine and login providing the above credentials
+
+1.  When finished, halt the server with:
+
+		$ vagrant halt
+
+[Vagrant][] shares the two source folders with the VM so that you can modify
+the source files on the host server and immediately impact the deployed
+application.  This gives you a complete working development environment.
+
+**Note:** When the VM is initially provisioned, if the `node_modules`
+sub-folder exists, it is removed and the contents re-installed/rebuilt to
+ensure that all of the `npm` installed binaries are compatible with the VM's
+operating system.  Similarly, you may need to remove and re-create this folder
+if you choose to run the trip server directly on the local guest machine.
+
+Rendering of map tiles is disabled by default, in order to respect
+[OpenStreetMap's][OpenStreetMap] [Tile Usage Policy][].  You will need to
+follow the instructions below, in the *Tile Server Configuration* section,
+before map tiles are rendered.
+
+If you forget the admin user (`admin@secret.org`) password, login into the VM
+and modify the database entry in the [PostgreSQL][] database.  Replace
+`SECRET` with your desired password.
+
+	$ cd ~/projects/trip-server
+	$ vagrant ssh
+	$ psql trip
+	trip=# UPDATE usertable SET password=crypt('SECRET', gen_salt('bf')) WHERE nickname='admin';
+	trip=# \q
+
+You can configure the time zone and locale settings by running the following
+commands on the guest VM and following the prompts:
+
+	$ sudo dpkg-reconfigure tzdata
+	$ sudo dpkg-reconfigure locales
+
+View the `Vagrantfile` configuration file in the root of the `trip-server`
+folder for some examples you can modify.  E.g. you can enable the
+`config.vm.network "public_network"` option to make the VM accessible from the
+public network.  This would allow you, for example, to test location updates,
+using a GPS enabled device sharing the same private LAN as the host VM.
+[Note the warnings](https://www.vagrantup.com/docs/networking/public_network.html)
+in the Vagrant documentation for this setting, as for convenience, **the VM is
+insecure by default and design.**
+
+
+## Standard Setup and Configuration
+
+This section describes manually installing and configuring a server to run the
+TRIP application.  It can be run as a standalone [Node.js][] server, or behind
+a reverse proxy server, such as [Apache][] or [Nginx][].
 
 These instructions assume installation on a [Debian][] based [Linux][] system,
 but it should run on any system supported by [Node.js][].
@@ -135,9 +229,11 @@ configured to run behind an [Apache web server][Apache] using HTTPS.
 Most if not all tile server providers have policies that you must comply with
 and there may be sanctions if you fail to do so.  E.g. If you are using the
 [OpenStreetMap][] tile server, read and comply with their
-[Tile Usage Policy](http://wiki.openstreetmap.org/wiki/Tile_usage_policy).
+[Tile Usage Policy][].
 Please ensure you configure the following entries correctly for the
 appropriate element of the `tile.providers` section(s) of `config.json`.
+
+[Tile Usage Policy]: https://operations.osmfoundation.org/policies/tiles/ "OSM Tile Usage Policy"
 
 - userAgentInfo - This is the e-mail address at which the system
   administrators can contact you
@@ -490,6 +586,7 @@ n/a
 [GPSLogger]: http://code.mendhak.com/gpslogger/ "A battery efficient GPS logging application"
 [Linux]: https://www.kernel.org/
 [Markdown]: http://daringfireball.net/projects/markdown/ "A text-to-HTML conversion tool for web writers"
+[Nginx]: https://nginx.org/ "HTTP and reverse proxy server, a mail proxy server, and a generic TCP/UDP proxy server"
 [Node.js]: https://nodejs.org/ "A JavaScript runtime built on Chrome's V8 JavaScript engine"
 [OpenStreetMap]: http://www.openstreetmap.org/ "OpenStreetMap"
 [PostgreSQL]: https://www.postgresql.org "A powerful, open source object-relational database system"
@@ -498,3 +595,5 @@ n/a
 [semver]: http://semver.org
 [spa]: https://en.wikipedia.org/wiki/Single-page_application "Single-page application"
 [Traccar Client]: https://www.traccar.org/client/
+[Vagrant]: https://www.vagrantup.com "Development Environments Made Easy"
+[VirtualBox]: https://www.virtualbox.org "A x86 and AMD64/Intel64 virtualization product"
