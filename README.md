@@ -1,4 +1,4 @@
-!-- -*- mode: markdown; -*- -->
+<!-- -*- mode: markdown; -*- -->
 
 # TRIP - Trip Recording and Itinerary Planner
 
