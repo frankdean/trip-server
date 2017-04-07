@@ -114,11 +114,11 @@ if [ ! -e /var/www/trip/app/bower_components ]; then
 		# If not, download and extract release
 		if [ ! -e /vagrant/provisioning/downloads/trip-release-v0.11.0.tar.gz ]; then
 			cd /vagrant/provisioning/downloads
-			wget --no-verbose https://github.com/frankdean/trip-web-client/releases/download/v0.11.0/trip-release-v0.11.0.tar.gz 2>&1
+			wget --no-verbose https://github.com/frankdean/trip-web-client/releases/download/v0.11.2/trip-release-v0.11.2.tar.gz 2>&1
 		fi
 		cd /var/www/trip
-		tar --no-same-owner --no-same-permissions -xf /vagrant/provisioning/downloads/trip-release-v0.11.0.tar.gz
-		#su - vagrant -c 'cd /var/www/trip && tar -xf /vagrant/provisioning/downloads/trip-release-v0.11.0.tar.gz'
+		tar --no-same-owner --no-same-permissions -xf /vagrant/provisioning/downloads/trip-release-v0.11.2.tar.gz
+		#su - vagrant -c 'cd /var/www/trip && tar -xf /vagrant/provisioning/downloads/trip-release-v0.11.2.tar.gz'
 	fi
 fi
 
