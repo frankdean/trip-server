@@ -21,23 +21,24 @@ COPY georef_format (key, value, ord) FROM stdin;
 %d°%c	D+	3
 %i%d	D	4
 %p%d	±D	5
-%c%D° %M	QLandkarte GT	6
+plus+code	OLC plus+code	6
 %dd%M'%S"%c	Proj4	7
-%c%d°%M′%S″	+DMS	8
-%c%d°%M′\\	+DM	9
-%c%d°	+D	10
-%d° %M′ %S″ %c	D M S +	11
-%d° %M′ %c	D M +	12
-%d° %c	D +	13
-%c %d° %M′ %S″	+ D M S	14
-%c %d° %M′	+ D M	15
-%c %d°	+ D	16
-%d %m %s%c	Plain DMS+	16
-%d %m%c	Plain DM+	17
-%d%c	Plain D+	18
-%c%d %m %s	Plain +DMS	19
-%c%d %m	Plain +DM	20
-%c%d	Plain +D	21
+%c%D° %M	QLandkarte GT	8
+%c%d°%M′%S″	+DMS	9
+%c%d°%M′\\	+DM	10
+%c%d°	+D	11
+%d° %M′ %S″ %c	D M S +	12
+%d° %M′ %c	D M +	13
+%d° %c	D +	14
+%c %d° %M′ %S″	+ D M S	15
+%c %d° %M′	+ D M	16
+%c %d°	+ D	17
+%d %m %s%c	Plain DMS+	17
+%d %m%c	Plain DM+	18
+%d%c	Plain D+	19
+%c%d %m %s	Plain +DMS	20
+%c%d %m	Plain +DM	21
+%c%d	Plain +D	22
 \.
 
 
@@ -88,11 +89,11 @@ COPY itinerary (id, title, description, user_id, archived, start, finish) FROM s
 -- Data for Name: itinerary_route; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-COPY itinerary_route (id, itinerary_id, name) FROM stdin;
-8303	929	Test One
-8309	983	Test One
-8310	983	Modified route name
-8304	929	Modified route name
+COPY itinerary_route (id, itinerary_id, name, distance, ascent, descent, lowest, highest) FROM stdin;
+8303	929	Test One	\N	\N	\N	\N	\N
+8309	983	Test One	\N	\N	\N	\N	\N
+8310	983	Modified route name	\N	\N	\N	\N	\N
+8304	929	Modified route name	\N	\N	\N	\N	\N
 \.
 
 
@@ -164,11 +165,11 @@ COPY itinerary_sharing (itinerary_id, shared_to_id, active) FROM stdin;
 -- Data for Name: itinerary_track; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-COPY itinerary_track (id, itinerary_id, name, color) FROM stdin;
-1015	929	Test track one	Green
-1025	983	Test track one	Green
-1026	983	Test track name	Yellow
-1016	929	Test track name	Yellow
+COPY itinerary_track (id, itinerary_id, name, color, distance, ascent, descent, lowest, highest) FROM stdin;
+1015	929	Test track one	Green	\N	\N	\N	\N	\N
+1025	983	Test track one	Green	\N	\N	\N	\N	\N
+1026	983	Test track name	Yellow	\N	\N	\N	\N	\N
+1016	929	Test track name	Yellow	\N	\N	\N	\N	\N
 \.
 
 
