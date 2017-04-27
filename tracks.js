@@ -274,7 +274,7 @@ function doLogPoint(q, callback) {
     }
     q.lng = q.lng ? q.lng : q.lon;
     if (q.lat !== undefined && q.lng !== undefined &&
-        validator.isFloat(q.lat) && validator.isFloat(q.lng)) {
+        validator.isFloat('' + q.lat) && validator.isFloat('' + q.lng)) {
       if (q.mstime !== undefined && validator.isInt('' + q.mstime)) {
         db.findUserByUuid(q.uuid, function(err, user) {
           if (err) {
