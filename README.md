@@ -168,6 +168,10 @@ configured to run behind an [Apache web server][Apache] using HTTPS.
 		$ cd /usr/local/trip-server
 		$ npm install
 
+	If `bcrypt` fails to build, you probably need to install C++ build tools
+	etc.  In Debian this is most easily achieved by installing the
+	`build-essential` package.
+
 1.  Clone the [trip-web-client][] to an appropriate folder, ideally outside
     the server's folder, with a symlink from the `app` sub-directory of the
     server to the client's top-level folder.
