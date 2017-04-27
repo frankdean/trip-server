@@ -69,9 +69,8 @@ GRANT trip_role TO trip;
 EOF
 fi
 
-grep 'client_max_body_size' /etc/nginx/nginx.conf >/dev/null
-if [ $? -ne 0 ]; then
-	sed -i~ 's/server_tokens\(.*\)$/server_tokens\1\n\tclient_max_body_size 32m;/; s/ssl_prefer_server_ciphers\(.*\)$/ssl_prefer_server_ciphers\1\n\tssl_session_cache shared:SSL:10m;\n\tssl_session_timeout 10m;/' /etc/nginx/nginx.conf
+if [ ! -e /etc/nginx/conf.d/trip.conf ]; then
+	cp /vagrant/provisioning/nginx/conf.d/trip.conf /etc/nginx/conf.d/
 fi
 if [ ! -e /etc/nginx/sites-available/trip ]; then
 	cp /vagrant/provisioning/nginx/sites-available/trip /etc/nginx/sites-available
