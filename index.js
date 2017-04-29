@@ -1331,9 +1331,14 @@ myApp.server = http.createServer(function(req, res) {
   } else if (req.method === 'GET' && /^\/\?id=[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}&timestamp=\d+&lat=[-.\d]+&lon=[-.\d]+&speed=[-.\d]+&bearing=[-.\d]+&altitude=[-.\d]+&batt=[-.\d]+/.test(req.url)) {
     // special handling for Traccar Client that has hard-coded call to root URL
     myApp.handleLogPoint(req, res);
-  } else if (config.staticFiles !== undefined && config.staticFiles.allow &&
-             req.method === 'GET' && /^\/app(?:(?:\/)?|\/.*)$/.test(req.url)) {
-    myApp.serveStaticFiles(req, res);
+  } else if (req.method === 'GET' && /^\/app(?:(?:\/)?|\/.*)$/.test(req.url)) {
+    if (config.staticFiles.allow) {
+      myApp.serveStaticFiles(req, res);
+    } else {
+      winston.warn('Serving static files disabled in config.json - ignoring request: %s', req.url);
+      res.statusCode = 404;
+      res.end();
+    }
   } else {
     // Must be authorized for everything else
     var params = url.parse(req.url, true);
