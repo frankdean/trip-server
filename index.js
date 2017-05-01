@@ -52,6 +52,15 @@ function BadRequestError(message) {
 BadRequestError.prototype = Object.create(Error.prototype);
 BadRequestError.prototype.constructor = BadRequestError;
 
+function SystemError(message) {
+  this.name = 'error';
+  this.message = message || 'System Error';
+  this.severity = 'FATAL';
+  this.stack = (new Error()).stack;
+}
+SystemError.prototype = Object.create(Error.prototype);
+SystemError.prototype.constructor = SystemError;
+
 myApp.handleError = function handleError(e, res) {
   if (e) {
     if (e instanceof login.UnauthorizedError) {
@@ -1093,15 +1102,16 @@ myApp.handleGetLocationShares = function(req, res, token) {
 myApp.handleGetConfigMapAttribution = function(req, res, token) {
   req.on('data', function() {
   }).on('end', function() {
-    if (Array.isArray(config.tile.providers)) {
+    if (config.tile && config.tile.providers && Array.isArray(config.tile.providers) &&
+        config.tile.providers.length > 0) {
       var layers = [];
       config.tile.providers.forEach(function(v) {
         layers.push(v.mapLayer);
       });
       myApp.respondWithData(null, res, layers);
     } else {
-      winston.error('config.json is invalid - tile.providers must be an array');
-      myApp.handleError(new Error('config.json tile.providers'));
+      winston.error('config.json is invalid - tile.providers must be defined as an array');
+      myApp.handleError(new SystemError('config.json is invalid - no tile.providers defined'), res);
     }
   });
 };
