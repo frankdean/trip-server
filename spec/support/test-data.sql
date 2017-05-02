@@ -92,11 +92,11 @@ COPY itinerary (id, title, description, user_id, archived, start, finish) FROM s
 -- Data for Name: itinerary_route; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-COPY itinerary_route (id, itinerary_id, name, distance, ascent, descent, lowest, highest) FROM stdin;
-8303	929	Test One	\N	\N	\N	\N	\N
-8309	983	Test One	\N	\N	\N	\N	\N
-8310	983	Modified route name	\N	\N	\N	\N	\N
-8304	929	Modified route name	\N	\N	\N	\N	\N
+COPY itinerary_route (id, itinerary_id, name, distance, ascent, descent, lowest, highest, color) FROM stdin;
+8303	929	Test One	\N	\N	\N	\N	\N	\N
+8309	983	Test One	\N	\N	\N	\N	\N	\N
+8310	983	Modified route name	\N	\N	\N	\N	\N	\N
+8304	929	Modified route name	\N	\N	\N	\N	\N	\N
 \.
 
 
@@ -1847,6 +1847,30 @@ COPY location_sharing (shared_by_id, shared_to_id, recent_minutes, max_minutes, 
 
 
 --
+-- Data for Name: path_color; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY path_color (key, value, html_code) FROM stdin;
+Black	Black	black
+White	White	white
+Red	Red	red
+Yellow	Yellow	yellow
+Blue	Blue	blue
+Magenta	Magenta	fuchsia
+Cyan	Cyan	aqua
+DarkRed	Dark Red	maroon
+Green	Green	lime
+DarkGreen	Dark Green	green
+LightGray	Light Gray	silver
+DarkGray	Dark Gray	gray
+DarkBlue	Dark Blue	navy
+DarkMagenta	Dark Magenta	purple
+DarkYellow	Dark Yellow	olive
+DarkCyan	Dark Cyan	teal
+\.
+
+
+--
 -- Data for Name: role; Type: TABLE DATA; Schema: public; Owner: -
 --
 
@@ -1875,30 +1899,6 @@ SELECT pg_catalog.setval('tile_download_seq', 122, true);
 --
 
 COPY tile_metric ("time", count) FROM stdin;
-\.
-
-
---
--- Data for Name: track_color; Type: TABLE DATA; Schema: public; Owner: -
---
-
-COPY track_color (key, value, html_code) FROM stdin;
-Black	Black	black
-White	White	white
-Red	Red	red
-Yellow	Yellow	yellow
-Blue	Blue	blue
-Magenta	Magenta	fuchsia
-Cyan	Cyan	aqua
-DarkRed	Dark Red	maroon
-Green	Green	lime
-DarkGreen	Dark Green	green
-LightGray	Light Gray	silver
-DarkGray	Dark Gray	gray
-DarkBlue	Dark Blue	navy
-DarkMagenta	Dark Magenta	purple
-DarkYellow	Dark Yellow	olive
-DarkCyan	Dark Cyan	teal
 \.
 
 

@@ -501,8 +501,8 @@ myApp.handleUpdateItineraryRouteName = function(req, res, token) {
         itineraryId = match ? match[1] : undefined;
         routeId = match ? match[2] : undefined;
         var params = JSON.parse(body);
-        if (params && params.name !== undefined) {
-          itineraries.updateItineraryRouteName(token.sub, itineraryId, routeId, params.name, function(err) {
+        if (params && params.name !== undefined && params.color !== undefined) {
+          itineraries.updateItineraryRouteName(token.sub, itineraryId, routeId, params.name, params.color, function(err) {
             myApp.noResponseData(err, res);
           });
         } else {
@@ -900,7 +900,7 @@ myApp.handleGetNicknames = function(req, res, token) {
   });
 };
 
-myApp.handleGetTrackColors = function(req, res, token) {
+myApp.handleGetPathColors = function(req, res, token) {
   req.on('data', function() {
   }).on('end', function() {
     tracks.getColors(function(err, result) {
@@ -1269,8 +1269,8 @@ myApp.handleAuthenticatedRequests = function(req, res, token) {
     myApp.handleGetItineraryTrackName(req, res, token);
   } else if (req.method === 'POST' && /\/itinerary\/(\d+)\/track\/name\/(\d+)(?:\?.*)?$/.test(req.url)) {
     myApp.handleUpdateItineraryTrackName(req, res, token);
-  } else if (req.method === 'GET' && /\/track\/colors(?:\?.*)?$/.test(req.url)) {
-    myApp.handleGetTrackColors(req, res, token);
+  } else if (req.method === 'GET' && /\/path\/colors(?:\?.*)?$/.test(req.url)) {
+    myApp.handleGetPathColors(req, res, token);
   } else if (req.method === 'GET' && /\/itinerary\/share\/(?:[0-9]+)(?:\?.*)?$/.test(req.url)) {
     myApp.handleGetItineraryShares(req, res, token);
   } else if (req.method === 'GET' && /\/itineraries\/shares(?:\?.*)$/.test(req.url)) {

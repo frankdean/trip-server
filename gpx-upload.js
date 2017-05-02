@@ -168,6 +168,13 @@ function parseFile(itineraryId, pathname, callback) {
             waypoint.color = lastText;
           }
           break;
+        case 'gpxx:routeextension':
+          if (route && currentTag && currentTag.name === 'gpxx:displaycolor' &&
+              currentTag.parent.parent && currentTag.parent.parent.name === 'extensions' &&
+              currentTag.parent.parent.parent && currentTag.parent.parent.parent.name === 'rte') {
+            route.color = lastText;
+          }
+          break;
         case 'gpxx:trackextension':
           if (track && currentTag && currentTag.name === 'gpxx:displaycolor' &&
               currentTag.parent.parent && currentTag.parent.parent.name === 'extensions' &&

@@ -67,7 +67,8 @@ CREATE TABLE itinerary_route (
     ascent numeric(9,1),
     descent numeric(9,1),
     lowest numeric(8,1),
-    highest numeric(8,1)
+    highest numeric(8,1),
+    color text
 );
 
 
@@ -338,6 +339,17 @@ CREATE TABLE location_sharing (
 
 
 --
+-- Name: path_color; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE TABLE path_color (
+    key text NOT NULL,
+    value text NOT NULL,
+    html_code text
+);
+
+
+--
 -- Name: role; Type: TABLE; Schema: public; Owner: -; Tablespace: 
 --
 
@@ -400,17 +412,6 @@ CREATE SEQUENCE tile_download_seq
 CREATE TABLE tile_metric (
     "time" timestamp with time zone DEFAULT now() NOT NULL,
     count integer NOT NULL
-);
-
-
---
--- Name: track_color; Type: TABLE; Schema: public; Owner: -; Tablespace: 
---
-
-CREATE TABLE track_color (
-    key text NOT NULL,
-    value text NOT NULL,
-    html_code text
 );
 
 
@@ -641,7 +642,7 @@ ALTER TABLE ONLY tile
 -- Name: track_color_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
 --
 
-ALTER TABLE ONLY track_color
+ALTER TABLE ONLY path_color
     ADD CONSTRAINT track_color_pkey PRIMARY KEY (key);
 
 
@@ -649,7 +650,7 @@ ALTER TABLE ONLY track_color
 -- Name: track_color_value_key; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
 --
 
-ALTER TABLE ONLY track_color
+ALTER TABLE ONLY path_color
     ADD CONSTRAINT track_color_value_key UNIQUE (value);
 
 

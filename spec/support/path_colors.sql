@@ -12,10 +12,10 @@ SET client_min_messages = warning;
 SET search_path = public, pg_catalog;
 
 --
--- Data for Name: track_color; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: path_color; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-COPY track_color (key, value, html_code) FROM stdin;
+COPY path_color (key, value, html_code) FROM stdin;
 Black	Black	black
 White	White	white
 Red	Red	red

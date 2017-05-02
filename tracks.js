@@ -45,7 +45,7 @@ function getNicknames(username, callback) {
 
 function getColors(callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  db.getTrackColors(function(err, result) {
+  db.getPathColors(function(err, result) {
       callback(err, result);
   });
 }

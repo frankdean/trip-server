@@ -353,11 +353,11 @@ function getItineraryRouteName(username, itineraryId, routeId, callback) {
   });
 }
 
-function updateItineraryRouteName(username, itineraryId, routeId, name, callback) {
+function updateItineraryRouteName(username, itineraryId, routeId, name, color, callback) {
   db.confirmItineraryOwnership(username, itineraryId, function(err, result) {
     if (utils.handleError(err, callback)) {
       if (result) {
-        db.updateItineraryRouteName(itineraryId, routeId, name, function(err, result) {
+        db.updateItineraryRouteName(itineraryId, routeId, name, color, function(err, result) {
           if (!err && result) {
             callback(err);
           } else {
@@ -573,7 +573,7 @@ function getTracks(itineraryId, trackIds, callback) {
 
 function downloadItineraryGpx(username, itineraryId, params, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  var root, rte, rtept, trk, trkseg, trkpt, wpt, ext, trkext, wptext;
+  var root, rte, rteext, rtept, trk, trkseg, trkpt, wpt, ext, trkext, wptext;
   db.confirmItinerarySharedAccess(username, itineraryId, function(err, result) {
     if (utils.handleError(err, callback)) {
       if (result !== true) {
@@ -629,6 +629,13 @@ function downloadItineraryGpx(username, itineraryId, params, callback) {
                         rte.e('name', r.name);
                       } else {
                         rte.e('name', 'RTE: ' + r.id);
+                      }
+                      if (r.color) {
+                        ext = rte.e('extensions');
+                        rteext = ext.e('gpxx:RouteExtension');
+                        // IsAutoNamed is mandatory for a RouteExtension in XSD
+                        rteext.e('gpxx:IsAutoNamed', 'false');
+                        rteext.e('gpxx:DisplayColor', r.color);
                       }
                       if (r.points !== undefined && Array.isArray(r.points)) {
                         r.points.forEach(function(v) {

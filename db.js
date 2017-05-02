@@ -61,7 +61,7 @@ module.exports = {
   getLocations: getLocations,
   getMostRecentLocationTime: getMostRecentLocationTime,
   getNicknames: getNicknames,
-  getTrackColors: getTrackColors,
+  getPathColors: getPathColors,
   getWaypointSymbols: getWaypointSymbols,
   getGeoreferenceFormats: getGeoreferenceFormats,
   getPassword: getPassword,
@@ -505,13 +505,13 @@ function getNicknames(username, callback) {
   });
 }
 
-function getTrackColors(callback) {
+function getPathColors(callback) {
   callback = typeof callback === 'function' ? callback : function() {};
   pg.connect(config.db.uri, function(err, client, done) {
     if (err) {
       callback(err);
     } else {
-      client.query('SELECT key, value FROM track_color ORDER BY value, key',
+      client.query('SELECT key, value FROM path_color ORDER BY value, key',
                    [],
                    function(err, result) {
                      // release the client back to the pool
@@ -1606,7 +1606,7 @@ function getItineraryRoutes(itineraryId, routeIds, callback) {
     if (err) {
       callback(err);
     } else {
-      client.query('SELECT r.id AS route_id, r.name AS route_name, r.distance, r.ascent, r.descent, r.lowest, r.highest, p.id AS point_id, p.position[1] AS lat, p.position[0] AS lng, p.name AS point_name, p.comment, p.description, p.symbol, p.altitude FROM itinerary_route r LEFT JOIN itinerary_route_point p ON r.id=p.itinerary_route_id WHERE r.itinerary_id = $1 AND r.id=ANY($2) ORDER BY r.id, p.id',
+      client.query('SELECT r.id AS route_id, r.name AS route_name, r.color AS path_color, Rc.html_code, r.distance, r.ascent, r.descent, r.lowest, r.highest, p.id AS point_id, p.position[1] AS lat, p.position[0] AS lng, p.name AS point_name, p.comment, p.description, p.symbol, p.altitude FROM itinerary_route r LEFT JOIN path_color RC ON r.color=rc.key LEFT JOIN itinerary_route_point p ON r.id=p.itinerary_route_id WHERE r.itinerary_id = $1 AND r.id=ANY($2) ORDER BY r.id, p.id',
                    [itineraryId, routeIds],
                    function(err, result) {
                      // release the client back to the pool
@@ -1621,6 +1621,8 @@ function getItineraryRoutes(itineraryId, routeIds, callback) {
                              rte = {};
                              rte.id = rid;
                              rte.name = v.route_name;
+                             rte.color = v.path_color;
+                             rte.htmlcolor = v.html_code;
                              rte.distance = v.distance;
                              rte.ascent = v.ascent;
                              rte.descent = v.descent;
@@ -1657,7 +1659,7 @@ function getItineraryTracks(itineraryId, trackIds, callback) {
     if (err) {
       callback(err);
     } else {
-      client.query('SELECT t.id AS track_id, t.name AS track_name, t.color AS track_color, tc.html_code, t.distance, t.ascent, t.descent, t.lowest, t.highest, ts.id AS segment_id, p.id AS point_id, p.position[1] AS lat, p.position[0] AS lng, p.time, p.hdop, p.altitude FROM itinerary_track t LEFT JOIN track_color tc ON t.color=tc.key LEFT JOIN itinerary_track_segment ts ON t.id=ts.itinerary_track_id LEFT JOIN itinerary_track_point p ON ts.id=p.itinerary_track_segment_id WHERE t.itinerary_id = $1 AND t.id=ANY($2) ORDER BY t.id, ts.id, p.id',
+      client.query('SELECT t.id AS track_id, t.name AS track_name, t.color AS path_color, tc.html_code, t.distance, t.ascent, t.descent, t.lowest, t.highest, ts.id AS segment_id, p.id AS point_id, p.position[1] AS lat, p.position[0] AS lng, p.time, p.hdop, p.altitude FROM itinerary_track t LEFT JOIN path_color tc ON t.color=tc.key LEFT JOIN itinerary_track_segment ts ON t.id=ts.itinerary_track_id LEFT JOIN itinerary_track_point p ON ts.id=p.itinerary_track_segment_id WHERE t.itinerary_id = $1 AND t.id=ANY($2) ORDER BY t.id, ts.id, p.id',
                    [itineraryId, trackIds],
                    function(err, result) {
                      // release the client back to the pool
@@ -1673,7 +1675,7 @@ function getItineraryTracks(itineraryId, trackIds, callback) {
                              trk = {};
                              trk.id = tid;
                              trk.name = v.track_name;
-                             trk.color = v.track_color;
+                             trk.color = v.path_color;
                              trk.htmlcolor = v.html_code;
                              trk.distance = v.distance;
                              trk.ascent = v.ascent;
@@ -1717,7 +1719,7 @@ function getItineraryRouteNames(itineraryId, callback) {
     if (err) {
       callback(err);
     } else {
-      client.query('SELECT id, name, distance, ascent, descent, lowest, highest FROM itinerary_route WHERE itinerary_id=$1 ORDER BY name, id',
+      client.query('SELECT id, name, color, distance, ascent, descent, lowest, highest FROM itinerary_route WHERE itinerary_id=$1 ORDER BY name, id',
                    [itineraryId],
                    function(err, result) {
                      // release the client back to the pool
@@ -1742,7 +1744,7 @@ function getItineraryRouteName(itineraryId, routeId, callback) {
     if (err) {
       callback(err);
     } else {
-      client.query('SELECT id, name, distance, ascent, descent, lowest, highest FROM itinerary_route WHERE itinerary_id=$1 AND id=$2',
+      client.query('SELECT id, name, color, distance, ascent, descent, lowest, highest FROM itinerary_route WHERE itinerary_id=$1 AND id=$2',
                    [itineraryId, routeId],
                    function(err, result) {
                      // release the client back to the pool
@@ -1761,14 +1763,14 @@ function getItineraryRouteName(itineraryId, routeId, callback) {
   });
 }
 
-function updateItineraryRouteName(itineraryId, routeId, name, callback) {
+function updateItineraryRouteName(itineraryId, routeId, name, color, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
   pg.connect(config.db.uri, function(err, client, done) {
     if (err) {
       callback(err);
     } else {
-      client.query('UPDATE itinerary_route SET name=$3 WHERE itinerary_id=$1 AND id=$2',
-                   [itineraryId, routeId, name],
+      client.query('UPDATE itinerary_route SET name=$3, color=$4 WHERE itinerary_id=$1 AND id=$2',
+                   [itineraryId, routeId, name, color],
                    function(err, result) {
                      // release the client back to the pool
                      done();
@@ -1911,9 +1913,10 @@ function createItineraryRoute(itineraryId, route, callback) {
     if (err) {
       callback(err);
     } else {
-      client.query('INSERT INTO itinerary_route (itinerary_id, name, distance, ascent, descent, lowest, highest) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id',
+      client.query('INSERT INTO itinerary_route (itinerary_id, name, color, distance, ascent, descent, lowest, highest) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id',
                    [itineraryId,
                     route.name,
+                    route.color,
                     route.distance,
                     route.ascent,
                     route.descent,
@@ -1950,8 +1953,8 @@ function createItineraryRoutes(itineraryId, routes, callback) {
       var routeCounter = routes.length;
       routes.forEach(function(r) {
         client.query({name: 'crt-itnry-rte',
-                      text: 'INSERT INTO itinerary_route (itinerary_id, name, distance, ascent, descent, lowest, highest) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id',
-                      values: [itineraryId, r.name, r.distance, r.ascent, r.descent, r.lowest, r.highest]}, function(err, result) {
+                      text: 'INSERT INTO itinerary_route (itinerary_id, name, color, distance, ascent, descent, lowest, highest) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id',
+                      values: [itineraryId, r.name, r.color, r.distance, r.ascent, r.descent, r.lowest, r.highest]}, function(err, result) {
                         if (err) {
                           winston.error('Failure inserting itinerary_route', err);
                         } else {

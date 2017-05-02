@@ -355,7 +355,9 @@ E.g. a format string of `%d°%M′%S″%c` would result in a lat/long value of
 Scripts to create default values for these lookup tables are in the
 `./spec/support` folder, named `waypoint_symbols.sql`, `track_colors.sql` and
 `georef_formats.sql` respectively.  The default waypoint symbols and track
-colours are generally appropriate for Garmin devices.
+colours are generally appropriate for Garmin devices.  If fact, the colours
+are the only ones allowed by the
+[Garmin Extensions XSD](http://www8.garmin.com/xmlschemas/GpxExtensionsv3.xsd).
 
 
 #### Indexes for Query Performance
@@ -580,7 +582,31 @@ This section describes any environmental changes, such as database changes or
 configuration changes that need to be made since the last release, when
 upgrading to the next release.
 
-n/a
+1.  Required database changes:
+
+		INSERT INTO track_color VALUES ('Transparent', 'Transparent', 'silver');
+		ALTER TABLE itinerary_route ADD COLUMN color text;
+
+1.  Then either;
+
+	rename `track_color` to `path_color`, or;
+
+			ALTER TABLE track_color RENAME TO path_color;
+
+	or
+
+	create `path_color` as a copy of `track_color` allowing compatability
+	between versions v0.11 and v0.12
+
+			CREATE TABLE path_color (LIKE track_color);
+			ALTER TABLE ONLY path_color ADD CONSTRAINT path_color_pkey PRIMARY KEY (key);
+			ALTER TABLE ONLY path_color ADD CONSTRAINT path_color_value_key UNIQUE (value);
+			GRANT SELECT ON path_color TO trip_role;
+			INSERT INTO path_color SELECT * FROM track_color;
+
+1.  Optionally, drop the `track_color` table when unlikely to roll-back to v0.11:
+
+		DROP TABLE track_color;
 
 
 [trip-web-client]: https://github.com/frankdean/trip-web-client
@@ -595,7 +621,7 @@ n/a
 [OpenStreetMap]: http://www.openstreetmap.org/ "OpenStreetMap"
 [PostgreSQL]: https://www.postgresql.org "A powerful, open source object-relational database system"
 [RaspberryPi]: https://www.raspberrypi.org
-[gpx]: https://en.wikipedia.org/wiki/GPS_Exchange_Format "GPS Exchange Format"
+[gpx]: http://www.topografix.com/gpx.asp "The GPX Exchange Format"
 [semver]: http://semver.org
 [spa]: https://en.wikipedia.org/wiki/Single-page_application "Single-page application"
 [Traccar Client]: https://www.traccar.org/client/

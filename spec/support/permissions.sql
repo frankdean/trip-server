@@ -14,7 +14,7 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON user_role TO trip_role;
 GRANT SELECT, INSERT, UPDATE, DELETE ON usertable TO trip_role;
 GRANT SELECT, INSERT ON tile_metric TO trip_role;
 GRANT SELECT ON georef_format TO trip_role;
-GRANT SELECT ON track_color TO trip_role;
+GRANT SELECT ON path_color TO trip_role;
 GRANT SELECT ON waypoint_symbol TO trip_role;
 GRANT USAGE ON SEQUENCE itinerary_route_point_seq TO trip_role;
 GRANT USAGE ON SEQUENCE itinerary_route_seq TO trip_role;
