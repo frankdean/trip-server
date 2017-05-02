@@ -1,18 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gpx xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" creator="TRIP" version="1.1" xmlns="http://www.topografix.com/GPX/1/1" xmlns:gpxx="http://www.garmin.com/xmlschemas/GpxExtensions/v3" xmlns:wptx1="http://www.garmin.com/xmlschemas/WaypointExtension/v1" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www8.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/WaypointExtension/v1 http://www8.garmin.com/xmlschemas/WaypointExtensionv1.xsd">
   <metadata>
-    <time>2017-01-17T12:45:34.920Z</time>
+    <time>2017-05-02T11:04:06.416Z</time>
   </metadata>
   <wpt lon="-0.13483334" lat="51.51743317">
-    <time>2016-11-02T19:28:50.000Z</time>
     <ele>100.00000</ele>
+    <time>2016-11-02T19:28:50.000Z</time>
     <name>London</name>
     <cmt>Test Comment 1</cmt>
     <desc>Test description 1</desc>
     <sym>City (Capitol)</sym>
     <type>My Type</type>
     <extensions>
-      <color>#b400842b</color>
       <wptx1:WaypointExtension>
         <wptx1:Samples>1</wptx1:Samples>
       </wptx1:WaypointExtension>
@@ -36,94 +35,7 @@
     <cmt>Test Comment 3</cmt>
     <desc>Test description 3</desc>
     <sym>City (Capitol)</sym>
-    <extensions>
-      <color>#b400842b</color>
-    </extensions>
   </wpt>
-  <trk>
-    <name>Test track one</name>
-    <extensions>
-      <gpxx:TrackExtension>
-        <gpxx:DisplayColor>Green</gpxx:DisplayColor>
-      </gpxx:TrackExtension>
-    </extensions>
-    <trkseg>
-      <trkpt lon="-64.45214081" lat="18.49486923">
-        <time>1970-01-01T00:00:01.000Z</time>
-        <ele>100.00000</ele>
-        <hdop>140.0</hdop>
-      </trkpt>
-      <trkpt lon="-105.49706268" lat="45.40974808">
-        <time>1970-01-01T00:00:02.000Z</time>
-        <ele>100.00000</ele>
-      </trkpt>
-      <trkpt lon="-133.70994568" lat="-3.32189083">
-        <time>1970-01-01T00:00:03.000Z</time>
-        <ele>100.00000</ele>
-      </trkpt>
-      <trkpt lon="-90.73143768" lat="-0.59913325">
-        <time>1970-01-01T00:00:04.000Z</time>
-        <ele>100.00000</ele>
-      </trkpt>
-      <trkpt lon="-6.79588938" lat="4.05566788">
-        <time>1970-01-01T00:00:05.000Z</time>
-        <ele>100.00000</ele>
-      </trkpt>
-      <trkpt lon="13.4189539" lat="-9.08620834">
-        <time>1970-01-01T00:00:06.000Z</time>
-        <ele>100.00000</ele>
-      </trkpt>
-    </trkseg>
-    <trkseg>
-      <trkpt lon="17.81348419" lat="-33.34461975">
-        <time>1970-01-01T00:00:07.000Z</time>
-        <ele>100.00000</ele>
-      </trkpt>
-      <trkpt lon="26.07520294" lat="-34.80059052">
-        <time>1970-01-01T00:00:08.000Z</time>
-        <ele>100.00000</ele>
-      </trkpt>
-      <trkpt lon="44.26856232" lat="-25.94357681">
-        <time>1970-01-01T00:00:09.000Z</time>
-        <ele>100.00000</ele>
-      </trkpt>
-      <trkpt lon="51.12403107" lat="11.79707623">
-        <time>1970-01-01T00:00:10.000Z</time>
-        <ele>100.00000</ele>
-      </trkpt>
-      <trkpt lon="-5.8290925" lat="36.11537552">
-        <time>1970-01-01T00:00:11.000Z</time>
-        <ele>100.00000</ele>
-      </trkpt>
-      <trkpt lon="-27.8896389" lat="38.62944031">
-        <time>1970-01-01T00:00:12.000Z</time>
-        <ele>100.00000</ele>
-      </trkpt>
-      <trkpt lon="-61.20018387" lat="11.79707623">
-        <time>1970-01-01T00:00:13.000Z</time>
-        <ele>100.00000</ele>
-      </trkpt>
-    </trkseg>
-  </trk>
-  <trk>
-    <name>Test track two</name>
-    <extensions>
-      <gpxx:TrackExtension>
-        <gpxx:DisplayColor>Yellow</gpxx:DisplayColor>
-      </gpxx:TrackExtension>
-    </extensions>
-    <trkseg>
-      <trkpt lon="-54.45214081" lat="17.49486923">
-        <time>1970-01-01T00:00:01.000Z</time>
-        <ele>100.00000</ele>
-        <hdop>140.0</hdop>
-      </trkpt>
-      <trkpt lon="-75.49706268" lat="42.40974808">
-        <time>1970-01-01T00:00:02.000Z</time>
-        <ele>100.00000</ele>
-      </trkpt>
-    </trkseg>
-  </trk>
   <rte>
     <name>Test One</name>
     <rtept lon="-67.038345" lat="62.788059">
@@ -197,4 +109,88 @@
       <sym>Small City</sym>
     </rtept>
   </rte>
+  <trk>
+    <name>Test track one</name>
+    <extensions>
+      <gpxx:TrackExtension>
+        <gpxx:DisplayColor>Green</gpxx:DisplayColor>
+      </gpxx:TrackExtension>
+    </extensions>
+    <trkseg>
+      <trkpt lon="-64.45214081" lat="18.49486923">
+        <ele>100.00000</ele>
+        <time>1970-01-01T00:00:01.000Z</time>
+        <hdop>140.0</hdop>
+      </trkpt>
+      <trkpt lon="-105.49706268" lat="45.40974808">
+        <ele>100.00000</ele>
+        <time>1970-01-01T00:00:02.000Z</time>
+      </trkpt>
+      <trkpt lon="-133.70994568" lat="-3.32189083">
+        <ele>100.00000</ele>
+        <time>1970-01-01T00:00:03.000Z</time>
+      </trkpt>
+      <trkpt lon="-90.73143768" lat="-0.59913325">
+        <ele>100.00000</ele>
+        <time>1970-01-01T00:00:04.000Z</time>
+      </trkpt>
+      <trkpt lon="-6.79588938" lat="4.05566788">
+        <ele>100.00000</ele>
+        <time>1970-01-01T00:00:05.000Z</time>
+      </trkpt>
+      <trkpt lon="13.4189539" lat="-9.08620834">
+        <ele>100.00000</ele>
+        <time>1970-01-01T00:00:06.000Z</time>
+      </trkpt>
+    </trkseg>
+    <trkseg>
+      <trkpt lon="17.81348419" lat="-33.34461975">
+        <ele>100.00000</ele>
+        <time>1970-01-01T00:00:07.000Z</time>
+      </trkpt>
+      <trkpt lon="26.07520294" lat="-34.80059052">
+        <ele>100.00000</ele>
+        <time>1970-01-01T00:00:08.000Z</time>
+      </trkpt>
+      <trkpt lon="44.26856232" lat="-25.94357681">
+        <ele>100.00000</ele>
+        <time>1970-01-01T00:00:09.000Z</time>
+      </trkpt>
+      <trkpt lon="51.12403107" lat="11.79707623">
+        <ele>100.00000</ele>
+        <time>1970-01-01T00:00:10.000Z</time>
+      </trkpt>
+      <trkpt lon="-5.8290925" lat="36.11537552">
+        <ele>100.00000</ele>
+        <time>1970-01-01T00:00:11.000Z</time>
+      </trkpt>
+      <trkpt lon="-27.8896389" lat="38.62944031">
+        <ele>100.00000</ele>
+        <time>1970-01-01T00:00:12.000Z</time>
+      </trkpt>
+      <trkpt lon="-61.20018387" lat="11.79707623">
+        <ele>100.00000</ele>
+        <time>1970-01-01T00:00:13.000Z</time>
+      </trkpt>
+    </trkseg>
+  </trk>
+  <trk>
+    <name>Test track two</name>
+    <extensions>
+      <gpxx:TrackExtension>
+        <gpxx:DisplayColor>Yellow</gpxx:DisplayColor>
+      </gpxx:TrackExtension>
+    </extensions>
+    <trkseg>
+      <trkpt lon="-54.45214081" lat="17.49486923">
+        <ele>100.00000</ele>
+        <time>1970-01-01T00:00:01.000Z</time>
+        <hdop>140.0</hdop>
+      </trkpt>
+      <trkpt lon="-75.49706268" lat="42.40974808">
+        <ele>100.00000</ele>
+        <time>1970-01-01T00:00:02.000Z</time>
+      </trkpt>
+    </trkseg>
+  </trk>
 </gpx>

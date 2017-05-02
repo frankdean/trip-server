@@ -6,6 +6,9 @@
         "level": 0
       }
     },
+    "gpx": {
+      "allowInvalidXsd": false
+    },
     "autoQuit": {
       "timeOut": 300
     }

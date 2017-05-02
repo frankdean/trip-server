@@ -4,15 +4,14 @@
     <time>2017-01-17T12:45:34.920Z</time>
   </metadata>
   <wpt lon="-0.13483334" lat="51.51743317">
-    <time>2016-11-02T19:28:50.000Z</time>
     <ele>100.00000</ele>
+    <time>2016-11-02T19:28:50.000Z</time>
     <name>London</name>
     <cmt>Test Comment 1</cmt>
     <desc>Test description 1</desc>
     <sym>City (Capitol)</sym>
     <type>My Type</type>
     <extensions>
-      <color>#b400842b</color>
       <wptx1:WaypointExtension>
         <wptx1:Samples>1</wptx1:Samples>
       </wptx1:WaypointExtension>

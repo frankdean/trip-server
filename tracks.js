@@ -245,10 +245,10 @@ function getLocationsAsXml(query, callback) {
           if (v.altitude) {
             trkpt.e('ele', null, v.altitude);
           }
+          trkpt.e('time', null, v.time.toISOString());
           if (v.hdop) {
             trkpt.e('hdop', v.hdop);
           }
-          trkpt.e('time', null, v.time.toISOString());
         });
         callback(null, root.end({pretty: false}));
       } else {

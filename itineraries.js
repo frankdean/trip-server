@@ -22,6 +22,7 @@ var validator = require('validator');
 var winston = require('winston');
 
 var db = require('./db');
+var config = require('./config.json');
 var utils = require('./utils');
 
 var validNickname = /^[!-\.0->@-~]+$/;
@@ -597,8 +598,8 @@ function downloadItineraryGpx(username, itineraryId, params, callback) {
                   if (waypoints !== undefined && Array.isArray(waypoints)) {
                     waypoints.forEach(function(v, i, a) {
                       wpt = root.e('wpt', {lon: v.lng, lat: v.lat});
-                      if (v.time) wpt.e('time', null, v.time.toISOString());
                       if (v.altitude) wpt.e('ele', null, v.altitude);
+                      if (v.time) wpt.e('time', null, v.time.toISOString());
                       if (v.name) {
                         wpt.e('name', v.name);
                       } else {
@@ -608,15 +609,36 @@ function downloadItineraryGpx(username, itineraryId, params, callback) {
                       if (v.description) wpt.e('desc', v.description);
                       if (v.symbol) wpt.e('sym', v.symbol);
                       if (v.type) wpt.e('type', v.type);
-                      if (v.color || v.samples) {
+                      // 'color' element used by OsmAnd is not allowed in the XSDs, so optional config
+                      if ((config.app.gpx && config.app.gpx.allowInvalidXsd && v.color) || v.samples) {
                         ext = wpt.e('extensions');
-                        if (v.color) {
+                        if (config.app.gpx && config.app.gpx.allowInvalidXsd && v.color) {
                           ext.e('color', v.color);
                         }
                         if (v.samples) {
                           wptext = ext.e('wptx1:WaypointExtension');
                           wptext.e('wptx1:Samples', v.samples);
                         }
+                      }
+                    });
+                  }
+                  if (routes !== undefined && Array.isArray(routes)) {
+                    routes.forEach(function(r) {
+                      rte = root.e('rte');
+                      if (r.name) {
+                        rte.e('name', r.name);
+                      } else {
+                        rte.e('name', 'RTE: ' + r.id);
+                      }
+                      if (r.points !== undefined && Array.isArray(r.points)) {
+                        r.points.forEach(function(v) {
+                          rtept = rte.e('rtept', {lon: v.lng, lat: v.lat});
+                          if (v.altitude) rtept.e('ele', null, v.altitude);
+                          if (v.name) rtept.e('name', v.name);
+                          if (v.comment) rtept.e('cmt', v.comment);
+                          if (v.description) rtept.e('desc', v.description);
+                          if (v.symbol) rtept.e('sym', v.symbol);
+                        });
                       }
                     });
                   }
@@ -639,8 +661,8 @@ function downloadItineraryGpx(username, itineraryId, params, callback) {
                           if (ts.points !== undefined && Array.isArray(ts.points)) {
                             ts.points.forEach(function(v) {
                               trkpt = trkseg.e('trkpt', {lon: v.lng, lat: v.lat});
-                              if (v.time) trkpt.e('time', null, v.time.toISOString());
                               if (v.altitude) trkpt.e('ele', null, v.altitude);
+                              if (v.time) trkpt.e('time', null, v.time.toISOString());
                               if (v.hdop) trkpt.e('hdop', null, v.hdop);
                             });
                           } else {
@@ -651,26 +673,6 @@ function downloadItineraryGpx(username, itineraryId, params, callback) {
                         winston.error('Track segments array is missing');
                       }
                     }); // forEach track
-                  }
-                  if (routes !== undefined && Array.isArray(routes)) {
-                    routes.forEach(function(r) {
-                      rte = root.e('rte');
-                      if (r.name) {
-                        rte.e('name', r.name);
-                      } else {
-                        rte.e('name', 'RTE: ' + r.id);
-                      }
-                      if (r.points !== undefined && Array.isArray(r.points)) {
-                        r.points.forEach(function(v) {
-                          rtept = rte.e('rtept', {lon: v.lng, lat: v.lat});
-                          if (v.altitude) rtept.e('ele', null, v.altitude);
-                          if (v.name) rtept.e('name', v.name);
-                          if (v.comment) rtept.e('cmt', v.comment);
-                          if (v.description) rtept.e('desc', v.description);
-                          if (v.symbol) rtept.e('sym', v.symbol);
-                        });
-                      }
-                    });
                   }
                   callback(null, root.end({pretty: false}));
                 });
