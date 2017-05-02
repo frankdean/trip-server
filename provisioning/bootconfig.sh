@@ -50,7 +50,8 @@ EOF
 	if [ "$IMPORT_TEST_DATA" == "y" ]; then
 		su - postgres -c  'psql trip' <test-data.sql >/dev/null
 	else
-		ADMIN_PWD=$(apg  -m 12 -x 14 -M NC -t -n 20 | tail -n 1 | cut -d ' ' -f 1 -)
+		ADMIN_PWD_TEXT=$(apg  -m 12 -x 14 -M NC -t -n 20 | tail -n 1)
+		ADMIN_PWD=$(echo $ADMIN_PWD_TEXT | cut -d ' ' -f 1 -)
 		su - postgres -c  'psql trip' <waypoint_symbols.sql >/dev/null
 		su - postgres -c  'psql trip' <track_colors.sql >/dev/null
 		su - postgres -c 'psql trip' >/dev/null <<EOF
@@ -139,6 +140,6 @@ if [ ! -z "$ADMIN_PWD" ]; then
 	>&2 echo
 	>&2 echo "******************************************************************************"
 	>&2 echo "I have created an initial admin user for TRIP"
-	>&2 echo "login as 'admin@secret.org' with password '$ADMIN_PWD'"
+	>&2 echo "login as 'admin@secret.org' with password '$ADMIN_PWD_TEXT'"
 	>&2 echo "******************************************************************************"
 fi
