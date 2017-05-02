@@ -110,14 +110,15 @@ if [ ! -e /var/www/trip/app/bower_components ]; then
 		fi
 	else
 		echo "Configuring to run with a downloaded version of the web application"
+		TRIP_WEB_CLIENT_VERSION='v0.11.6'
+		TRIP_WEB_CLIENT_RELEASE="trip-release-${TRIP_WEB_CLIENT_VERSION}.tar.gz"
 		# If not, download and extract release
-		if [ ! -e /vagrant/provisioning/downloads/trip-release-v0.11.0.tar.gz ]; then
+		if [ ! -e /vagrant/provisioning/downloads/${TRIP_WEB_CLIENT_RELEASE} ]; then
 			cd /vagrant/provisioning/downloads
-			wget --no-verbose https://github.com/frankdean/trip-web-client/releases/download/v0.11.2/trip-release-v0.11.2.tar.gz 2>&1
+			wget --no-verbose https://github.com/frankdean/trip-web-client/releases/download/${TRIP_WEB_CLIENT_VERSION}/${TRIP_WEB_CLIENT_RELEASE} 2>&1
 		fi
 		cd /var/www/trip
-		tar --no-same-owner --no-same-permissions -xf /vagrant/provisioning/downloads/trip-release-v0.11.2.tar.gz
-		#su - vagrant -c 'cd /var/www/trip && tar -xf /vagrant/provisioning/downloads/trip-release-v0.11.2.tar.gz'
+		tar --no-same-owner --no-same-permissions -xf /vagrant/provisioning/downloads/${TRIP_WEB_CLIENT_RELEASE}
 	fi
 fi
 
