@@ -32,6 +32,7 @@ DarkBlue	Dark Blue	navy
 DarkMagenta	Dark Magenta	purple
 DarkYellow	Dark Yellow	olive
 DarkCyan	Dark Cyan	teal
+Transparent	Transparent	silver
 \.
 
 
