@@ -8,6 +8,8 @@
 # Uncomment the following to debug the script
 #set -x
 
+TRIP_WEB_CLIENT_VERSION='v0.12.0'
+
 su - postgres -c 'createuser -drs vagrant' 2>/dev/null
 su - vagrant -c 'cd /vagrant && npm install'
 cd /vagrant
@@ -53,7 +55,8 @@ EOF
 		ADMIN_PWD_TEXT=$(apg  -m 12 -x 14 -M NC -t -n 20 | tail -n 1)
 		ADMIN_PWD=$(echo $ADMIN_PWD_TEXT | cut -d ' ' -f 1 -)
 		su - postgres -c  'psql trip' <waypoint_symbols.sql >/dev/null
-		su - postgres -c  'psql trip' <track_colors.sql >/dev/null
+		su - postgres -c  'psql trip' <georef_formats.sql >/dev/null
+		su - postgres -c  'psql trip' <path_colors.sql >/dev/null
 		su - postgres -c 'psql trip' >/dev/null <<EOF
 CREATE EXTENSION pgcrypto;
 INSERT INTO role (name) VALUES ('Admin'), ('User');
@@ -111,8 +114,7 @@ if [ ! -e /var/www/trip/app/bower_components ]; then
 		fi
 	else
 		echo "Configuring to run with a downloaded version of the web application"
-		TRIP_WEB_CLIENT_VERSION='v0.11.6'
-		TRIP_WEB_CLIENT_RELEASE="trip-release-${TRIP_WEB_CLIENT_VERSION}.tar.gz"
+		TRIP_WEB_CLIENT_RELEASE="trip-web-release-${TRIP_WEB_CLIENT_VERSION}.tar.gz"
 		# If not, download and extract release
 		if [ ! -e /vagrant/provisioning/downloads/${TRIP_WEB_CLIENT_RELEASE} ]; then
 			cd /vagrant/provisioning/downloads
