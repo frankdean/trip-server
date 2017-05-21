@@ -129,8 +129,8 @@ if [ ! -L /usr/local/trip-server ]; then
 	cd /usr/local
 	ln -s /vagrant trip-server
 fi
-if [ ! -e /etc/systemd/system/trip.server ]; then
-	systemctl is-active trip.service >/dev/null
+if [ ! -e /etc/systemd/system/trip.socket ]; then
+	systemctl is-active trip.socket >/dev/null
 	if [ $? -ne 0 ]; then
 		cp /vagrant/provisioning/systemd/trip.s* /etc/systemd/system/
 		systemctl enable trip.socket 2>/dev/null

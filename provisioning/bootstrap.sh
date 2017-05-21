@@ -3,18 +3,24 @@
 apt-get update
 apt-get install -y g++ git nginx postgresql postgresql-contrib apg
 
+NODE_VERSION="v6.10.3"
+NODE_FILENAME="node-${NODE_VERSION}-linux-x64"
+NODE_TAR_FILENAME="${NODE_FILENAME}.tar.xz"
+NODE_EXTRACT_DIR="${NODE_FILENAME}"
+NODE_DOWNLOAD_URL="https://nodejs.org/dist/${NODE_VERSION}/${NODE_TAR_FILENAME}"
+
 if [ ! -d /usr/local/share/node-v6.10.1-linux-x64 ]; then
-	if [ ! -e /vagrant/provisioning/downloads/node-v6.10.1-linux-x64.tar.xz ]; then
+	if [ ! -e "/vagrant/provisioning/downloads/${NODE_TAR_FILENAME}" ]; then
 		if [ ! -d /vagrant/provisioning/downloads ]; then
 			mkdir -p /vagrant/provisioning/downloads
 		fi
 		cd /vagrant/provisioning/downloads
-		wget --no-verbose https://nodejs.org/dist/v6.10.1/node-v6.10.1-linux-x64.tar.xz 2>&1
+		wget --no-verbose $NODE_DOWNLOAD_URL 2>&1
 	fi
-	if [ -e /vagrant/provisioning/downloads/node-v6.10.1-linux-x64.tar.xz ]; then
+	if [ -e "/vagrant/provisioning/downloads/${NODE_TAR_FILENAME}" ]; then
 		cd /usr/local/share
-		tar --no-same-owner --no-same-permissions -xf /vagrant/provisioning/downloads/node-v6.10.1-linux-x64.tar.xz
-		ln -s node-v6.10.1-linux-x64 node-current
+		tar --no-same-owner --no-same-permissions -xf "/vagrant/provisioning/downloads/${NODE_TAR_FILENAME}"
+		ln -s "$NODE_EXTRACT_DIR" node-current
 		cd  /usr/local/bin
 		ln -s ../share/node-current/bin/node
 		ln -s ../share/node-current/bin/npm

@@ -40,6 +40,9 @@ The following features are provided:
 
 * Viewing routes, tracks and waypoints of an itinerary on the map.
 
+* Splitting and joining routes and tracks.
+
+* Deleting individual points from routes and tracks.
 
 ## Requirements
 
@@ -299,7 +302,7 @@ the application is deployed.
 
 As a Unix user who is also a postgresql superuser:
 
-		$ createdb trip
+		$ createdb --owner=trip trip
 
 Confirm the trip user can connect to the database using the password
 created earlier:
@@ -561,13 +564,11 @@ a release of the web client.
 
 1.  Run `npm run lint`
 
-1.  Update the version number in `config-dist.json`
+1.  Update the version number in `index.js myApp.version`
 
 1.  Check in the change and push the changes
 
 1.  On the target server, pull the changes
-
-1.  Update the version number in the local `config.json`
 
 1.  Run `npm install` on the target server
 
@@ -582,32 +583,7 @@ This section describes any environmental changes, such as database changes or
 configuration changes that need to be made since the last release, when
 upgrading to the next release.
 
-1.  Required database changes:
-
-		INSERT INTO track_color VALUES ('Transparent', 'Transparent', 'silver');
-		ALTER TABLE itinerary_route ADD COLUMN color text;
-
-1.  Then either;
-
-	rename `track_color` to `path_color`, or;
-
-			ALTER TABLE track_color RENAME TO path_color;
-
-	or
-
-	create `path_color` as a copy of `track_color` allowing compatability
-	between versions v0.11 and v0.12
-
-			CREATE TABLE path_color (LIKE track_color);
-			ALTER TABLE ONLY path_color ADD CONSTRAINT path_color_pkey PRIMARY KEY (key);
-			ALTER TABLE ONLY path_color ADD CONSTRAINT path_color_value_key UNIQUE (value);
-			GRANT SELECT ON path_color TO trip_role;
-			INSERT INTO path_color SELECT * FROM track_color;
-
-1.  Optionally, drop the `track_color` table when unlikely to roll-back to v0.11:
-
-		DROP TABLE track_color;
-
+n/a
 
 [trip-web-client]: https://github.com/frankdean/trip-web-client
 [AngularJS]: https://angularjs.org

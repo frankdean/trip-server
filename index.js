@@ -37,6 +37,7 @@ var tracks = require('./tracks');
 var reports = require('./reports');
 
 var myApp = myApp || {};
+myApp.version = '0.13.0-rc.2';
 module.exports = myApp;
 
 winston.level = config.log.level;
@@ -97,12 +98,13 @@ myApp.validateHeaders = function(headers, callback) {
 };
 
 myApp.validateBody = function(body, callback) {
-  // if (config.debug) {
-  //   winston.debug('BODY:', body);
-  // }
   if (!validator.isJSON(body)) {
     callback(new BadRequestError('Body is not valid JSON'));
   } else {
+    // if (config.debug) {
+    //   winston.debug('BODY:', JSON.stringify(JSON.parse(body), null, 4) + '\n');
+    //   winston.debug('BODY:', body);
+    // }
     callback(null);
   }
 };
@@ -558,6 +560,37 @@ myApp.handleDeleteItineraryRoute = function(req, res, token) {
   });
 };
 
+myApp.handleGetItineraryRoutePoints = function(req, res, token) {
+  var match, itineraryId, routeId;
+  req.on('data', function(chunk) {
+  }).on('end', function() {
+    myApp.validatePagingParameters(req, function(err, offset, limit) {
+      if (myApp.handleError(err, res)) {
+        myApp.validateHeaders(req.headers, function(err) {
+          if (myApp.handleError(err, res)) {
+            match =  /\/itinerary\/(\d+)\/route\/(\d+)\/points(?:\?.*)?$/.exec(req.url);
+            itineraryId = match ? match[1] : undefined;
+            routeId = match ? match[2] : undefined;
+            if (routeId) {
+              itineraries.getItineraryRoutePoints(
+                token.sub,
+                itineraryId,
+                routeId,
+                offset,
+                limit,
+                function(err, result) {
+                  myApp.respondWithData(err, res, result);
+                });
+            } else {
+              myApp.handleError(new Error('Invalid parameters'), res);
+            }
+          }
+        });
+      }
+    });
+  });
+};
+
 myApp.handleReplaceItineraryRoutePoints = function(req, res, token) {
   var match, itineraryId, routeId, body = [];
   req.on('data', function(chunk) {
@@ -582,17 +615,72 @@ myApp.handleReplaceItineraryRoutePoints = function(req, res, token) {
   });
 };
 
+myApp.handleDeleteItineraryRoutePoints = function(req, res, token) {
+  var match, itineraryId, routeId, body = [];
+  req.on('data', function(chunk) {
+    body.push(chunk);
+  }).on('end', function() {
+    body = Buffer.concat(body).toString();
+    myApp.validateHeadersAndBody(req.headers, body, function(err) {
+      if (myApp.handleError(err, res)) {
+        match = /\/itinerary\/(\d+)\/route\/(\d+)\/delete-points(?:\?.*)?$/.exec(req.url);
+        itineraryId = match ? match[1] : undefined;
+        routeId = match ? match[2] : undefined;
+        var params = JSON.parse(body);
+        if (params && params.points !== undefined) {
+          itineraries.deleteItineraryRoutePoints(token.sub, itineraryId, routeId, params.points, function(err, result) {
+            myApp.respondWithData(err, res, result);
+          });
+        } else {
+          myApp.handleError(new Error('Invalid parameters'), res);
+        }
+      }
+    });
+  });
+};
+
 myApp.handleGetItineraryTrackNames = function(req, res, token) {
   var match, id;
   req.on('data', function(chunk) {
   }).on('end', function() {
     myApp.validateHeaders(req.headers, function(err) {
       if (myApp.handleError(err, res)) {
-        match =  /\/itinerary\/(\d+)\/tracks\/names(?:\?.*)?$/.exec(req.url);
+        match =  /\/itinerary\/(\d+)\/track\/names(?:\?.*)?$/.exec(req.url);
         id = match ? match[1] : undefined;
         itineraries.getItineraryTrackNames(token.sub, id, function(err, trackNames) {
           myApp.respondWithData(err, res, trackNames);
         });
+      }
+    });
+  });
+};
+
+myApp.handleSaveItineraryTrack = function(req, res, token) {
+  var match, itineraryId, trackId, body = [];
+  req.on('data', function(chunk) {
+    body.push(chunk);
+  }).on('end', function() {
+    body = Buffer.concat(body).toString();
+    myApp.validateHeadersAndBody(req.headers, body, function(err) {
+      if (myApp.handleError(err, res)) {
+        match = /\/itinerary\/(\d+)\/track(?:\/(\d+))?(?:\?.*)?$/.exec(req.url);
+        itineraryId = match ? match[1] : undefined;
+        trackId = match ? match[2] : undefined;
+        var params = JSON.parse(body);
+        winston.debug('Params: %j', params);
+        if (params && ((Array.isArray(params.segments) || (params.track && Array.isArray(params.track.segments))))) {
+          itineraries.saveItineraryTrack(
+            token.sub,
+            itineraryId,
+            trackId,
+            params.track,
+            params.segments,
+            function(err, track) {
+              myApp.noResponseData(err, res, track);
+            });
+        } else {
+          myApp.handleError(new Error('Invalid parameters'), res);
+        }
       }
     });
   });
@@ -647,13 +735,183 @@ myApp.handleGetItineraryTracks = function(req, res, token) {
     body = Buffer.concat(body).toString();
     myApp.validateHeadersAndBody(req.headers, body, function(err) {
       if (myApp.handleError(err, res)) {
-        match =  /\/itinerary\/(\d+)\/tracks(?:\?.*)?$/.exec(req.url);
+        match =  /\/itinerary\/(\d+)\/tracks\/selected(?:\?.*)?$/.exec(req.url);
         id = match ? match[1] : undefined;
         var params = JSON.parse(body);
         if (params && Array.isArray(params.tracks)) {
           itineraries.getItineraryTracksForUser(token.sub, id, params.tracks, function(err, tracks) {
             myApp.respondWithData(err, res, tracks);
           });
+        } else {
+          myApp.handleError(new Error('Invalid parameters'), res);
+        }
+      }
+    });
+  });
+};
+
+myApp.handleGetItineraryTrackSegments = function(req, res, token) {
+  var match, itineraryId, trackId;
+  req.on('data', function(chunk) {
+  }).on('end', function() {
+    myApp.validatePagingParameters(req, function(err, offset, limit) {
+      if (myApp.handleError(err, res)) {
+        myApp.validateHeaders(req.headers, function(err) {
+          if (myApp.handleError(err, res)) {
+            match =  /\/itinerary\/(\d+)\/track\/(\d+)\/segment(?:\?.*)?$/.exec(req.url);
+            itineraryId = match ? match[1] : undefined;
+            trackId = match ? match[2] : undefined;
+            itineraries.getItineraryTrackSegmentsForUser(
+              token.sub,
+              itineraryId,
+              trackId,
+              offset,
+              limit,
+              function(err, track) {
+                myApp.respondWithData(err, res, track);
+              });
+          } else {
+            myApp.handleError(new Error('Invalid parameters'), res);
+          }
+        });
+      }
+    });
+  });
+};
+
+myApp.handleGetItineraryTrackSegmentWithPaging = function(req, res, token) {
+  var match, itineraryId, segmentId;
+  req.on('data', function(chunk) {
+  }).on('end', function() {
+    myApp.validatePagingParameters(req, function(err, offset, limit) {
+      if (myApp.handleError(err, res)) {
+        myApp.validateHeaders(req.headers, function(err) {
+          if (myApp.handleError(err, res)) {
+            match =  /\/itinerary\/(\d+)\/track\/\d+\/segment\/(\d+)(?:\?.*)?$/.exec(req.url);
+            itineraryId = match ? match[1] : undefined;
+            segmentId = match ? match[2] : undefined;
+            itineraries.getItineraryTrackSegmentForUser(
+              token.sub,
+              itineraryId,
+              segmentId,
+              offset,
+              limit,
+              function(err, track) {
+                myApp.respondWithData(err, res, track);
+              });
+          } else {
+            myApp.handleError(new Error('Invalid parameters'), res);
+          }
+        });
+      }
+    });
+  });
+};
+
+myApp.handleGetItineraryTrackSegmentWithPaging = function(req, res, token) {
+  var match, itineraryId, segmentId;
+  req.on('data', function(chunk) {
+  }).on('end', function() {
+    myApp.validatePagingParameters(req, function(err, offset, limit) {
+      if (myApp.handleError(err, res)) {
+        myApp.validateHeaders(req.headers, function(err) {
+          if (myApp.handleError(err, res)) {
+            match =  /\/itinerary\/(\d+)\/track\/\d+\/segment\/(\d+)(?:\?.*)?$/.exec(req.url);
+            itineraryId = match ? match[1] : undefined;
+            segmentId = match ? match[2] : undefined;
+            itineraries.getItineraryTrackSegmentForUser(
+              token.sub,
+              itineraryId,
+              segmentId,
+              offset,
+              limit,
+              function(err, track) {
+                myApp.respondWithData(err, res, track);
+              });
+          } else {
+            myApp.handleError(new Error('Invalid parameters'), res);
+          }
+        });
+      }
+    });
+  });
+};
+
+myApp.handleGetItineraryTrackSegmentWithoutPaging = function(req, res, token) {
+  var match, itineraryId, segmentId;
+  req.on('data', function(chunk) {
+  }).on('end', function() {
+    myApp.validateHeaders(req.headers, function(err) {
+      if (myApp.handleError(err, res)) {
+        match =  /\/itinerary\/(\d+)\/track\/\d+\/segment\/(\d+)(?:\?.*)?$/.exec(req.url);
+        itineraryId = match ? match[1] : undefined;
+        segmentId = match ? match[2] : undefined;
+        itineraries.getItineraryTrackSegmentForUser(
+          token.sub,
+          itineraryId,
+          segmentId,
+          null,
+          null,
+          function(err, track) {
+            myApp.respondWithData(err, res, track);
+          });
+      } else {
+        myApp.handleError(new Error('Invalid parameters'), res);
+      }
+    });
+  });
+};
+
+myApp.handleDeleteItineraryTrackSegments = function(req, res, token) {
+  var match, itineraryId, trackId, body = [];
+  req.on('data', function(chunk) {
+    body.push(chunk);
+  }).on('end', function() {
+    body = Buffer.concat(body).toString();
+    myApp.validateHeadersAndBody(req.headers, body, function(err) {
+      if (myApp.handleError(err, res)) {
+        match = /itinerary\/(\d+)\/track\/(\d+)\/delete-segments(?:\?.*)?$/.exec(req.url);
+        itineraryId = match ? match[1] : undefined;
+        trackId = match ? match[2] : undefined;
+        var params = JSON.parse(body);
+        if (params && Array.isArray(params.segments)) {
+          itineraries.deleteItineraryTrackSegmentsForUser(
+            token.sub,
+            itineraryId,
+            trackId,
+            params.segments,
+            function(err) {
+              myApp.noResponseData(err, res);
+            });
+        } else {
+          myApp.handleError(new Error('Invalid parameters'), res);
+        }
+      }
+    });
+  });
+};
+
+myApp.handleDeleteItineraryTrackSegmentPoints = function(req, res, token) {
+  var match, itineraryId, trackId, body = [];
+  req.on('data', function(chunk) {
+    body.push(chunk);
+  }).on('end', function() {
+    body = Buffer.concat(body).toString();
+    myApp.validateHeadersAndBody(req.headers, body, function(err) {
+      if (myApp.handleError(err, res)) {
+        match =  /itinerary\/(\d+)\/track\/(\d+)\/segment\/\d+\/delete-points(?:\?.*)?$/.exec(req.url);
+        itineraryId = match ? match[1] : undefined;
+        trackId = match ? match[2] : undefined;
+        var params = JSON.parse(body);
+        if (params && Array.isArray(params.points)) {
+          itineraries.deleteItineraryTrackSegmentPointsForUser(
+            token.sub,
+            itineraryId,
+            trackId,
+            params.points,
+            function(err) {
+              myApp.noResponseData(err, res);
+            });
         } else {
           myApp.handleError(new Error('Invalid parameters'), res);
         }
@@ -834,8 +1092,12 @@ myApp.handleGetUsers = function(req, res) {
     myApp.validatePagingParameters(req, function(err, offset, limit) {
       var q = url.parse(req.url, true).query;
       if (myApp.handleError(err, res)) {
-        login.getUsers(offset, limit, q.nickname, q.email, q.searchType, function(err, result) {
-          myApp.respondWithData(err, res, result);
+        myApp.validateHeaders(req.headers, function(err) {
+          if (myApp.handleError(err, res)) {
+            login.getUsers(offset, limit, q.nickname, q.email, q.searchType, function(err, result) {
+              myApp.respondWithData(err, res, result);
+            });
+          }
         });
       }
     });
@@ -1255,20 +1517,36 @@ myApp.handleAuthenticatedRequests = function(req, res, token) {
     myApp.handleSaveItineraryRoute(req, res, token);
   } else if (req.method === 'DELETE' && /\/itinerary\/(\d+)\/route\/(\d+)(?:\?.*)?$/.test(req.url)) {
     myApp.handleDeleteItineraryRoute(req, res, token);
+  } else if (req.method === 'GET' && /\/itinerary\/(\d+)\/route\/(\d+)\/points(?:\?.*)?$/.test(req.url)) {
+    myApp.handleGetItineraryRoutePoints(req, res, token);
   } else if (req.method === 'PUT' && /\/itinerary\/(\d+)\/route\/(\d+)\/points(?:\?.*)?$/.test(req.url)) {
     myApp.handleReplaceItineraryRoutePoints(req, res, token);
+  } else if (req.method === 'PUT' && /\/itinerary\/(\d+)\/route\/(\d+)\/delete-points(?:\?.*)?$/.test(req.url)) {
+    myApp.handleDeleteItineraryRoutePoints(req, res, token);
   } else if (req.method === 'POST' && /\/itinerary\/\d+\/routes(?:\?.*)?$/.test(req.url)) {
     myApp.handleGetItineraryRoutes(req, res, token);
   } else if (req.method === 'GET' && /\/itinerary\/(\d+)\/route\/(\d+)(?:\?.*)?$/.test(req.url)) {
     myApp.handleGetItineraryRoute(req, res, token);
-  } else if (req.method === 'GET' && /\/itinerary\/(\d+)\/tracks\/names(?:\?.*)?$/.test(req.url)) {
+  } else if (req.method === 'GET' && /\/itinerary\/(\d+)\/track\/names(?:\?.*)?$/.test(req.url)) {
     myApp.handleGetItineraryTrackNames(req, res, token);
-  } else if (req.method === 'POST' && /\/itinerary\/(\d+)\/tracks(?:\?.*)?$/.test(req.url)) {
+  } else if (req.method === 'POST' && /\/itinerary\/(\d+)\/track(?:\/(\d+))?(?:\?.*)?$/.test(req.url)) {
+    myApp.handleSaveItineraryTrack(req, res, token);
+  } else if (req.method === 'POST' && /\/itinerary\/(\d+)\/tracks\/selected(?:\?.*)?$/.test(req.url)) {
     myApp.handleGetItineraryTracks(req, res, token);
   } else if (req.method === 'GET' && /\/itinerary\/(\d+)\/track\/name\/(\d+)(?:\?.*)?$/.test(req.url)) {
     myApp.handleGetItineraryTrackName(req, res, token);
   } else if (req.method === 'POST' && /\/itinerary\/(\d+)\/track\/name\/(\d+)(?:\?.*)?$/.test(req.url)) {
     myApp.handleUpdateItineraryTrackName(req, res, token);
+  } else if (req.method === 'GET' && /\/itinerary\/(\d+)\/track\/(\d+)\/segment(?:\?.*)?$/.test(req.url)) {
+    myApp.handleGetItineraryTrackSegments(req, res, token);
+  } else if (req.method === 'GET' && /\/itinerary\/(\d+)\/track\/\d+\/segment\/(\d+)\?.*page_size=/.test(req.url)) {
+    myApp.handleGetItineraryTrackSegmentWithPaging(req, res, token);
+  } else if (req.method === 'GET' && /\/itinerary\/(\d+)\/track\/\d+\/segment\/(\d+)(?:\?.*)?$/.test(req.url)) {
+    myApp.handleGetItineraryTrackSegmentWithoutPaging(req, res, token);
+  } else if (req.method === 'PUT' && /itinerary\/(\d+)\/track\/(\d+)\/delete-segments(?:\?.*)?$/.test(req.url)) {
+    myApp.handleDeleteItineraryTrackSegments(req, res, token);
+  } else if (req.method === 'PUT' && /itinerary\/(\d+)\/track\/\d+\/segment\/\d+\/delete-points(?:\?.*)?$/.test(req.url)) {
+    myApp.handleDeleteItineraryTrackSegmentPoints(req, res, token);
   } else if (req.method === 'GET' && /\/path\/colors(?:\?.*)?$/.test(req.url)) {
     myApp.handleGetPathColors(req, res, token);
   } else if (req.method === 'GET' && /\/itinerary\/share\/(?:[0-9]+)(?:\?.*)?$/.test(req.url)) {
@@ -1314,6 +1592,11 @@ myApp.serveStaticFiles = function(req, res) {
       }
     }
   });
+};
+
+myApp.shutdown = function() {
+  winston.info('Shutdown');
+  process.exit(0);
 };
 
 myApp.server = http.createServer(function(req, res) {
@@ -1388,9 +1671,9 @@ io.on('connection', function(socket) {
 
 var port = process.env.LISTEN_PID > 0 ? 'systemd' : 8080;
 if (port === 'systemd') {
-  myApp.server.autoQuit({ timeOut: config.app.autoQuit.timeOut });
-  winston.info('TRIP running under systemd with autoQuit after %d seconds', config.app.autoQuit.timeOut);
+  myApp.server.autoQuit({ timeOut: config.app.autoQuit.timeOut, exitFn: myApp.shutdown });
+  winston.info('TRIP v%s running under systemd with autoQuit after %d seconds', myApp.version, config.app.autoQuit.timeOut);
 } else {
-  winston.info('TRIP running in development mode');
+  winston.info('TRIP v%s running in development mode', myApp.version);
 }
 myApp.server.listen(port);

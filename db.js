@@ -105,18 +105,29 @@ module.exports = {
   getItineraryWaypoints: getItineraryWaypoints,
   getSpecifiedItineraryWaypoints: getSpecifiedItineraryWaypoints,
   getItineraryRoutes: getItineraryRoutes,
+  getItineraryRoutePointsCount: getItineraryRoutePointsCount,
+  getItineraryRoutePoints: getItineraryRoutePoints,
   getItineraryTracks: getItineraryTracks,
+  getItineraryTrackSegmentCount: getItineraryTrackSegmentCount,
+  getItineraryTrackSegments: getItineraryTrackSegments,
+  getItineraryTrackSegmentPointCount: getItineraryTrackSegmentPointCount,
+  getItineraryTrackSegment: getItineraryTrackSegment,
+  deleteItineraryTrackSegments: deleteItineraryTrackSegments,
+  replaceItineraryTrackSegments: replaceItineraryTrackSegments,
+  deleteItineraryTrackSegmentPoints: deleteItineraryTrackSegmentPoints,
   getItineraryRouteNames: getItineraryRouteNames,
   getItineraryRouteName: getItineraryRouteName,
   updateItineraryRouteName: updateItineraryRouteName,
   getItineraryTrackNames: getItineraryTrackNames,
   getItineraryTrackName: getItineraryTrackName,
   updateItineraryTrackName: updateItineraryTrackName,
+  updateItineraryTrackDistanceElevation: updateItineraryTrackDistanceElevation,
   createItineraryWaypoints: createItineraryWaypoints,
   createItineraryRoute: createItineraryRoute,
   createItineraryRoutes: createItineraryRoutes,
   updateItineraryDistanceElevationData: updateItineraryDistanceElevationData,
   updateItineraryRoutePoints: updateItineraryRoutePoints,
+  deleteItineraryRoutePoints: deleteItineraryRoutePoints,
   createItineraryTracks: createItineraryTracks,
   deleteItineraryWaypoint: deleteItineraryWaypoint,
   deleteItineraryWaypoints: deleteItineraryWaypoints,
@@ -1652,6 +1663,62 @@ function getItineraryRoutes(itineraryId, routeIds, callback) {
   });
 }
 
+function getItineraryRoutePointsCount(itineraryId, routeId, callback) {
+  callback = typeof callback === 'function' ? callback : function() {};
+  pg.connect(config.db.uri, function(err, client, done) {
+    if (err) {
+      callback(err);
+    } else {
+      var sql = 'SELECT count(*) FROM itinerary_route_point rp JOIN itinerary_route r ON r.id=rp.itinerary_route_id WHERE r.itinerary_id=$1 AND itinerary_route_id=$2';
+      client.query(sql,
+                   [itineraryId,
+                    routeId],
+                   function(err, result) {
+                     // release the client back to the pool
+                     done();
+                     if (err) {
+                       callback(err);
+                     } else {
+                       if (result.rowCount === 1) {
+                         callback(null, result.rows[0].count);
+                       } else {
+                         callback(new Error('Route not found'));
+                       }
+                     }
+                   });
+    }
+  });
+}
+
+function getItineraryRoutePoints(itineraryId, routeId, offset, limit, callback) {
+  callback = typeof callback === 'function' ? callback : function() {};
+  pg.connect(config.db.uri, function(err, client, done) {
+    if (err) {
+      callback(err);
+    } else {
+      var sql = 'SELECT r.itinerary_id, rp.itinerary_route_id, rp.id, position[1] AS lat, position[0] AS lng, altitude, rp.name, rp.comment, rp.description, rp.symbol FROM itinerary_route_point rp JOIN itinerary_route r ON r.id=rp.itinerary_route_id WHERE r.itinerary_id=$1 AND itinerary_route_id=$2';
+      if (offset) {
+        sql += ' OFFSET ' + offset;
+      }
+      if (limit) {
+        sql += ' LIMIT ' + limit;
+      }
+      client.query(sql,
+                   [itineraryId,
+                    routeId],
+                   function(err, result) {
+                     // release the client back to the pool
+                     done();
+                     if (err) {
+                       callback(err);
+                     } else {
+                       callback(null, result.rows);
+                     }
+                   });
+    }
+  });
+}
+
 function getItineraryTracks(itineraryId, trackIds, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
   var tracks = [], tid, sid, trk, trkseg, trkpt;
@@ -1708,6 +1775,179 @@ function getItineraryTracks(itineraryId, trackIds, callback) {
                        }
                        callback(err, tracks);
                      }
+                   });
+    }
+  });
+}
+
+function getItineraryTrackSegmentCount(trackId, callback) {
+  callback = typeof callback === 'function' ? callback : function() {};
+  pg.connect(config.db.uri, function(err, client, done) {
+    if (err) {
+      callback(err);
+    } else {
+      client.query('SELECT count(*) FROM itinerary_track_segment WHERE itinerary_track_id=$1',
+                   [trackId],
+                   function(err, result) {
+                     // release the client back to the pool
+                     done();
+                     if (err) {
+                       callback(err);
+                     } else {
+                       if (result.rowCount === 1) {
+                         callback(null, result.rows[0].count);
+                       } else {
+                         callback(new Error('Track not found'));
+                       }
+                     }
+                   });
+    }
+  });
+}
+
+function getItineraryTrackSegments(itineraryId, trackId, offset, limit, callback) {
+  callback = typeof callback === 'function' ? callback : function() {};
+  var track, segments = [];
+  pg.connect(config.db.uri, function(err, client, done) {
+    if (err) {
+      callback(err);
+    } else {
+      var sql = 'SELECT ts.id FROM itinerary_track_segment ts JOIN itinerary_track it ON it.id=ts.itinerary_track_id WHERE it.itinerary_id = $1 AND itinerary_track_id=$2';
+      if (offset) {
+        sql += ' OFFSET ' + offset;
+      }
+      if (limit) {
+        sql += ' LIMIT ' + limit;
+      }
+      client.query(sql,
+                   [itineraryId, trackId],
+                   function(err, result) {
+                     // release the client back to the pool
+                     done();
+                     if (err) {
+                       callback(err);
+                     } else {
+                       if (result.rowCount > 0) {
+                         callback(null, result.rows);
+                       } else {
+                         callback(new Error('Track not found'));
+                       }
+                     }
+                   });
+    }
+  });
+}
+
+function getItineraryTrackSegmentPointCount(segmentId, callback) {
+  callback = typeof callback === 'function' ? callback : function() {};
+  pg.connect(config.db.uri, function(err, client, done) {
+    if (err) {
+      callback(err);
+    } else {
+      client.query('SELECT count(*) FROM itinerary_track_point WHERE itinerary_track_segment_id=$1',
+                   [segmentId],
+                   function(err, result) {
+                     // release the client back to the pool
+                     done();
+                     if (err) {
+                       callback(err);
+                     } else {
+                       if (result.rowCount === 1) {
+                         callback(null, result.rows[0].count);
+                       } else {
+                         callback(new Error('Track segment not found'));
+                       }
+                     }
+                   });
+    }
+  });
+}
+
+function getItineraryTrackSegment(itineraryId, segmentId, offset, limit, callback) {
+  callback = typeof callback === 'function' ? callback : function() {};
+  var track, segments = [];
+  pg.connect(config.db.uri, function(err, client, done) {
+    if (err) {
+      callback(err);
+    } else {
+      var sql = 'SELECT tp.id, tp.position[1] AS lat, tp.position[0] as lng, tp.time, tp.hdop, tp.altitude FROM itinerary_track_point tp JOIN itinerary_track_segment ts ON ts.id=tp.itinerary_track_segment_id JOIN itinerary_track it ON it.id=ts.itineRary_track_id WHERE it.itinerary_id=$1 AND ts.id=$2';
+      if (offset) {
+        sql += ' OFFSET ' + offset;
+      }
+      if (limit) {
+        sql += ' LIMIT ' + limit;
+      }
+      client.query(sql,
+                   [itineraryId, segmentId],
+                   function(err, result) {
+                     // release the client back to the pool
+                     done();
+                     if (err) {
+                       callback(err);
+                     } else {
+                       if (result.rowCount > 0) {
+                         callback(null, result.rows);
+                       } else {
+                         callback(new Error('Track segment not found: ' + segmentId));
+                       }
+                     }
+                   });
+    }
+  });
+}
+
+function deleteItineraryTrackSegments(itineraryId, segments, callback) {
+  callback = typeof callback === 'function' ? callback : function() {};
+  pg.connect(config.db.uri, function(err, client, done) {
+    if (err) {
+      callback(err);
+    } else {
+      client.query('DELETE FROM itinerary_track_segment ts2 WHERE EXISTS(SELECT 1 FROM (SELECT it.itinerary_id, ts.id FROM itinerary_track_segment ts JOIN itinerary_track it ON it.id=ts.itinerary_track_id WHERE it.itinerary_id=$1 AND ts.id=ANY($2)) AS q WHERE q.itinerary_id=$1 AND q.id=ts2.id)',
+                   [itineraryId, segments],
+                   function(err, result) {
+                     // release the client back to the pool
+                     done();
+                     callback(err);
+                   });
+    }
+  });
+}
+
+function replaceItineraryTrackSegments(itineraryId, trackId, segments, callback) {
+  callback = typeof callback === 'function' ? callback : function() {};
+  pg.connect(config.db.uri, function(err, client, done) {
+    if (err) {
+      callback(err);
+    } else {
+      client.query('DELETE FROM itinerary_track_segment ts2 WHERE EXISTS(SELECT 1 FROM (SELECT it.itinerary_id, ts.itinerary_track_id FROM itinerary_track_segment ts JOIN itinerary_track it ON it.id=ts.itinerary_track_id WHERE it.itinerary_id=$1 AND ts.itinerary_track_id=$2) AS q WHERE q.itinerary_id=$1 AND q.itinerary_track_id=ts2.itinerary_track_id)',
+                   [itineraryId, trackId],
+                   function(err, result) {
+                     if (err) {
+                       winston.error('Failure deleting itinerary track segments', err);
+                       callback(err);
+                     } else {
+                       localCreateItineraryTrackSegments(client, trackId, segments, function() {
+                         done();
+                         callback(null);
+                       });
+                     }
+                   });
+    }
+  });
+}
+
+function deleteItineraryTrackSegmentPoints(itineraryId, points, callback) {
+  callback = typeof callback === 'function' ? callback : function() {};
+  pg.connect(config.db.uri, function(err, client, done) {
+    if (err) {
+      callback(err);
+    } else {
+      client.query('DELETE FROM itinerary_track_point tp2 WHERE EXISTS (SELECT 1 FROM (SELECT it.itinerary_id, tp.id FROM itinerary_track_point tp JOIN itinerary_track_segment ts ON ts.id=tp.itinerary_track_segment_id JOIN itinerary_track it ON it.id=ts.itinerary_track_id WHERE it.itinerary_id=$1 AND tp.id=ANY($2)) AS q WHERE q.itinerary_id=$1 AND q.id=tp2.id)',
+                   [itineraryId, points],
+                   function(err, result) {
+                     // release the client back to the pool
+                     done();
+                     callback(err);
                    });
     }
   });
@@ -1855,6 +2095,33 @@ function updateItineraryTrackName(itineraryId, trackId, name, color, callback) {
   });
 }
 
+function updateItineraryTrackDistanceElevation(itineraryId, trackId, track, callback) {
+  callback = typeof callback === 'function' ? callback : function() {};
+  pg.connect(config.db.uri, function(err, client, done) {
+    if (err) {
+      callback(err);
+    } else {
+      client.query('UPDATE itinerary_track SET distance=$3, ascent=$4, descent=$5, lowest=$6, highest=$7 WHERE itinerary_id=$1 AND id=$2',
+                   [itineraryId,
+                    trackId,
+                    track.distance,
+                    track.ascent,
+                    track.descent,
+                    track.lowest,
+                    track.highest],
+                   function(err, result) {
+                     // release the client back to the pool
+                     done();
+                     if (err) {
+                       callback(err);
+                     } else {
+                       callback(err, result.rowCount === 1);
+                     }
+                   });
+    }
+  });
+}
+
 function createItineraryWaypoints(itineraryId, waypoints, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
   var waypointCounter = waypoints.length;
@@ -1894,9 +2161,10 @@ function localCreateItineraryRoutePoints(client, routeId, points, callback) {
                            rp.lat,
                            rp.ele ? rp.ele : rp.altitude,
                            rp.name,
-                           rp.cmt,
-                           rp.desc,
-                           rp.sym]}, function(err, result) {
+                           rp.cmt ? rp.cmt : rp.comment,
+                           rp.desc ? rp.desc : rp.description,
+                           rp.sym ? rp.sym : rp.symbol
+                          ]}, function(err, result) {
                              if (err) {
                                winston.error('Failure inserting itinerary route point', err);
                              }
@@ -1994,14 +2262,14 @@ function updateItineraryDistanceElevationData(itineraryId, routeId, route, callb
   });
 }
 
-function updateItineraryRoutePoints(routeId, points, callback) {
+function updateItineraryRoutePoints(itineraryId, routeId, points, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
   pg.connect(config.db.uri, function(err, client, done) {
     if (err) {
       callback(err);
     } else {
-      client.query('DELETE FROM itinerary_route_point WHERE itinerary_route_id=$1',
-                   [routeId],
+      client.query('DELETE FROM itinerary_route_point rp2 WHERE EXISTS (SELECT 1 FROM (SELECT rp.id FROM itinerary_route r JOIN itinerary_route_point rp ON r.id=rp.itinerary_route_id WHERE r.itinerary_id=$1 AND r.id=$2) AS q WHERE q.id=rp2.id)',
+                   [itineraryId, routeId],
                    function(err, result) {
                      if (err) {
                        winston.error('Failure removing existing itinerary_route_points', err);
@@ -2018,46 +2286,69 @@ function updateItineraryRoutePoints(routeId, points, callback) {
   });
 }
 
-function localCreateItineraryTrackPoints(client, segmentId, points, callback) {
-  var pointCounter = points.length;
-  if (pointCounter === 0) callback();
-  points.forEach(function(tp) {
-    client.query({name: 'crt-itnry-trkpt',
-                  text: 'INSERT INTO itinerary_track_point (itinerary_track_segment_id, position, time, hdop, altitude) VALUES ($1, POINT($2, $3), $4, $5, $6) RETURNING id',
-                  values: [segmentId,
-                           tp.lng,
-                           tp.lat,
-                           tp.time,
-                           tp.hdop,
-                           tp.ele]}, function(err, result) {
-                             if (err) {
-                               winston.error('Failure inserting itinerary track point', err);
-                             }
-                             if (--pointCounter === 0) {
-                               callback();
-                             }
-                           });
+function deleteItineraryRoutePoints(itineraryId, points, callback) {
+  callback = typeof callback === 'function' ? callback : function() {};
+  pg.connect(config.db.uri, function(err, client, done) {
+    if (err) {
+      callback(err);
+    } else {
+      client.query('DELETE FROM itinerary_route_point rp2 WHERE EXISTS (SELECT 1 FROM (SELECT r.itinerary_id, rp.id FROM itinerary_route_point rp JOIN itinerary_route r ON r.id=rp.itinerary_route_id WHERE r.itinerary_id=$1 AND rp.id=ANY($2)) AS q WHERE q.itinerary_id=$1 AND q.id=rp2.id)',
+                   [itineraryId,
+                    points],
+                   function(err, result) {
+                     done();
+                     callback(err);
+                   });
+    }
   });
 }
 
+function localCreateItineraryTrackPoints(client, segmentId, points, callback) {
+  var pointCounter = points ? points.length : 0;
+  if (pointCounter === 0) {
+    callback();
+  } else {
+    points.forEach(function(tp) {
+      client.query({name: 'crt-itnry-trkpt',
+                    text: 'INSERT INTO itinerary_track_point (itinerary_track_segment_id, position, time, hdop, altitude) VALUES ($1, POINT($2, $3), $4, $5, $6) RETURNING id',
+                    values: [segmentId,
+                             tp.lng,
+                             tp.lat,
+                             tp.time,
+                             tp.hdop,
+                             (tp.ele ? tp.ele : tp.altitude) ]}, function(err, result) {
+                               if (err) {
+                                 winston.error('Failure inserting itinerary track point', err);
+                               }
+                               if (--pointCounter === 0) {
+                                 callback();
+                               }
+                             });
+    });
+  }
+}
+
 function localCreateItineraryTrackSegments(client, trackId, segments, callback) {
-  var segmentCounter = segments.length;
-  if (segmentCounter === 0) callback();
-  segments.forEach(function(ts) {
-    client.query({name: 'crt-itnry-trkseg',
-                  text: 'INSERT INTO itinerary_track_segment (itinerary_track_id) VALUES ($1) RETURNING id',
-                  values: [trackId]}, function(err, result) {
-                    if (err) {
-                      winston.error('Failure inserting itinerary track segment', err);
-                    }
-                    var segmentResult = result.rows[0];
-                    localCreateItineraryTrackPoints(client, segmentResult.id, ts.points, function() {
-                      if (--segmentCounter === 0) {
-                        callback();
+  var segmentCounter = segments ? segments.length : 0;
+  if (segmentCounter === 0) {
+    callback();
+  } else {
+    segments.forEach(function(ts) {
+      client.query({name: 'crt-itnry-trkseg',
+                    text: 'INSERT INTO itinerary_track_segment (itinerary_track_id) VALUES ($1) RETURNING id',
+                    values: [trackId]}, function(err, result) {
+                      if (err) {
+                        winston.error('Failure inserting itinerary track segment', err);
                       }
+                      var segmentResult = result.rows[0];
+                      localCreateItineraryTrackPoints(client, segmentResult.id, ts.points, function() {
+                        if (--segmentCounter === 0) {
+                          callback();
+                        }
+                      });
                     });
-                  });
-  });
+    });
+  }
 }
 
 function createItineraryTracks(itineraryId, tracks, callback) {
@@ -2082,7 +2373,7 @@ function createItineraryTracks(itineraryId, tracks, callback) {
                         localCreateItineraryTrackSegments(client, trackResult.id, t.segments, function() {
                           if (--trackCounter === 0) {
                             done();
-                            callback(null);
+                            callback(null, trackResult.id);
                           }
                         });
                       });
@@ -2142,7 +2433,7 @@ function deleteItineraryRoute(itineraryId, routeId, callback) {
                      // release the client back to the pool
                      done();
                      if (!err && result.rowCount === 0) {
-                       winston.warn('Failed to delete itineary route for itinerary id %s and route id %s');
+                       winston.warn('Failed to delete itinerary route for itinerary id %s and route id %s');
                      } else {
                        callback(err);
                      }

@@ -1,6 +1,7 @@
 {
   "app": {
-    "version": "0.12.0",
+	"_version": "version in config.json is deprecated.  Now coded in index.js as myApp.version.  Can be removed from config.json when not planning to run with versions older than 0.13.0",
+    "version": "0.13.0-rc.1",
     "json": {
       "indent": {
         "level": 0

@@ -41,10 +41,12 @@ module.exports = {
   getItineraryWaypointCount: getItineraryWaypointCount,
   saveItineraryRoute: saveItineraryRoute,
   replaceItineraryRoutePoints: replaceItineraryRoutePoints,
+  deleteItineraryRoutePoints: deleteItineraryRoutePoints,
   getItineraryRouteNames: getItineraryRouteNames,
   getItineraryRouteName: getItineraryRouteName,
   updateItineraryRouteName: updateItineraryRouteName,
   deleteItineraryRoute: deleteItineraryRoute,
+  getItineraryRoutePoints: getItineraryRoutePoints,
   getItineraryTrackNames: getItineraryTrackNames,
   getItineraryTrackName: getItineraryTrackName,
   updateItineraryTrackName: updateItineraryTrackName,
@@ -55,6 +57,11 @@ module.exports = {
   moveItineraryWaypoint: moveItineraryWaypoint,
   deleteItineraryWaypoint: deleteItineraryWaypoint,
   getItineraryTracksForUser: getItineraryTracksForUser,
+  getItineraryTrackSegmentsForUser: getItineraryTrackSegmentsForUser,
+  getItineraryTrackSegmentForUser: getItineraryTrackSegmentForUser,
+  saveItineraryTrack: saveItineraryTrack,
+  deleteItineraryTrackSegmentsForUser: deleteItineraryTrackSegmentsForUser,
+  deleteItineraryTrackSegmentPointsForUser: deleteItineraryTrackSegmentPointsForUser,
   getItineraryRoutesForUser: getItineraryRoutesForUser,
   deleteItineraryUploads: deleteItineraryUploads,
   getWaypointSymbols: getWaypointSymbols,
@@ -316,7 +323,27 @@ function replaceItineraryRoutePoints(username, itineraryId, routeId, points, cal
         var route =  {points: points};
         utils.fillDistanceElevationForPath(route);
         db.updateItineraryDistanceElevationData(itineraryId, routeId, route, function(err) {
-          db.updateItineraryRoutePoints(routeId, points, callback);
+          if (utils.handleError(err, callback)) {
+            db.updateItineraryRoutePoints(itineraryId, routeId, points, callback);
+          }
+        });
+      } else {
+        callback(new Error('Access denied'));
+      }
+    }
+  });
+}
+
+function deleteItineraryRoutePoints(username, itineraryId, routeId, points, callback) {
+  db.confirmItineraryOwnership(username, itineraryId, function(err, result) {
+    if (utils.handleError(err, callback)) {
+      if (result) {
+        db.getItineraryRoutePoints(itineraryId, routeId, null, null, function(err, result) {
+          var route =  {points: result};
+          utils.fillDistanceElevationForPath(route);
+          db.updateItineraryDistanceElevationData(itineraryId, routeId, route, function(err) {
+            db.deleteItineraryRoutePoints(itineraryId, points, callback);
+          });
         });
       } else {
         callback(new Error('Access denied'));
@@ -362,6 +389,24 @@ function updateItineraryRouteName(username, itineraryId, routeId, name, color, c
             callback(err);
           } else {
             callback(new Error('Update route name failed'));
+          }
+        });
+      } else {
+        callback(new Error('Access denied'));
+      }
+    }
+  });
+}
+
+function getItineraryRoutePoints(username, itineraryId, routeId, offset, limit, callback) {
+  db.confirmItinerarySharedAccess(username, itineraryId, function(err, result) {
+    if (utils.handleError(err, callback)) {
+      if (result) {
+        db.getItineraryRoutePointsCount(itineraryId, routeId, function(err, count) {
+          if (utils.handleError(err, callback)) {
+            db.getItineraryRoutePoints(itineraryId, routeId, offset, limit, function(err, result) {
+              callback(err, {count: count, points: result});
+            });
           }
         });
       } else {
@@ -522,6 +567,150 @@ function getItineraryTracksForUser(username, itineraryId, trackIds, callback) {
       }
     }
   });
+}
+
+function getItineraryTrackSegmentsForUser(username, itineraryId, trackId, offset, limit, callback) {
+  db.confirmItinerarySharedAccess(username, itineraryId, function(err, result) {
+    if (utils.handleError(err, callback)) {
+      if (result) {
+        db.getItineraryTrackSegmentCount(trackId, function(err, count) {
+          if (utils.handleError(err, callback)) {
+            if (count > 0) {
+              db.getItineraryTrackName(itineraryId, trackId, function(err, track) {
+                if (utils.handleError(err, callback)) {
+                  db.getItineraryTrackSegments(itineraryId, trackId, offset, limit, function(err, segments) {
+                    if (utils.handleError(err, callback)) {
+                      track.segments = segments;
+                      callback(err, {count: count, track: track});
+                    }
+                  });
+                }
+              });
+            } else {
+              callback(null, {count: 0, track: {id: null, segments: []}});
+            }
+          }
+        });
+      } else {
+        callback(new Error('Access denied'));
+      }
+    }
+  });
+}
+
+function getItineraryTrackSegmentForUser(username, itineraryId, segmentId, offset, limit, callback) {
+  db.confirmItinerarySharedAccess(username, itineraryId, function(err, result) {
+    if (utils.handleError(err, callback)) {
+      if (result) {
+        db.getItineraryTrackSegmentPointCount(segmentId, function(err, count) {
+          if (utils.handleError(err, callback)) {
+            if (count > 0) {
+              db.getItineraryTrackSegment(itineraryId, segmentId, offset, limit, function(err, segment) {
+                if (utils.handleError(err, callback)) {
+                  callback(err, {count: count, points: segment});
+                }
+              });
+            } else {
+              callback(null, {count: 0, points: []});
+            }
+          }
+        });
+      } else {
+        callback(new Error('Access denied'));
+      }
+    }
+  });
+}
+
+function saveItineraryTrack(username, itineraryId, trackId, newTrack, segments, callback) {
+  db.confirmItineraryOwnership(username, itineraryId, function(err, result) {
+    if (utils.handleError(err, callback)) {
+      if (result !== true) {
+        callback(new Error('Access denied'));
+      } else {
+        if (!newTrack) {
+          db.replaceItineraryTrackSegments(itineraryId, trackId, segments, function(err) {
+            if (utils.handleError(err, callback)) {
+              // Re-calculate track length etc.
+              db.getItineraryTracks(itineraryId, [trackId], function(err, result) {
+                if (utils.handleError(err, callback)) {
+                  if (result.length > 0) {
+                    utils.fillDistanceElevationForTrack(result[0]);
+                    db.updateItineraryTrackDistanceElevation(itineraryId, trackId, result[0], callback);
+                  } else {
+                    winston.warn('Failed to find any matching tracks for track id: %d', trackId);
+                    callback(null);
+                  }
+                }
+              });
+            }
+          });
+        } else {
+          // Create as a new track
+          db.createItineraryTracks(itineraryId, [newTrack], function(err, newTrackId) {
+            if (utils.handleError(err, callback)) {
+              // Re-calculate track length etc.
+              db.getItineraryTracks(itineraryId, [newTrackId], function(err, result) {
+                if (utils.handleError(err, callback)) {
+                  if (result.length > 0) {
+                    utils.fillDistanceElevationForTrack(result[0]);
+                    db.updateItineraryTrackDistanceElevation(itineraryId, newTrackId, result[0], callback);
+                  } else {
+                    winston.warn('Failed to find any matching tracks for track id: %d', newTrackId);
+                    callback(null);
+                  }
+                }
+              });
+            }
+          });
+        }
+      }
+      }
+  });
+}
+
+function deleteItineraryTrackSegmentsForUser(username, itineraryId, trackId, segments, callback) {
+    db.confirmItineraryOwnership(username, itineraryId, function(err, result) {
+      if (utils.handleError(err, callback)) {
+        if (result !== true) {
+          callback(new Error('Access denied'));
+        } else {
+          db.deleteItineraryTrackSegments(itineraryId, segments, function(err) {
+            if (utils.handleError(err, callback)) {
+              // Re-calculate track length etc.
+              db.getItineraryTracks(itineraryId, [trackId], function(err, result) {
+                if (utils.handleError(err, callback) && result.length > 0) {
+                  utils.fillDistanceElevationForTrack(result[0]);
+                  db.updateItineraryTrackDistanceElevation(itineraryId, trackId, result[0], callback);
+                }
+              });
+            }
+          });
+        }
+      }
+    });
+}
+
+function deleteItineraryTrackSegmentPointsForUser(username, itineraryId, trackId, points, callback) {
+    db.confirmItineraryOwnership(username, itineraryId, function(err, result) {
+      if (utils.handleError(err, callback)) {
+        if (result !== true) {
+          callback(new Error('Access denied'));
+        } else {
+          db.deleteItineraryTrackSegmentPoints(itineraryId, points, function(err) {
+            if (utils.handleError(err, callback)) {
+              // Re-calculate track length etc.
+              db.getItineraryTracks(itineraryId, [trackId], function(err, result) {
+                if (utils.handleError(err, callback) && result.length > 0) {
+                  utils.fillDistanceElevationForTrack(result[0]);
+                  db.updateItineraryTrackDistanceElevation(itineraryId, trackId, result[0], callback);
+                }
+              });
+            }
+          });
+        }
+      }
+    });
 }
 
 function getItineraryRoutesForUser(username, itineraryId, routeIds, callback) {

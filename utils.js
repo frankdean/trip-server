@@ -52,7 +52,9 @@ function calculateDistance(coords) {
         }
       };
   try {
-    retval = turfLineDistance(line);
+    if (Array.isArray(coords) && coords.length > 0) {
+      retval = turfLineDistance(line);
+    }
   } catch(e) {
     winston.error(e);
   }
