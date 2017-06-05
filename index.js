@@ -37,7 +37,7 @@ var tracks = require('./tracks');
 var reports = require('./reports');
 
 var myApp = myApp || {};
-myApp.version = '0.13.0-rc.2';
+myApp.version = '0.13.0';
 module.exports = myApp;
 
 winston.level = config.log.level;
@@ -288,12 +288,10 @@ myApp.handleUploadItineraryFile = function(req, res, token) {
   form.maxFieldsSize = 10 * 1024 * 1024;
   form.hash = 'sha1';
   form.on('file', function(name, file) {
-    /*
-    winston.debug('File saved as %s', file.path);
-    winston.debug('Original name: %s', file.name);
-    winston.debug('File size: %d bytes', file.size);
-    winston.debug('Hash: %s', file.hash);
-    */
+    // winston.debug('File saved as %s', file.path);
+    // winston.debug('Original name: %s', file.name);
+    // winston.debug('File size: %d bytes', file.size);
+    // winston.debug('Hash: %s', file.hash);
     gpxUpload.importFile(itineraryId, file.path, true, function(err, result) {
       // winston.debug('Import result:', result);
     });
@@ -307,11 +305,9 @@ myApp.handleUploadItineraryFile = function(req, res, token) {
     myApp.handleError(new Error('Form upload aborted'));
   });
   form.on('end', function() {
-    /*
-    winston.debug('Received upload of %d bytes', form.bytesReceived);
-    winston.debug('Expected %d bytes', form.bytesExpected);
-    winston.debug('File path: %s', form.uploadDir);
-    */
+    // winston.debug('Received upload of %d bytes', form.bytesReceived);
+    // winston.debug('Expected %d bytes', form.bytesExpected);
+    // winston.debug('File path: %s', form.uploadDir);
     res.statusCode = 200;
     res.end();
   });
@@ -667,7 +663,6 @@ myApp.handleSaveItineraryTrack = function(req, res, token) {
         itineraryId = match ? match[1] : undefined;
         trackId = match ? match[2] : undefined;
         var params = JSON.parse(body);
-        winston.debug('Params: %j', params);
         if (params && ((Array.isArray(params.segments) || (params.track && Array.isArray(params.track.segments))))) {
           itineraries.saveItineraryTrack(
             token.sub,
@@ -1162,6 +1157,12 @@ myApp.handleGetNicknames = function(req, res, token) {
   });
 };
 
+myApp.handleGetNickname = function(req, res, token) {
+  login.getNicknameForUsername(token.sub, function(err, nickname) {
+    myApp.respondWithData(err, res, {nickname: nickname});
+  });
+};
+
 myApp.handleGetPathColors = function(req, res, token) {
   req.on('data', function() {
   }).on('end', function() {
@@ -1461,6 +1462,8 @@ myApp.handleAuthenticatedRequests = function(req, res, token) {
     myApp.handleGetTile(req, res, token);
   } else if (req.method === 'GET' && /\/nicknames\/?(\?.*)?$/.test(req.url)) {
     myApp.handleGetNicknames(req, res, token);
+  } else if (req.method === 'GET' && /\/nickname\/?(\?.*)?$/.test(req.url)) {
+    myApp.handleGetNickname(req, res, token);
   } else if (req.method === 'GET' && /\/download\/tracks(\/)?([!-\.0->@-~]+)?(\?.*)?$/.test(req.url)) {
     myApp.handleDownloadLocations(req, res, token);
   } else if (req.method === 'POST' && /\/download\/itinerary\/(\d+)\/gpx(?:\/)?([!-\.0->@-~]+)?(\?.*)?$/.test(req.url)) {
@@ -1574,7 +1577,7 @@ myApp.handleAuthenticatedRequests = function(req, res, token) {
   } else if (token.admin && req.method === 'GET' && /\/admin\/system\/status\/?(\?.*)?$/.test(req.url)) {
     myApp.handleGetSystemStatus(req, res);
   } else {
-    winston.debug('URL path not recognised: %s', req.url);
+    winston.warn('URL path not recognised: %s', req.url);
     myApp.handleError(new BadRequestError('URL path not recognised: ' + req.url), res);
   }
 };
@@ -1618,7 +1621,7 @@ myApp.server = http.createServer(function(req, res) {
   } else if (req.method === 'GET' && /^\/(favicon.ico|apple-touch-icon(-precomposed)?.png)$/.test(req.url)) {
     // Expect front-end webserver to handle requests for /favicon.ico
     // Ignore otherwise
-    winston.debug('Returning 404 for %s: %s', req.method, req.url);
+    // winston.debug('Returning 404 for %s: %s', req.method, req.url);
     res.statusCode = 404;
     res.end();
   } else if (req.method === 'GET' && /^\/\?id=[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}&timestamp=\d+&lat=[-.\d]+&lon=[-.\d]+&speed=[-.\d]+&bearing=[-.\d]+&altitude=[-.\d]+&batt=[-.\d]+/.test(req.url)) {

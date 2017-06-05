@@ -263,12 +263,16 @@ function toNum(v) {
 }
 
 function doLogPoint(q, callback) {
-  winston.debug('tracks.js doLogPoint()', q);
+  // winston.debug('tracks.js doLogPoint()', q);
   if (q.uuid !== undefined) {
     q.hdop = toNum(q.hdop);
+    q.hdop = q.hdop ? q.hdop : undefined;
     q.altitude = toNum(q.altitude);
+    q.altitude = q.altitude ? q.altitude : undefined;
     q.speed = toNum(q.speed);
+    q.speed = q.speed ? q.speed : undefined;
     q.bearing = toNum(q.bearing);
+    q.bearing = q.bearing ? q.bearing : undefined;
     if (q.note !== undefined && validator.isEmpty(q.note)) {
       q.note = undefined;
     }
@@ -278,22 +282,27 @@ function doLogPoint(q, callback) {
       if (q.mstime !== undefined && validator.isInt('' + q.mstime)) {
         db.findUserByUuid(q.uuid, function(err, user) {
           if (err) {
-            winston.warn('Warning user not found for UUID', q.uuid, q.id);
+            winston.info('User not found for UUID', q.uuid, q.id);
             callback(new Error('Invalid UUID'));
           } else {
             db.logPoint(user.id, q, function(err) {
+              if (err) {
+                winston.error('Failure saving logged point', err);
+              }
               callback(err, user);
             });
           }
         });
       } else {
+        winston.warn('Invalid time-type parameter');
         callback(new Error('Invalid time-type parameter'));
       }
     } else {
+      winston.warn('Invalid or missing lat/lon parameters');
       callback(new Error('Invalid or missing lat/lon parameters'));
     }
   } else {
-    winston.debug('query params:', q);
+    winston.warn('log_point failed, query params are:', q);
     callback(new Error('Missing UUID parameter'));
   }
 }

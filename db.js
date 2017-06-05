@@ -51,6 +51,7 @@ module.exports = {
   findUserByNickname: findUserByNickname,
   findUserByUsername: findUserByUsername,
   findUserByUuid: findUserByUuid,
+  getNicknameForUsername: getNicknameForUsername,
   getLocationCount: getLocationCount,
   getLocationShareCountByUsername: getLocationShareCountByUsername,
   getLocationShareDetails: getLocationShareDetails,
@@ -427,6 +428,31 @@ function findUserByNickname(nickname, callback) {
                      } else {
                        if (result.rowCount > 0) {
                          callback(null, result.rows[0].id);
+                       } else {
+                         callback(new UserNotFoundError());
+                       }
+                     }
+                   });
+    }
+  });
+}
+
+function getNicknameForUsername(username, callback) {
+  callback = typeof callback === 'function' ? callback : function() {};
+  pg.connect(config.db.uri, function(err, client, done) {
+    if (err) {
+      callback(err);
+    } else {
+      client.query('SELECT nickname FROM usertable WHERE email = $1',
+                   [username],
+                   function(err, result) {
+                     // release the client back to the pool
+                     done();
+                     if (err) {
+                       callback(err);
+                     } else {
+                       if (result.rowCount > 0) {
+                         callback(null, result.rows[0].nickname);
                        } else {
                          callback(new UserNotFoundError());
                        }

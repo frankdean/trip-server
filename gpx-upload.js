@@ -48,7 +48,7 @@ module.exports = {
 function parseFile(itineraryId, pathname, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
   var firstError = null;
-  winston.debug('Importing file %s', pathname);
+  // winston.debug('Importing file %s', pathname);
   var parser = sax.createStream(false, {lowercasetags: true, trim: true}),
       waypoints = [],
       waypoint = null,
@@ -236,13 +236,13 @@ function parseFile(itineraryId, pathname, callback) {
  */
 function importFile(itineraryId, pathname, deleteFlag, callback) {
   var lastError = null;
-  winston.debug('importing from %s', pathname);
+  // winston.debug('importing from %s', pathname);
   parseFile(itineraryId, pathname, function(err, waypoints, routes, tracks) {
-    winston.debug('Imported %d waypoints', waypoints.length);
-    winston.debug('Imported %d routes', routes.length);
-    winston.debug('Imported %d tracks', tracks.length);
+    // winston.debug('Imported %d waypoints', waypoints.length);
+    // winston.debug('Imported %d routes', routes.length);
+    // winston.debug('Imported %d tracks', tracks.length);
     if (deleteFlag) {
-      winston.debug('Deleting %s', pathname);
+      // winston.debug('Deleting %s', pathname);
       fs.unlinkSync(pathname);
     }
     if (err) {

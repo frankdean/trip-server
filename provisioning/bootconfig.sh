@@ -8,7 +8,7 @@
 # Uncomment the following to debug the script
 #set -x
 
-TRIP_WEB_CLIENT_VERSION='v0.12.0'
+TRIP_WEB_CLIENT_VERSION='v0.13.0'
 
 su - postgres -c 'createuser -drs vagrant' 2>/dev/null
 su - vagrant -c 'cd /vagrant && npm install'

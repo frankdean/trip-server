@@ -112,11 +112,9 @@ function fillDistanceElevationForPath(path) {
 }
 
 function fillDistanceElevationForRoutes(routes) {
-  var t = Date.now();
   routes.forEach(function(v) {
     fillDistanceElevationForPath(v);
   });
-  winston.debug('Filled distance elevation data for routes in %d ms', Date.now() - t);
 }
 
 function fillDistanceElevationForTrack(track) {
@@ -137,9 +135,7 @@ function fillDistanceElevationForTrack(track) {
 }
 
 function fillDistanceElevationForTracks(tracks) {
-  var t = Date.now();
   tracks.forEach(function(t) {
     fillDistanceElevationForTrack(t);
   });
-  winston.debug('Filled distance elevation data for tracks in %d ms', Date.now() - t);
 }

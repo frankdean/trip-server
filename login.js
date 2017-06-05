@@ -35,6 +35,7 @@ module.exports = {
   checkAuthenticated: checkAuthenticated,
   getUser: getUser,
   getUsers: getUsers,
+  getNicknameForUsername: getNicknameForUsername,
   createUser: createUser,
   updateUser: updateUser,
   deleteUser: deleteUser,
@@ -146,6 +147,10 @@ function getUsers(offset, limit, nickname, email, searchType, callback) {
       });
     }
   });
+}
+
+function getNicknameForUsername(username, callback) {
+  db.getNicknameForUsername(username, callback);
 }
 
 function createUser(user, callback) {
