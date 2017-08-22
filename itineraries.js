@@ -762,7 +762,7 @@ function getTracks(itineraryId, trackIds, callback) {
 
 function downloadItineraryGpx(username, itineraryId, params, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  var root, rte, rteext, rtept, trk, trkseg, trkpt, wpt, ext, trkext, wptext;
+  var rteptCount, rteptName, root, rte, rteext, rtept, trk, trkseg, trkpt, wpt, ext, trkext, wptext;
   db.confirmItinerarySharedAccess(username, itineraryId, function(err, result) {
     if (utils.handleError(err, callback)) {
       if (result !== true) {
@@ -827,10 +827,16 @@ function downloadItineraryGpx(username, itineraryId, params, callback) {
                         rteext.e('gpxx:DisplayColor', r.color);
                       }
                       if (r.points !== undefined && Array.isArray(r.points)) {
+                        rteptCount = 0;
                         r.points.forEach(function(v) {
                           rtept = rte.e('rtept', {lon: v.lng, lat: v.lat});
                           if (v.altitude) rtept.e('ele', null, v.altitude);
-                          if (v.name) rtept.e('name', v.name);
+                          if (v.name) {
+                            rtept.e('name', v.name);
+                          } else {
+                            rteptName = '00' + ++rteptCount;
+                            rtept.e('name', rteptName.slice(-3));
+                          }
                           if (v.comment) rtept.e('cmt', v.comment);
                           if (v.description) rtept.e('desc', v.description);
                           if (v.symbol) rtept.e('sym', v.symbol);
