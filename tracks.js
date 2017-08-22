@@ -311,23 +311,43 @@ function logPoint(q, callback) {
   if (q.uuid === undefined && q.id !== undefined) {
     q.uuid = q.id;
   }
-  // Do no redefine ms time
+  // Do not redefine mstime
   if (q.mstime === undefined) {
     if (q.unixtime === undefined && q.timestamp && validator.isInt('' + q.timestamp)) {
       q.unixtime = q.timestamp;
     }
-    if (q.unixtime !== undefined && validator.isInt(q.unixtime)) {
+    if (q.unixtime !== undefined && validator.isInt('' + q.unixtime)) {
       q.mstime = q.unixtime * 1000;
     }
     // ISO8601 formatted date
     if (q.time !== undefined && validator.isISO8601(q.time)) {
       q.mstime = Date.parse(q.time);
     }
+    // Workaround for bug on some Android devices where GPS time is consistently wrong
+    // Apply a second or millisecond correction, max range 25 hours
+    winston.debug('tracks.js: mstime before:', q.mstime, new Date(q.mstime));
+    if (q.offset) {
+      if (validator.isInt('' + q.offset, {min: -90000, max: 90000})) {
+        winston.debug('Modifying time by %d seconds', q.offset);
+        q.mstime += Number(q.offset) * 1000;
+      } else {
+        winston.debug('Invalid value for offset parameter');
+      }
+    } else if (q.msoffset) {
+      if (validator.isInt('' + q.msoffset, {min: -90000000, max: 90000000})) {
+        winston.debug('Modifying time by %d milliseconds', q.msoffset);
+        q.mstime += Number(q.msoffset);
+      } else {
+        winston.debug('Invalid value for msoffset parameter');
+      }
+    }
+    winston.debug('tracks.js: mstime: after', q.mstime, new Date(q.mstime));
     // If no time parameters specified, default to now, but not where an
     // invalid time has been passed.  If someone is trying to specify a time,
     // but it is invalid, we don't want to record a time that may be quite
     // wrong and therefore misleading.
     if (q.mstime === undefined && q.time === undefined && q.timestamp === undefined && q.unixtime === undefined) {
+      winston.debug('tracks.js no time parameter specified, logging time as now');
       q.mstime = Date.now();
     }
   }
