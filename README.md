@@ -57,7 +57,7 @@ This option provides a working example of the application running in a
 [VirtualBox][] virtual machine (VM) for those
 [operating systems supported][vagrant-download] by [Vagrant][].  This also
 provides a complete example of running the application behind the [Nginx][]
-[engine x] HTTP reverse proxy server.  It is suitable for development or
+("engine x") HTTP reverse proxy server.  It is suitable for development or
 demonstration, but not as a production system.
 
 **Note:** Installing all the required software, including the Vagrant box
@@ -96,7 +96,7 @@ involves downloading approximately 600MB of data.  Perhaps more of an
 1.  Make a note of the trip-server admin user credentials displayed at the end
     of the startup process
 	
-1.  Use your browser to navigate to <http://localhost:8080/> on the same
+1.  Use your browser to navigate to <http://localhost:8080/> on the host
     machine and login providing the above credentials
 
 1.  When finished, halt the server with:

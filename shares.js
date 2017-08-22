@@ -98,13 +98,20 @@ function getLocationShares(username, offset, pageSize, callback) {
 
 function validateShare(share) {
   return share.nickname !== undefined && validNickname.test(share.nickname) &&
-    (share.recentDays === undefined || validator.isInt('' + share.recentDays)) &&
-    (share.recentHours === undefined || validator.isInt('' + share.recentHours)) &&
-    (share.recentMinutes === undefined || validator.isInt('' + share.recentMinutes)) &&
-    (share.maximumDays === undefined || validator.isInt('' + share.maximumDays)) &&
-    (share.maximumHours === undefined || validator.isInt('' + share.maximumHours)) &&
-    (share.maximumMinutes === undefined || validator.isInt('' + share.maximumMinutes)) &&
-    (share.active === undefined || validator.isBoolean('' + share.active));
+    (share.recentDays === undefined || share.recentDays === null ||
+     validator.isInt('' + share.recentDays)) &&
+    (share.recentHours === undefined || share.recentHours === null ||
+     validator.isInt('' + share.recentHours)) &&
+    (share.recentMinutes === undefined || share.recentMinutes === null ||
+     validator.isInt('' + share.recentMinutes)) &&
+    (share.maximumDays === undefined || share.maximumDays === null ||
+     validator.isInt('' + share.maximumDays)) &&
+    (share.maximumHours === undefined || share.maximumHours === null ||
+     validator.isInt('' + share.maximumHours)) &&
+    (share.maximumMinutes === undefined || share.maximumMinutes === null ||
+     validator.isInt('' + share.maximumMinutes)) &&
+    (share.active === undefined || share.active === null ||
+     validator.isBoolean('' + share.active));
 }
 
 function validateShares(shares) {
