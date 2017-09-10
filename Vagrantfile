@@ -5,9 +5,14 @@ Vagrant.configure("2") do |config|
 
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://atlas.hashicorp.com/search.
+  # Bento are one of the Vagrant recommended boxes see
+  # https://www.vagrantup.com/docs/boxes.html#official-boxes
+  # https://app.vagrantup.com/bento
   # config.vm.box = "bento/ubuntu-16.04"
   # config.vm.box = "bento/ubuntu-16.10"
-  config.vm.box = "bento/debian-8.7"
+  # config.vm.box = "bento/debian-8.7"
+  config.vm.box = "bento/debian-9.1"
+  # config.vm.box_version = "201708.22.0"
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs

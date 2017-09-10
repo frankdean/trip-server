@@ -259,32 +259,55 @@ function getLocationsAsXml(query, callback) {
 }
 
 function toNum(v) {
-  return (v === undefined || validator.isEmpty(v)) ? null : Number(v);
+  var r = (v === undefined || validator.isEmpty('' + v)) ? undefined : Number(v);
+  return r !== undefined ? r : undefined;
 }
 
 function doLogPoint(q, callback) {
-  // winston.debug('tracks.js doLogPoint()', q);
   if (q.uuid !== undefined) {
     q.hdop = toNum(q.hdop);
-    q.hdop = q.hdop ? q.hdop : undefined;
     q.altitude = toNum(q.altitude);
-    q.altitude = q.altitude ? q.altitude : undefined;
+    q.batt = toNum(q.batt);
+    q.sat = toNum(q.sat);
     q.speed = toNum(q.speed);
-    q.speed = q.speed ? q.speed : undefined;
     q.bearing = toNum(q.bearing);
-    q.bearing = q.bearing ? q.bearing : undefined;
     if (q.note !== undefined && validator.isEmpty(q.note)) {
       q.note = undefined;
     }
-    q.lng = q.lng ? q.lng : q.lon;
+    q.lng = q.lng !== undefined ? q.lng : q.lon;
     if (q.lat !== undefined && q.lng !== undefined &&
-        validator.isFloat('' + q.lat) && validator.isFloat('' + q.lng)) {
+        validator.isFloat('' + q.lat, {min: -90, max: 90}) && validator.isFloat('' + q.lng, {min: -180, max: 180})) {
+      if (!validator.isFloat('' + q.hdop, {min: 0, max: 99999.9})) {
+        winston.debug('Received invalid hdop for location %j', q);
+        q.hdop = undefined;
+      }
+      if(q.altitude !== undefined && !validator.isFloat('' + q.altitude, {min: -999999.99999, max: 999999.99999})) {
+        winston.debug('Received invalid altitude for location %j', q);
+        q.altitude = undefined;
+      }
+      if(q.speed !== undefined && !validator.isFloat('' + q.speed, {min: -99999.9, max: 99999.9})) {
+        winston.debug('Received invalid speed for location %j', q);
+        q.speed = undefined;
+      }
+      if (q.bearing !== undefined && !validator.isFloat('' + q.bearing, {min: -999999.99999, max: 999999.99999})) {
+        winston.debug('Received invalid bearing for location %j', q);
+        q.bearing = undefined;
+      }
+      if (q.sat !== undefined && !validator.isInt('' + q.sat, {min: 0, max: 32767})) {
+        winston.debug('Received invalid satellite count for location %j', q);
+        q.sat = undefined;
+      }
+      if (q.batt !== undefined && !validator.isFloat('' + q.batt, {min: 0, max: 999.9})) {
+        winston.debug('Received invalid battery value for location %j', q);
+        q.batt = undefined;
+      }
       if (q.mstime !== undefined && validator.isInt('' + q.mstime)) {
         db.findUserByUuid(q.uuid, function(err, user) {
           if (err) {
             winston.info('User not found for UUID', q.uuid, q.id);
             callback(new Error('Invalid UUID'));
           } else {
+            winston.debug('Saving %j', q);
             db.logPoint(user.id, q, function(err) {
               if (err) {
                 winston.error('Failure saving logged point', err);
@@ -294,20 +317,21 @@ function doLogPoint(q, callback) {
           }
         });
       } else {
-        winston.warn('Invalid time-type parameter');
+        winston.debug('Invalid time-type parameter for location %j', q);
         callback(new Error('Invalid time-type parameter'));
       }
     } else {
-      winston.warn('Invalid or missing lat/lon parameters');
+      winston.debug('Invalid or missing lat/lon parameters for location %j', q);
       callback(new Error('Invalid or missing lat/lon parameters'));
     }
   } else {
-    winston.warn('log_point failed, query params are:', q);
+    winston.debug('log_point failed for location: %j', q);
     callback(new Error('Missing UUID parameter'));
   }
 }
 
 function logPoint(q, callback) {
+  var provParams, offsetParams, offsetIndex, offset;
   if (q.uuid === undefined && q.id !== undefined) {
     q.uuid = q.id;
   }
@@ -320,25 +344,67 @@ function logPoint(q, callback) {
       q.mstime = q.unixtime * 1000;
     }
     // ISO8601 formatted date
-    if (q.time !== undefined && validator.isISO8601(q.time)) {
+    if (q.time !== undefined && validator.isISO8601('' + q.time)) {
       q.mstime = Date.parse(q.time);
     }
-    // Workaround for bug on some Android devices where GPS time is consistently wrong
-    // Apply a second or millisecond correction, max range 25 hours
-    winston.debug('tracks.js: mstime before:', q.mstime, new Date(q.mstime));
-    if (q.offset) {
-      if (validator.isInt('' + q.offset, {min: -90000, max: 90000})) {
-        winston.debug('Modifying time by %d seconds', q.offset);
-        q.mstime += Number(q.offset) * 1000;
+    if (q.mstime) {
+      // Workaround for bug on some Android devices where GPS time is consistently wrong
+      // Apply a second or millisecond correction, max range 25 hours
+      winston.debug('tracks.js: mstime before:', q.mstime, new Date(q.mstime));
+      // Comma separated list of provider to modify the time for
+      if (Array.isArray(q.offsetprovs)) {
+        winston.debug('offsetprovs parameter appears to occur more than once - has been parsed as an array');
+        provParams = q.offsetprovs;
       } else {
-        winston.debug('Invalid value for offset parameter');
+        provParams = q.offsetprovs ? q.offsetprovs.split(',') : [];
       }
-    } else if (q.msoffset) {
-      if (validator.isInt('' + q.msoffset, {min: -90000000, max: 90000000})) {
-        winston.debug('Modifying time by %d milliseconds', q.msoffset);
-        q.mstime += Number(q.msoffset);
-      } else {
-        winston.debug('Invalid value for msoffset parameter');
+      offsetIndex = provParams.indexOf(q.prov);
+      if (q.offset && (provParams.length === 0 || offsetIndex !== -1)) {
+        if (Array.isArray(q.offset)) {
+          winston.debug('offset parameter appears to occur more than once - has been parsed as an array');
+          offsetParams = q.offset;
+        } else {
+          offsetParams = q.offset.split(',');
+        }
+        if (offsetIndex > -1 && offsetIndex < offsetParams.length) {
+          offset = offsetParams[offsetIndex];
+        } else {
+          if (offsetParams.length > 1) {
+            winston.debug('offset has inconsistent number of values compared with offsetprovs parameter');
+            offset = 0;
+          } else {
+            offset = q.offset;
+          }
+        }
+        if (validator.isInt('' + offset, {min: -90000, max: 90000})) {
+          winston.debug('Modifying time by %d seconds', offset);
+          q.mstime += Number(offset) * 1000;
+        } else {
+          winston.debug('Invalid value for offset parameter');
+        }
+      } else if (q.msoffset && (provParams.length === 0 || offsetIndex !== -1)) {
+        if (Array.isArray(q.msoffset)) {
+          winston.debug('msoffset parameter appears to occur more than once - has been parsed as an array');
+          offsetParams = q.msoffset;
+        } else {
+          offsetParams = q.msoffset.split(',');
+        }
+        if (offsetIndex > -1 && offsetIndex < offsetParams.length) {
+          offset = offsetParams[offsetIndex];
+        } else {
+          if (offsetParams.length > 1) {
+            winston.debug('msoffset has inconsistent number of values compared with offsetprovs parameter');
+            offset = 0;
+          } else {
+            offset = q.msoffset;
+          }
+        }
+        if (validator.isInt('' + offset, {min: -90000000, max: 90000000})) {
+          winston.debug('Modifying time by %d milliseconds', offset);
+          q.mstime += Number(offset);
+        } else {
+          winston.debug('Invalid value for msoffset parameter');
+        }
       }
     }
     winston.debug('tracks.js: mstime: after', q.mstime, new Date(q.mstime));

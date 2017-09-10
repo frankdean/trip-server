@@ -834,7 +834,7 @@ function downloadItineraryGpx(username, itineraryId, params, callback) {
                           if (v.name) {
                             rtept.e('name', v.name);
                           } else {
-                            rteptName = '00' + ++rteptCount;
+                            rteptName = '00' + (++rteptCount);
                             rtept.e('name', rteptName.slice(-3));
                           }
                           if (v.comment) rtept.e('cmt', v.comment);

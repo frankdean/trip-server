@@ -17,7 +17,7 @@
     "GPS"
   ],
   "devDependencies": {
-    "jasmine": "^2.6.0",
+    "jasmine": "^2.8.0",
     "jshint": "^2.9.4"
   },
   "scripts": {
@@ -30,11 +30,12 @@
     "@turf/invariant": "3.10.0",
     "@turf/line-distance": "3.10.3",
     "autoquit": "github:frankdean/node-autoquit#0.1.7-rc.2",
-    "bcrypt": "^1.0.2",
+    "bcrypt": "^1.0.3",
     "formidable": "^1.1.1",
     "jsonwebtoken": "^7.4.1",
     "node-static": "^0.7.9",
     "pg": "~6.2.5",
+    "qs": "^6.5.0",
     "sax": "^1.2.2",
     "socket.io": "^1.7.4",
     "systemd": "^0.2.6",

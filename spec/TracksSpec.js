@@ -228,7 +228,7 @@ describe('tracks.js', function() {
       it('should save the point passing the timestamp as a millisecond value', function() {
         expect(err).toBeNull();
         expect(db.findUserByUuid).toHaveBeenCalledWith(validOsmAndPoint.uuid, jasmine.any(Function));
-        expect(db.logPoint).toHaveBeenCalledWith(testUserId, { lat: '52.5', lon: '-0.3', timestamp: validOsmAndPoint.timestamp, uuid: '63ee806c-2529-499d-ad2c-308d9ad1ef77', unixtime: '' + validOsmAndPoint.timestamp, mstime: Number(validOsmAndPoint.timestamp) * 1000, hdop: undefined, altitude: undefined, speed: undefined, bearing: undefined, lng: '-0.3' }, jasmine.any(Function) );
+        expect(db.logPoint).toHaveBeenCalledWith(testUserId, { lat: '52.5', lon: '-0.3', timestamp: validOsmAndPoint.timestamp, uuid: '63ee806c-2529-499d-ad2c-308d9ad1ef77', unixtime: '' + validOsmAndPoint.timestamp, mstime: Number(validOsmAndPoint.timestamp) * 1000, hdop: undefined, altitude: undefined, batt: undefined, sat: undefined, speed: undefined, bearing: undefined, lng: '-0.3' }, jasmine.any(Function) );
       });
 
     });
@@ -379,6 +379,8 @@ describe('tracks.js', function() {
                    mstime: jasmine.any(Number),
                    hdop: undefined,
                    altitude: undefined,
+                   batt: undefined,
+                   sat: undefined,
                    speed: undefined,
                    bearing: undefined,
                    lng: validGPSLoggerPoint.lng}),
@@ -410,7 +412,7 @@ describe('tracks.js', function() {
         expect(db.findUserByUuid).toHaveBeenCalledWith(validGPSLoggerPoint.uuid, jasmine.any(Function));
         expect(db.logPoint).toHaveBeenCalledWith(testUserId, {
           lat: validGPSLoggerPoint.lat,
-          lon: '-0.3', bearing: undefined, time: '2017-01-15T13:40:10.000Z', uuid: '63ee806c-2529-499d-ad2c-308d9ad1ef77', mstime: 1484487610000, hdop: undefined, altitude: undefined, speed: undefined, lng: '-0.3'}, jasmine.any(Function));
+          lon: '-0.3', bearing: undefined, time: '2017-01-15T13:40:10.000Z', uuid: '63ee806c-2529-499d-ad2c-308d9ad1ef77', mstime: 1484487610000, hdop: undefined, altitude: undefined, batt: undefined, sat: undefined, speed: undefined, lng: '-0.3'}, jasmine.any(Function));
       });
 
     });
@@ -445,6 +447,8 @@ describe('tracks.js', function() {
           mstime: 1484494615000,
           hdop: undefined,
           altitude: undefined,
+          batt: undefined,
+          sat: undefined,
           speed: undefined,
           bearing: undefined,
           lng: validGPSLoggerPoint.lng}, jasmine.any(Function));

@@ -23,6 +23,7 @@ var url = require('url');
 var autoquit = require('autoquit');
 var formidable = require('formidable');
 var nstatic = require('node-static');
+var qs = require('qs');
 var systemd = require('systemd');
 var validator = require('validator');
 var winston = require('winston');
@@ -37,7 +38,7 @@ var tracks = require('./tracks');
 var reports = require('./reports');
 
 var myApp = myApp || {};
-myApp.version = '0.13.1-rc.3';
+myApp.version = '0.14.0-rc.2';
 module.exports = myApp;
 
 winston.level = config.log.level;
@@ -1243,6 +1244,41 @@ myApp.handleLogPoint = function(req, res) {
   });
 };
 
+myApp.handlePostLogPoint = function(req, res) {
+  var q, body = [];
+  req.on('data', function(chunk) {
+    body.push(chunk);
+  }).on('end', function() {
+    if (! /^|;application\/x-www-form-urlencoded;|$/.test(req.headers['content-type'])) {
+      myApp.handleError(new BadRequestError('handlePostLogPoint() unexpected content-type: ' + req.headers['content-type']), res);
+    } else {
+      body = Buffer.concat(body).toString();
+      if (validator.isJSON(body)) {
+        winston.debug('Received JSON body');
+        q = JSON.parse(body);
+      } else {
+        if (body !== "") {
+          winston.debug('Body not valid JSON, parsing as query string: %j', body);
+          q = qs.parse(body);
+        } else {
+          winston.debug('Point POSTed without body, trying to extract any query parameters from request URL of: %j', req.url);
+          var q = url.parse(req.url, true).query;
+        }
+      }
+      if (q.decodenote === 'true' && q.note && q.note.length > 0) {
+        // fix where note has been URI encoded twice
+        q.note = decodeURIComponent(q.note.replace('+', '%20'));
+      }
+      tracks.logPoint(q, function(err, user) {
+        if (myApp.handleError(err, res)) {
+          io.emit(user.nickname, {update: true});
+          myApp.noResponseData(err, res);
+        }
+      });
+    }
+  });
+};
+
 myApp.handleGetLocations = function(req, res, token) {
   req.on('data', function() {
   }).on('end', function() {
@@ -1618,6 +1654,8 @@ myApp.server = http.createServer(function(req, res) {
     myApp.handleLogin(req, res);
   } else if (req.method === 'GET' && /\/log_point(?:\.php)?\/?(\?.*)?$/.test(req.url)) {
     myApp.handleLogPoint(req, res);
+  } else if (req.method === 'POST' && /\/log_point(?:\.php)?\/?(\?.*)?$/.test(req.url)) {
+    myApp.handlePostLogPoint(req, res);
   } else if (req.method === 'GET' && /^\/(favicon.ico|apple-touch-icon(-precomposed)?.png)$/.test(req.url)) {
     // Expect front-end webserver to handle requests for /favicon.ico
     // Ignore otherwise

@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
 
 apt-get update
-apt-get install -y g++ git nginx postgresql postgresql-contrib apg
+apt-get upgrade
+apt-get install -y g++ git nginx postgresql postgresql-contrib apg screen
 
-NODE_VERSION="v6.10.3"
+NODE_VERSION="v6.11.3"
 NODE_FILENAME="node-${NODE_VERSION}-linux-x64"
 NODE_TAR_FILENAME="${NODE_FILENAME}.tar.xz"
 NODE_EXTRACT_DIR="${NODE_FILENAME}"
 NODE_DOWNLOAD_URL="https://nodejs.org/dist/${NODE_VERSION}/${NODE_TAR_FILENAME}"
 
-if [ ! -d /usr/local/share/node-v6.10.1-linux-x64 ]; then
+if [ ! -d "/usr/local/share/${NODE_FILENAME}" ]; then
 	if [ ! -e "/vagrant/provisioning/downloads/${NODE_TAR_FILENAME}" ]; then
 		if [ ! -d /vagrant/provisioning/downloads ]; then
 			mkdir -p /vagrant/provisioning/downloads

@@ -8,7 +8,8 @@
 # Uncomment the following to debug the script
 #set -x
 
-TRIP_WEB_CLIENT_VERSION='v0.13.0'
+TRIP_WEB_CLIENT_VERSION='v0.14.0'
+PG_VERSION=9.6
 
 su - postgres -c 'createuser -drs vagrant' 2>/dev/null
 su - vagrant -c 'cd /vagrant && npm install'
@@ -27,16 +28,10 @@ else
 
 fi
 
-if [ -d /etc/postgresql/9.4 ]; then
-	egrep 'local\s+trip\s+trip\s+md5' /etc/postgresql/9.4/main/pg_hba.conf >/dev/null 2>&1
+if [ -d "/etc/postgresql/${PG_VERSION}" ]; then
+	egrep 'local\s+trip\s+trip\s+md5' "/etc/postgresql/${PG_VERSION}/main/pg_hba.conf" >/dev/null 2>&1
 	if [ $? -ne 0 ]; then
-		sed -i 's/local\(.*all.*all.*$\)/local   trip            trip                                    md5\nlocal\1/' /etc/postgresql/9.4/main/pg_hba.conf
-		systemctl reload postgresql
-	fi
-elif [ -d /etc/postgresql/9.5 ]; then
-	egrep 'local\s+trip\s+trip\s+md5' /etc/postgresql/9.5/main/pg_hba.conf >/dev/null 2>&1
-	if [ $? -ne 0 ]; then
-		sed -i 's/local\(.*all.*all.*$\)/local   trip            trip                                    md5\nlocal\1/' /etc/postgresql/9.5/main/pg_hba.conf
+		sed -i 's/local\(.*all.*all.*$\)/local   trip            trip                                    md5\nlocal\1/' "/etc/postgresql/${PG_VERSION}/main/pg_hba.conf"
 		systemctl reload postgresql
 	fi
 fi
@@ -48,6 +43,17 @@ if [ $? -eq 0 ]; then
 CREATE ROLE trip_role;
 EOF
 	su - postgres -c  'psql trip' <permissions.sql >/dev/null
+	CREATED_DB='y'
+fi
+su - postgres -c 'createuser trip' 2>/dev/null
+if [ $? -eq 0 ]; then
+	su - postgres -c 'dropuser trip'
+	echo "CREATE USER trip PASSWORD '$SECRET' NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT" | su - postgres -c psql
+	su - postgres -c 'psql trip' <<EOF
+GRANT trip_role TO trip;
+EOF
+fi
+if [ "$CREATED_DB" == "y" ]; then
 	# Create Test Data
 	if [ "$IMPORT_TEST_DATA" == "y" ]; then
 		su - postgres -c  'psql trip' <test-data.sql >/dev/null
@@ -64,15 +70,6 @@ WITH upd AS (INSERT INTO usertable (firstname, lastname, email, uuid, password, 
 EOF
 	fi
 fi
-su - postgres -c 'createuser trip' 2>/dev/null
-if [ $? -eq 0 ]; then
-	su - postgres -c 'dropuser trip'
-	echo "CREATE USER trip PASSWORD '$SECRET' NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT" | su - postgres -c psql
-	su - postgres -c 'psql trip' <<EOF
-GRANT trip_role TO trip;
-EOF
-fi
-
 if [ ! -e /etc/nginx/conf.d/trip.conf ]; then
 	cp /vagrant/provisioning/nginx/conf.d/trip.conf /etc/nginx/conf.d/
 fi
@@ -139,9 +136,10 @@ if [ ! -e /etc/systemd/system/trip.socket ]; then
 fi
 
 if [ ! -z "$ADMIN_PWD" ]; then
+	$ADMIN_PWD_PHONETIC=$(echo $ADMIN_PWD_TEXT | cut -d ' ' -f 2)
 	>&2 echo
 	>&2 echo "******************************************************************************"
 	>&2 echo "I have created an initial admin user for TRIP"
-	>&2 echo "login as 'admin@secret.org' with password '$ADMIN_PWD_TEXT'"
+	>&2 echo "login as 'admin@secret.org' with password '$ADMIN_PWD' $ADMIN_PWD_PHONETIC"
 	>&2 echo "******************************************************************************"
 fi

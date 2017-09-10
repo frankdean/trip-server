@@ -509,6 +509,72 @@ the Apache &lt;VirtualHost\&gt; sections:
 The following sections mostly relate to information around system maintenance
 and application development.
 
+### Deleting expired tiles from the cache
+
+Count how many tiles are expired:
+
+	SELECT count(*) FROM tile WHERE expires < now();
+
+count how many are not expired:
+
+	SELECT count(*) FROM tile WHERE expires >= now();
+
+Count how many are expired and older than 90 days:
+
+	SELECT count(*) FROM tile WHERE expires < now() AND updated < now()::timestamp::date - INTERVAL '90 days';
+
+Delete tiles which are older than 90 days and have expired:
+
+	DELETE FROM tile WHERE expires < now() AND updated < now()::timestamp::date - INTERVAL '90 days';
+
+Delete all expired tiles:
+
+	DELETE FROM tile WHERE expires < now();
+
+
+### Freeing up system disk space after deleted tiles (or other records)
+
+To see how much space is begin used by the whole database:
+
+	SELECT pg_size_pretty(pg_database_size('trip'));
+
+To see how much space is beging used the the tiles table:
+
+	SELECT pg_size_pretty(pg_table_size('tile');
+
+Normally, a PostgreSQL installation will be configured to run the
+[VACUUM](https://www.postgresql.org/docs/9.4/static/sql-vacuum.html) command
+automatically from time-to-time.  This allows deleted records to be re-used,
+but does not generally free up the system disk space being used by the deleted
+records.  To do that, the `VACUUM` command needs to be run with the `FULL`
+option.
+
+**Note** that `VACUUM FULL` requires an exclusive lock on the table it is
+working on so cannot be run in parallel with other database operations using
+the table.
+
+See the
+[Recovering Disk Space](https://www.postgresql.org/docs/9.4/static/routine-vacuuming.html#VACUUM-FOR-SPACE-RECOVERY)
+section of the
+[PostgreSQL documentation](https://www.postgresql.org/docs/9.4/static/index.html)
+for more information.
+
+To free up the system disk space used by the tiles table, in `plsql` run:
+
+	VACUUM FULL tile;
+
+or
+
+	VACUUM (FULL, VERBOSE) tile;
+
+To free up the system disk space used by all tables:
+
+	VACUUM FULL;
+
+or
+
+	VACUUM (FULL, VERBOSE);
+
 
 ### Useful queries for testing
 
