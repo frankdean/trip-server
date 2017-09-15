@@ -1722,7 +1722,7 @@ function getItineraryRoutePoints(itineraryId, routeId, offset, limit, callback) 
     if (err) {
       callback(err);
     } else {
-      var sql = 'SELECT r.itinerary_id, rp.itinerary_route_id, rp.id, position[1] AS lat, position[0] AS lng, altitude, rp.name, rp.comment, rp.description, rp.symbol FROM itinerary_route_point rp JOIN itinerary_route r ON r.id=rp.itinerary_route_id WHERE r.itinerary_id=$1 AND itinerary_route_id=$2';
+      var sql = 'SELECT r.itinerary_id, rp.itinerary_route_id, rp.id, position[1] AS lat, position[0] AS lng, altitude, rp.name, rp.comment, rp.description, rp.symbol FROM itinerary_route_point rp JOIN itinerary_route r ON r.id=rp.itinerary_route_id WHERE r.itinerary_id=$1 AND itinerary_route_id=$2 ORDER BY rp.id';
       if (offset) {
         sql += ' OFFSET ' + offset;
       }
@@ -1838,7 +1838,7 @@ function getItineraryTrackSegments(itineraryId, trackId, offset, limit, callback
     if (err) {
       callback(err);
     } else {
-      var sql = 'SELECT ts.id FROM itinerary_track_segment ts JOIN itinerary_track it ON it.id=ts.itinerary_track_id WHERE it.itinerary_id = $1 AND itinerary_track_id=$2';
+      var sql = 'SELECT ts.id FROM itinerary_track_segment ts JOIN itinerary_track it ON it.id=ts.itinerary_track_id WHERE it.itinerary_id = $1 AND itinerary_track_id=$2 ORDER BY ts.id';
       if (offset) {
         sql += ' OFFSET ' + offset;
       }
@@ -1896,7 +1896,7 @@ function getItineraryTrackSegment(itineraryId, segmentId, offset, limit, callbac
     if (err) {
       callback(err);
     } else {
-      var sql = 'SELECT tp.id, tp.position[1] AS lat, tp.position[0] as lng, tp.time, tp.hdop, tp.altitude FROM itinerary_track_point tp JOIN itinerary_track_segment ts ON ts.id=tp.itinerary_track_segment_id JOIN itinerary_track it ON it.id=ts.itineRary_track_id WHERE it.itinerary_id=$1 AND ts.id=$2';
+      var sql = 'SELECT tp.id, tp.position[1] AS lat, tp.position[0] as lng, tp.time, tp.hdop, tp.altitude FROM itinerary_track_point tp JOIN itinerary_track_segment ts ON ts.id=tp.itinerary_track_segment_id JOIN itinerary_track it ON it.id=ts.itineRary_track_id WHERE it.itinerary_id=$1 AND ts.id=$2 ORDER BY tp.id';
       if (offset) {
         sql += ' OFFSET ' + offset;
       }
