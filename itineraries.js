@@ -36,6 +36,7 @@ module.exports = {
   getSharedItinerariesForUser: getSharedItinerariesForUser,
   shareItinerary: shareItinerary,
   downloadItineraryGpx: downloadItineraryGpx,
+  downloadItineraryKml: downloadItineraryKml,
   updateItinerarySharesActiveStates: updateItinerarySharesActiveStates,
   deleteItinerarySharesForShareList: deleteItinerarySharesForShareList,
   getItineraryWaypointCount: getItineraryWaypointCount,
@@ -65,8 +66,27 @@ module.exports = {
   getItineraryRoutesForUser: getItineraryRoutesForUser,
   deleteItineraryUploads: deleteItineraryUploads,
   getWaypointSymbols: getWaypointSymbols,
-  getGeoreferenceFormats: getGeoreferenceFormats
+  getGeoreferenceFormats: getGeoreferenceFormats,
+  unitTests: {formatKmlSnippetDate: formatKmlSnippetDate}
 };
+
+function formatKmlSnippetDate(date) {
+  var s, dtf, parts;
+  dtf = new Intl.DateTimeFormat('en-GB', {
+    localeMatcher: 'lookup',
+    formatMatcher: 'basic',
+    weekday: 'short', month: 'short', day: '2-digit',
+    hour12: false,
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+    year: 'numeric'});
+  s = dtf.format(date);
+  parts = /^(\D{3}),?\s+(\D+)\s+(\d+),?\s+(\d+),?\s+(.*)$/.exec(s);
+  if (parts.length > 0) {
+    return parts[1] + ' ' + parts[2] + ' ' + Number(parts[3]) + ' ' + parts[5] + ' ' + parts[4];
+  } else {
+    return s;
+  }
+}
 
 function getItinerary(username, id, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
@@ -877,6 +897,337 @@ function downloadItineraryGpx(username, itineraryId, params, callback) {
                     }); // forEach track
                   }
                   callback(null, root.end({pretty: false}));
+                });
+              }
+            });
+          }
+        });
+      }
+    }
+  });
+}
+
+function writeKmlStyles(doc, routes, waypoints, tracks) {
+  var trackPngUrl = 'http://earth.google.com/images/kml-icons/track-directional/track-none.png',
+      waypointPngUrl = 'http://maps.google.com/mapfiles/kml/pal4/icon61.png';
+  if (Array.isArray(routes) && routes.length > 0) {
+    doc.com('Normal route style')
+      .e('Style', {'id': 'route_n'})
+      .e('IconStyle').ele('Icon')
+      .e('href', null, trackPngUrl);
+    doc.com('Highlighted route style')
+      .e('Style', {'id': 'route_h'})
+      .e('IconStyle')
+      .e('scale', null, 1.2)
+      .insertAfter('Icon')
+      .e('href', null, trackPngUrl);
+    doc.e('StyleMap', {'id': 'route'})
+      .e('Pair')
+      .e('key', null, 'normal')
+      .insertAfter('styleUrl', null, '#route_n')
+      .up().up()
+      .e('Pair')
+      .e('key', null, 'highlight')
+      .insertAfter('styleUrl', null, '#route_h');
+  }
+  if (Array.isArray(tracks) && tracks.length > 0) {
+    doc.com('Normal track style')
+      .e('Style', {'id':'track_n'})
+      .e('IconStyle')
+      .e('scale', null, '.5')
+      .insertAfter('Icon')
+      .e('href', null, trackPngUrl)
+      .up().up()
+      .insertAfter('LabelStyle')
+      .e('scale', null, 0);
+    doc.com('Highlighted track style')
+      .e('Style', {'id':'track_h'})
+      .e('IconStyle')
+      .e('scale', null, 1.2)
+      .insertAfter('Icon')
+      .e('href', null, trackPngUrl);
+    doc.e('StyleMap', {'id': 'track'})
+      .e('Pair')
+      .e('key', null, 'normal')
+      .insertAfter('styleUrl', null, '#track_n')
+      .up().up()
+      .e('Pair')
+      .e('key', null, 'highlight')
+      .insertAfter('styleUrl', null, '#track_h');
+  }
+
+  doc.com('Normal waypoint style')
+    .e('Style', {'id':'waypoint_n'})
+    .e('IconStyle')
+    .e('Icon')
+    .e('href', null, waypointPngUrl);
+  doc.com('Highlighted waypoint style')
+    .e('Style', {'id':'waypoint_h'})
+    .e('IconStyle')
+    .e('scale', null, 1.2)
+    .insertAfter('Icon')
+    .e('href', null, waypointPngUrl);
+  doc.e('StyleMap', {'id': 'waypoint'})
+    .e('Pair')
+    .e('key', null, 'normal')
+    .insertAfter('styleUrl', null, '#waypoint_n')
+    .up().up()
+    .e('Pair')
+    .e('key', null, 'highlight')
+    .insertAfter('styleUrl', null, '#waypoint_h');
+}
+
+function pointToCoordinateString(p) {
+  return p.lng.toFixed(6) + ',' +
+    p.lat.toFixed(6) +
+    (p.altitude ? ',' + Number(p.altitude).toFixed(2) : '');
+}
+
+function speedText(kmh) {
+  var speed, units;
+  if (kmh >= 1) {
+    speed = kmh;
+    units = 'km/hour';
+  } else if (kmh) {
+    speed = kmh * 1000;
+    units = 'meters/hour';
+  } else {
+    speed = null;
+    units = null;
+  }
+  return speed.toFixed(1) + ' ' + units;
+}
+
+function distanceText(km) {
+  var dist, units;
+  if (km >= 1) {
+    dist = km;
+    units = 'km';
+  } else if (km) {
+    dist = km * 1000;
+    units = 'meters';
+  } else {
+    dist = null;
+    units = null;
+  }
+  return dist.toFixed(1) + ' ' + units;
+}
+
+function writeKmlWaypointsFolder(doc, waypoints) {
+  var folder, placemark, count;
+  if (waypoints && Array.isArray(waypoints) && waypoints.length > 0) {
+    folder = doc.e('Folder');
+    folder.e('name', null, 'Waypoints');
+    count = 0;
+    waypoints.forEach(function(wpt) {
+      placemark = folder.e('Placemark');
+      placemark.e('name', wpt.name ? wpt.name : 'WPT: ' + wpt.id);
+      if (wpt.comment && wpt.comment.length > 0) {
+        placemark.e('description', null, wpt.comment);
+      }
+      if (wpt.time) {
+        placemark.e('TimeStamp').e('when', null, wpt.time.toISOString());
+      }
+      placemark.e('styleUrl', null, '#waypoint')
+        .insertAfter('Point')
+        .e('coordinates', null, pointToCoordinateString(wpt));
+    });
+  }
+}
+
+function writeKmlRoutesFolder(doc, routes) {
+  var folder, folder2, folder3, placemark, coords, styleStr, lstr, count;
+  if (Array.isArray(routes) && routes.length > 0) {
+    folder = doc.e('Folder');
+    folder.e('name', null, 'Routes');
+    routes.forEach(function(r) {
+      folder2 = folder.e('Folder');
+      // winston.debug('Route:', JSON.stringify(r, ['id', 'name', 'distance', 'ascent', 'descent', 'lowest', 'highest', 'bounds'], 4));
+      folder2.e('name', null, (r.name ? r.name : 'RTE: ' + r.id));
+      folder3 = folder2.e('Folder');
+      folder3.e('name', null, 'Points');
+      count = 0;
+      r.points.forEach(function(p) {
+        folder3.e('Placemark')
+          .e('name', null, ('00' + (++count)).slice(-3))
+          .insertAfter('snippet')
+          .insertAfter('description')
+          .dat('\n<table>' + '\n' +
+               '<tr><td>Longitude: ' + p.lng.toFixed(6) + ' </td></tr>\n' +
+               '<tr><td>Latitude: ' + p.lat.toFixed(6) + ' </td></tr>\n' +
+               (p.altitude ? '<tr><td>Altitude: ' + Number(p.altitude).toFixed(3) + ' meters </td></tr>\n' : '') +
+               // '<tr><td>Heading: ' + (p.bearing ? Number(p.bearing).toFixed(1) : '359.5') + ' </td></tr>\n' +
+               '</table>\n')
+          .insertAfter('LookAt')
+          .e('longitude', null, p.lng.toFixed(6))
+          .insertAfter('latitude', null, p.lat.toFixed(6))
+          .insertAfter('tilt', null, 66)
+          .up().insertAfter('styleUrl', null, '#route')
+          .insertAfter('Point')
+          .e('coordinates', null, pointToCoordinateString(p));
+        }); // forEach point
+
+      // LineString/coordinates section
+      placemark = folder2.e('Placemark')
+        .e('name', null, 'Path')
+        .insertAfter('styleUrl', null, '#lineStyle');
+      styleStr = placemark.insertAfter('Style');
+      styleStr.e('LineStyle')
+        .e('color', null, 'ff0000ff');
+        lstr = styleStr.insertAfter('LineString')
+          .e('tessellate', null, '1');
+        coords = '\n';
+        r.points.forEach(function(p) {
+          coords += pointToCoordinateString(p) + '\n';
+        }); // forEach point
+        lstr.insertAfter('coordinates', null, coords);
+
+    }); // foreach route
+
+  }
+}
+
+function writeKmlTracksFolder(doc, tracks) {
+  var speed, speedUnits, folder, folder2, folder3, coords, mgstr, lstr, count;
+  if (tracks && Array.isArray(tracks) && tracks.length > 0) {
+    folder = doc.e('Folder');
+    folder.e('name', null, 'Tracks');
+    tracks.forEach(function(t) {
+      folder2 = folder.e('Folder');
+      // winston.debug('Track:', JSON.stringify(t, ['id', 'name', 'distance', 'ascent', 'descent', 'lowest', 'highest', 'startTime', 'endTime', 'minSpeed', 'maxSpeed', 'avgSpeed', 'bounds'], 4));
+      folder2.e('name', null, (t.name ? t.name : 'TRK: ' + t.id))
+        .insertAfter('snippet')
+        .insertAfter('description')
+        .dat('<table>\n' +
+             '<tr><td><b>Distance</b> ' + distanceText(t.distance) + ' </td></tr>\n' +
+             '<tr><td><b>Min Alt</b> ' +  t.lowest.toFixed(3) + ' meters </td></tr>\n' +
+             '<tr><td><b>Max Alt</b> ' + t.highest.toFixed(3) + ' meters </td></tr>\n' +
+             '<tr><td><b>Max Speed</b> ' + speedText(t.maxSpeed) + ' </td></tr>\n' +
+             '<tr><td><b>Avg Speed</b> ' + speedText(t.avgSpeed) + ' </td></tr>\n' +
+             '<tr><td><b>Start Time</b> ' + t.startTime.toISOString() + '</td></tr>\n' +
+             '<tr><td><b>End Time</b> ' + t.endTime.toISOString() + '</td></tr>\n' +
+             '</table>')
+        .insertAfter('TimeSpan')
+        .e('begin', null, t.startTime.toISOString())
+        .insertAfter('end', null, t.endTime.toISOString());
+      folder3 = folder2.e('Folder');
+      folder3.e('name', null, 'Points');
+      count = 0;
+      t.segments.forEach(function(seg) {
+        seg.points.forEach(function(p) {
+          folder3.e('Placemark')
+            .e('name', null, t.name + '-' + count++)
+            .insertAfter('snippet')
+            .insertAfter('description')
+            .dat('\n<table>' + '\n' +
+                 '<tr><td>Longitude: ' + p.lng.toFixed(6) + ' </td></tr>\n' +
+                 '<tr><td>Latitude: ' + p.lat.toFixed(6) + ' </td></tr>\n' +
+                 '<tr><td>Altitude: ' + Number(p.altitude).toFixed(3) + ' meters </td></tr>\n' +
+                 (p.speed ? ('<tr><td>Speed: ' + speedText(p.speed) + ' </td></tr>\n') : '') +
+                 '<tr><td>Heading: ' + (p.bearing ? Number(p.bearing).toFixed(1) : '359.5') + ' </td></tr>\n' +
+                 '<tr><td>Time: ' + p.time.toISOString() + ' </td></tr>\n' +
+                 '</table>\n')
+            .insertAfter('LookAt')
+            .e('longitude', null, p.lng.toFixed(6))
+            .insertAfter('latitude', null, p.lat.toFixed(6))
+            .insertAfter('tilt', null, 66)
+            .up().insertAfter('TimeStamp')
+            .e('when', null, p.time.toISOString())
+            .up().insertAfter('styleUrl', null, '#track')
+            .insertAfter('Point')
+            .e('coordinates', null, pointToCoordinateString(p));
+        }); // forEach segment point
+      }); // foreach segment
+
+      // LineString/coordinates section
+      mgstr = folder2.e('Placemark')
+        .e('name', null, 'Path')
+        .insertAfter('styleUrl', null, '#lineStyle')
+        .insertAfter('Style')
+        .e('LineStyle')
+        .e('color', null, 'ff0000ff')
+        .up().up().insertAfter('MultiGeometry');
+
+      t.segments.forEach(function(seg) {
+        lstr = mgstr.e('LineString')
+          .e('tessellate', null, '1');
+        coords = '\n';
+        seg.points.forEach(function(p) {
+          coords += pointToCoordinateString(p) + '\n';
+        }); // forEach point
+        lstr.insertAfter('coordinates', null, coords);
+      }); // forEach segment
+
+    }); // foreach track
+
+  }
+}
+
+function downloadItineraryKml(username, itineraryId, params, callback) {
+  callback = typeof callback === 'function' ? callback : function() {};
+  var root, doc, tmpFolder, tmpFolder2, tmpFolder3, lookAt,
+      bounds, center, timeSpan, range;
+  db.confirmItinerarySharedAccess(username, itineraryId, function(err, result) {
+    if (utils.handleError(err, callback)) {
+      if (result !== true) {
+        callback(new Error('Access denied'));
+      } else {
+        getWaypoints(itineraryId, params.waypoints, function(err, waypoints) {
+          if (utils.handleError(err, callback)) {
+            getRoutes(itineraryId, params.routes, function(err, routes) {
+              if (utils.handleError(err, callback)) {
+                getTracks(itineraryId, params.tracks, function(err, tracks) {
+                  utils.fillDistanceElevationForRoutes(routes, {calcPoints: true});
+                  utils.fillDistanceElevationForTracks(tracks, {calcPoints: true});
+                  timeSpan = utils.getTimeSpanForWaypoints(waypoints);
+                  // NOTE: bounds has lng/lat order, not lat/lng
+                  bounds = utils.getWaypointBounds(waypoints);
+                  bounds = utils.getBounds([bounds, routes.bounds, tracks.bounds]);
+                  center = utils.getCenter(bounds);
+                  timeSpan = utils.getTimeSpan([timeSpan, routes, tracks]);
+                  // length of the diagonal of the bounding box in kms
+                  range = utils.getRange(bounds);
+                  if (range < 1) {
+                    range = 1;
+                  }
+                  root = builder.create('kml', {version: '1.0', encoding: 'UTF-8'});
+                  root.a('xmlns', 'http://www.opengis.net/kml/2.2')
+                    .a('xmlns:gx', 'http://www.google.com/kml/ext/2.2');
+                  doc = root.e('Document');
+                  doc.e('name', null, 'GPS device');
+                  doc.e('snippet', null, 'Created ' + formatKmlSnippetDate(new Date()));
+
+                  lookAt = doc.e('LookAt');
+                  if (timeSpan.startTime) {
+                      lookAt.e('gx:TimeSpan')
+                      .e('begin', null, timeSpan.startTime.toISOString())
+                      .insertAfter('end', null, timeSpan.endTime.toISOString());
+                  }
+
+                  if (Array.isArray(center)) {
+                    lookAt.e('longitude', center[0].toFixed(6))
+                      .insertAfter('latitude', center[1].toFixed(6))
+                      .insertAfter('range', (range * 1300).toFixed(6));
+                  } else {
+                    lookAt.e('longitude', Number(0).toFixed(6))
+                      .insertAfter('latitude', Number(0).toFixed(6))
+                      .insertAfter('range', Number(26000000).toFixed(6));
+                  }
+
+                  writeKmlStyles(doc, routes, waypoints, tracks);
+
+                  if (Array.isArray(routes) && routes.length > 0) {
+                    doc.e('Style', {'id':'lineStyle'})
+                      .e('LineStyle')
+                      .e('color', null, '99ffac59')
+                      .insertAfter('width', null, 6);
+                  }
+
+                  writeKmlWaypointsFolder(doc, waypoints);
+                  writeKmlTracksFolder(doc, tracks);
+                  writeKmlRoutesFolder(doc, routes);
+
+                  callback(null, root.end({pretty: true}));
                 });
               }
             });

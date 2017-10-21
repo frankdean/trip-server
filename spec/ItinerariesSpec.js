@@ -28,6 +28,14 @@ describe('itinerary.js', function() {
   var testUserId = 42;
   var err, itinerary = {};
 
+  describe('KML snippet date formatter', function() {
+
+    it('should match the format exported by Google Earth in the document snippet', function() {
+      expect(Itineraries.unitTests.formatKmlSnippetDate(new Date(2017, 8, 2, 13, 30, 45))).toEqual('Sat Sep 2 13:30:45 2017');
+    });
+
+  });
+
   describe('saveItinerary()', function() {
 
     describe('update an itinerary', function() {

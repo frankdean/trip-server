@@ -60,9 +60,15 @@ describe('utils.js', function() {
     [51.63165734945, -5.086669921875]
   ];
 
+  var testWaypoints = [
+    {"id":"001","lng":"57.7276192162149","lat":"-6.39404296875","ele":"369.8", time: "2017-09-21T13:54:00.000Z"},
+    {"id":"002","lng":"57.4449494358398","lat":"-7.00927734375","ele":"356.4", time: "2017-09-18T14:00:00.000Z"},
+    {"id":"003","lng":"57.0407298383609","lat":"-5.95458984375","ele":"360.4"}
+  ];
+
   var track1 = [
-    {"lng":"58.6083336607763","lat":"-5.03173828125","ele":"389.3"},
-    {"lng":"57.3027896563501","lat":"-5.77880859375","ele":"384.4"},
+    {"lng":"58.6083336607763","lat":"-5.03173828125","ele":"389.3", time: "2017-09-18T13:54:00.000Z"},
+    {"lng":"57.3027896563501","lat":"-5.77880859375","ele":"384.4", time: "2017-09-18T14:00:00.000Z"},
     {"lng":"57.7276192162149","lat":"-6.39404296875","ele":"369.8"},
     {"lng":"57.4449494358398","lat":"-7.00927734375","ele":"356.4"},
     {"lng":"57.0407298383609","lat":"-5.95458984375","ele":"360.4"},
@@ -130,6 +136,41 @@ describe('utils.js', function() {
       "name":"Test Track"
     }
   ];
+  var myTrack = '{"id":1037,"name":"Pirbright track","color":"Red","htmlcolor":"red","distance":"12.14","ascent":"163.9","descent":"208.1","lowest":"32.3","highest":"94.4","segments":[';
+  var testTracks2 = [
+    {
+      "id": "001",
+      "name":"Test Track 1",
+      "segments": [
+        {"points": track1},
+      ]
+    },
+    {
+      "id": "002",
+      "name":"Test Track 2",
+      "segments": [
+        {"points": track2},
+      ]
+    },
+    {
+      "id": "003",
+      "name":"Test Track 3",
+      "segments": [
+        {"points": track3}
+      ]
+    },
+  ];
+
+  var testBounds = [
+    [58.6083336607763, -5.03173828125, 57.3027896563501, -5.77880859375],
+    [57.7276192162149, -6.39404296875, 57.4449494358398, -7.00927734375],
+    undefined,
+    null,
+    [],
+    [57.0407298383609, -5.95458984375, 56.4139013760068, -6.52587890625],
+    [56.2433499241053, -5.91064453125, 56.6803737895014, -5.20751953125],
+    [55.7765730186677, -6.39404296875, 55.5534954584537, -6.04248046875]
+  ];
 
   var testBadRoutes = [{"points":[{"lat":"51","lng":"-1","ele":"rubbish"},
                                   {"lat":"52","lng":"-21","ele":"rubbish"}]},
@@ -141,10 +182,6 @@ describe('utils.js', function() {
                                   {"lat":"52","lng":"-21","ele":"rubbish"},
                                   {"lat": "53.5","lng":"-10.5","ele":"99"}]}];
 
-  it('should calculate the length of a set or coordinates', function() {
-    expect(Utils.unitTests.calculateDistance(testCoords)).toBeCloseTo(2303.30, 2);
-  });
-
   it('should calculate the length of a number of routes', function()  {
     Utils.fillDistanceElevationForRoutes(testRoutes);
     var r = testRoutes[0];
@@ -155,8 +192,20 @@ describe('utils.js', function() {
     expect(r.descent).toBeCloseTo(58.6, 2);
   });
 
+  it('should calculate the timespan for a number of routes', function()  {
+    Utils.fillDistanceElevationForRoutes(testRoutes, {calcPoints: true});
+    expect(testRoutes.startTime).toBeDefined();
+    expect(testRoutes.endTime).toBeDefined();
+    expect(new Date(testRoutes.startTime)).toEqual(new Date(track1[0].time));
+    expect(new Date(testRoutes.endTime)).toEqual(new Date(track1[1].time));
+  });
+
+  it('should calculate the bounds of a number of routes', function()  {
+    Utils.fillDistanceElevationForRoutes(testRoutes, {calcPoints: true});
+    expect(testRoutes.bounds).toEqual([ '51.63165734945', '-2.845458984375', '58.6083336607763', '-7.00927734375' ]);
+  });
+
   it('should calculate the length of a number of tracks', function()  {
-    // winston.debug('Track: %j', testTracks);
     Utils.fillDistanceElevationForTracks(testTracks);
     var t = testTracks[0];
     expect(t.distance).toBeCloseTo(2303.30, 2);
@@ -166,36 +215,40 @@ describe('utils.js', function() {
     expect(t.descent).toBeCloseTo(58.6, 2);
   });
 
-  it('should calculate elevation data for a path', function() {
-    var r = testRoutes[0];
-    Utils.calculateElevationData(r);
-    // expect(r.distance).toBeCloseTo(3.71, 2);
-    expect(r.lowest).toBeCloseTo(351.40, 2);
-    expect(r.highest).toBeCloseTo(389.3, 2);
-    expect(r.ascent).toBeCloseTo(52, 2);
-    expect(r.descent).toBeCloseTo(58.6, 2);
+  it('should fill in individual bearing, distance and speed attributes', function()  {
+    var p2;
+    Utils.fillDistanceElevationForTracks(testTracks, {calcPoints: true});
+    var t = testTracks[0];
+    expect(t.distance).toBeCloseTo(2303.30, 2);
+    expect(t.lowest).toBeCloseTo(351.40, 2);
+    expect(t.highest).toBeCloseTo(389.3, 2);
+    expect(t.ascent).toBeCloseTo(52, 2);
+    expect(t.descent).toBeCloseTo(58.6, 2);
+    expect(t.minSpeed).toBeCloseTo(1667.49, 2);
+    expect(t.maxSpeed).toBeCloseTo(1667.49, 2);
+    expect(t.avgSpeed).toBeCloseTo(23033.01, 2);
+    expect(t.startTime.toISOString()).toEqual("2017-09-18T13:54:00.000Z");
+    expect(t.endTime.toISOString()).toEqual("2017-09-18T14:00:00.000Z");
+    p2 = t.segments[0].points[1];
+    expect(p2.bearing).toBeCloseTo(240.05, 2);
+    expect(p2.distance).toBeCloseTo(166.75, 2);
+    expect(p2.speed).toBeCloseTo(1667.49, 2);
+    expect(testTracks.bounds).toEqual(["51.63165734945","-2.845458984375","58.6083336607763","-7.00927734375"]);
   });
 
-  it('should calculate elevation data for a path', function() {
-    var r = testRoutes[1];
-    Utils.calculateElevationData(r);
-    expect(r.lowest).toBeCloseTo(9900, 0);
-    expect(r.highest).toBeCloseTo(10300, 0);
-    expect(r.ascent).toBeCloseTo(400, 0);
-    expect(r.descent).toBeCloseTo(500, 0);
+  it('should calculate the timespan for a number of routes', function()  {
+    Utils.fillDistanceElevationForTracks(testTracks2, {calcPoints: true});
+    var t = testTracks2;
+    expect(t.startTime).toBeDefined();
+    expect(t.endTime).toBeDefined();
+    expect(new Date(t.startTime)).toEqual(new Date(track1[0].time));
+    expect(new Date(t.endTime)).toEqual(new Date(track1[1].time));
   });
 
-  it('should calculate elevation data for a reversed path', function() {
-    var r = {};
-    r.points = [];
-    r.points = testRoutes[0].points.slice();
-    r.points.reverse();
-    Utils.calculateElevationData(r);
-    // expect(r.distance).toBeCloseTo(3.71, 2);
-    expect(r.lowest).toBeCloseTo(351.40, 2);
-    expect(r.highest).toBeCloseTo(389.3, 2);
-    expect(r.ascent).toBeCloseTo(58.6, 2);
-    expect(r.descent).toBeCloseTo(52, 2);
+  it('should calculate the bounds of a number of tracks', function()  {
+    var p2;
+    Utils.fillDistanceElevationForTracks(testTracks2, {calcPoints: true});
+    expect(testTracks2.bounds).toEqual(["51.63165734945","-2.845458984375","58.6083336607763","-7.00927734375"]);
   });
 
   it('should calculate the length of a single bad route', function()  {
@@ -209,7 +262,7 @@ describe('utils.js', function() {
 
   it('should calculate the length of another single bad route', function()  {
     Utils.fillDistanceElevationForPath(testBadRoutes[2]);
-    expect(testBadRoutes[2].distance).toEqual(NaN);
+    expect(testBadRoutes[2].distance).toBeCloseTo(725.62, 2);
     expect(testBadRoutes[2].lowest).toBeCloseTo(99, 2);
     expect(testBadRoutes[2].highest).toBeCloseTo(99, 2);
     expect(testBadRoutes[2].ascent).toBeCloseTo(0, 2);
@@ -226,11 +279,77 @@ describe('utils.js', function() {
     expect(testBadRoutes[1].ascent).toBeCloseTo(50, 2);
     expect(testBadRoutes[1].descent).toBeCloseTo(0, 2);
 
-    expect(testBadRoutes[2].distance).toEqual(NaN);
+    expect(testBadRoutes[2].distance).toBeCloseTo(725.62, 2);
     expect(testBadRoutes[2].lowest).toBeCloseTo(99, 2);
     expect(testBadRoutes[2].highest).toBeCloseTo(99, 2);
     expect(testBadRoutes[2].ascent).toBeCloseTo(0, 2);
     expect(testBadRoutes[2].descent).toBeCloseTo(0, 2);
+  });
+
+  it('should calculate the timespan for a number of objects', function() {
+    var testRange = [
+      {startTime: new Date(2017, 0, 14, 12, 32, 0)},
+      {endTime: new Date(2017, 0, 31, 14, 32, 0)},
+      {startTime: new Date(2017, 0, 12, 12, 32, 0), endTime: new Date(2017, 0, 31, 12, 32, 0)}
+    ],
+        result = Utils.getTimeSpan(testRange);
+    expect(result.startTime).toBeDefined();
+    expect(result.endTime).toBeDefined();
+    expect(new Date(result.startTime)).toEqual(testRange[2].startTime);
+    expect(new Date(result.endTime)).toEqual(testRange[1].endTime);
+  });
+
+  it('should calculate the timespan of a number of waypoints', function() {
+    var result = Utils.getTimeSpanForWaypoints(testWaypoints);
+    expect(new Date(result.startTime)).toEqual(new Date(testWaypoints[1].time));
+    expect(new Date(result.endTime)).toEqual(new Date(testWaypoints[0].time));
+  });
+
+  it('should return a timespan for one waypoint', function() {
+    var result = Utils.getTimeSpanForWaypoints([testWaypoints[0]]);
+    expect(new Date(result.startTime)).toEqual(new Date(testWaypoints[0].time));
+    expect(new Date(result.endTime)).toEqual(new Date(testWaypoints[0].time));
+  });
+
+  it('should not return a timespan where no waypoints have a time defined', function() {
+    var result = Utils.getTimeSpanForWaypoints([testWaypoints[2]]);
+    expect(result.startTime).not.toBeDefined();
+    expect(result.endTime).not.toBeDefined();
+  });
+
+  it('should calculate the bounds of a number of waypoints', function() {
+    var result = Utils.getWaypointBounds(testWaypoints);
+    expect(result).toEqual([ '57.0407298383609', '-5.95458984375', '57.7276192162149', '-7.00927734375' ]);
+  });
+
+  it('should calculate the bounds of a single waypoint', function() {
+    var result = Utils.getWaypointBounds([testWaypoints[0]]);
+    expect(result).toEqual([ '57.7276192162149', '-6.39404296875', '57.7276192162149', '-6.39404296875' ]);
+  });
+
+  it('should calculate the range for a set of bounds', function() {
+    var result = Utils.getRange(testBounds[0]);
+    expect(result).toBeCloseTo(166.75, 2);
+  });
+
+  it('should calculate the bounds of a number of bounds', function() {
+    var result = Utils.getBounds(testBounds);
+    expect(result).toEqual([ 55.5534954584537, -7.00927734375, 58.6083336607763, -5.03173828125 ]);
+  });
+
+  it('should return null for bounds if bounds are empty', function() {
+    var result = Utils.getBounds([null, null, null, null]);
+    expect(result).toBeNull();
+  });
+
+  it('should calculate the center of a bounds object', function() {
+    var result = Utils.getCenter(testBounds[0]);
+    expect(result).toEqual([ 57.9555616585632, -5.4052734375 ]);
+  });
+
+  it('should return null for center if bounds are empty', function() {
+    var result = Utils.getCenter([null, null, null, null]);
+    expect(result).toBeNull();
   });
 
 });

@@ -25,10 +25,13 @@
     "lint": "jshint *.js spec/*.js"
   },
   "dependencies": {
-    "@turf/distance": "3.10.3",
-    "@turf/helpers": "3.10.3",
-    "@turf/invariant": "3.10.0",
-    "@turf/line-distance": "3.10.3",
+    "@turf/bbox": "^4.7.3",
+    "@turf/bbox-polygon": "^4.7.3",
+    "@turf/bearing": "^4.7.3",
+    "@turf/center": "^4.7.3",
+    "@turf/distance": "^4.7.3",
+    "@turf/helpers": "^4.7.3",
+    "@turf/invariant": "^4.7.3",
     "autoquit": "github:frankdean/node-autoquit#0.1.7-rc.2",
     "bcrypt": "^1.0.3",
     "formidable": "^1.1.1",

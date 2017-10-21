@@ -38,7 +38,7 @@ var tracks = require('./tracks');
 var reports = require('./reports');
 
 var myApp = myApp || {};
-myApp.version = '0.14.1';
+myApp.version = '0.15.0-rc.1';
 module.exports = myApp;
 
 winston.level = config.log.level;
@@ -804,35 +804,6 @@ myApp.handleGetItineraryTrackSegmentWithPaging = function(req, res, token) {
   });
 };
 
-myApp.handleGetItineraryTrackSegmentWithPaging = function(req, res, token) {
-  var match, itineraryId, segmentId;
-  req.on('data', function(chunk) {
-  }).on('end', function() {
-    myApp.validatePagingParameters(req, function(err, offset, limit) {
-      if (myApp.handleError(err, res)) {
-        myApp.validateHeaders(req.headers, function(err) {
-          if (myApp.handleError(err, res)) {
-            match =  /\/itinerary\/(\d+)\/track\/\d+\/segment\/(\d+)(?:\?.*)?$/.exec(req.url);
-            itineraryId = match ? match[1] : undefined;
-            segmentId = match ? match[2] : undefined;
-            itineraries.getItineraryTrackSegmentForUser(
-              token.sub,
-              itineraryId,
-              segmentId,
-              offset,
-              limit,
-              function(err, track) {
-                myApp.respondWithData(err, res, track);
-              });
-          } else {
-            myApp.handleError(new Error('Invalid parameters'), res);
-          }
-        });
-      }
-    });
-  });
-};
-
 myApp.handleGetItineraryTrackSegmentWithoutPaging = function(req, res, token) {
   var match, itineraryId, segmentId;
   req.on('data', function(chunk) {
@@ -1245,13 +1216,14 @@ myApp.handleLogPoint = function(req, res) {
 };
 
 myApp.handlePostLogPoint = function(req, res) {
-  var q, body = [];
+  var body = [];
   req.on('data', function(chunk) {
     body.push(chunk);
   }).on('end', function() {
     if (! /^|;application\/x-www-form-urlencoded;|$/.test(req.headers['content-type'])) {
       myApp.handleError(new BadRequestError('handlePostLogPoint() unexpected content-type: ' + req.headers['content-type']), res);
     } else {
+      var q;
       body = Buffer.concat(body).toString();
       if (validator.isJSON(body)) {
         winston.debug('Received JSON body');
@@ -1262,7 +1234,7 @@ myApp.handlePostLogPoint = function(req, res) {
           q = qs.parse(body);
         } else {
           winston.debug('Point POSTed without body, trying to extract any query parameters from request URL of: %j', req.url);
-          var q = url.parse(req.url, true).query;
+          q = url.parse(req.url, true).query;
         }
       }
       if (q.decodenote === 'true' && q.note && q.note.length > 0) {
@@ -1333,6 +1305,31 @@ myApp.handleDownloadItineraryGpx = function(req, res, token) {
           if (myApp.handleError(err, res)) {
             res.setHeader('Content-type', 'application/gpx+xml');
             res.setHeader('Content-Disposition', 'attachment; filename=trip.gpx');
+            res.statusCode = 200;
+            res.end(result);
+          }
+        });
+      }
+    });
+  });
+};
+
+myApp.handleDownloadItineraryKml = function(req, res, token) {
+  var body = [];
+  req.on('data', function(chunk) {
+    body.push(chunk);
+  }).on('end', function() {
+    body = Buffer.concat(body).toString();
+    myApp.validateHeadersAndBody(req.headers, body, function(err) {
+      if (myApp.handleError(err, res)) {
+        var match, itineraryId;
+        match = /\/download\/itinerary\/(\d+)\/kml(?:\/)?([!-\.0->@-~]+)?(\?.*)?$/.exec(req.url);
+        itineraryId = match ? match[1] : undefined;
+        var params = JSON.parse(body);
+        itineraries.downloadItineraryKml(token.sub, itineraryId, params, function(err, result) {
+          if (myApp.handleError(err, res)) {
+            res.setHeader('Content-type', 'application/vnd.google-earth.kml+xml');
+            res.setHeader('Content-Disposition', 'attachment; filename=trip.kml');
             res.statusCode = 200;
             res.end(result);
           }
@@ -1504,6 +1501,8 @@ myApp.handleAuthenticatedRequests = function(req, res, token) {
     myApp.handleDownloadLocations(req, res, token);
   } else if (req.method === 'POST' && /\/download\/itinerary\/(\d+)\/gpx(?:\/)?([!-\.0->@-~]+)?(\?.*)?$/.test(req.url)) {
     myApp.handleDownloadItineraryGpx(req, res, token);
+  } else if (req.method === 'POST' && /\/download\/itinerary\/(\d+)\/kml(?:\/)?([!-\.0->@-~]+)?(\?.*)?$/.test(req.url)) {
+    myApp.handleDownloadItineraryKml(req, res, token);
   } else if (req.method === 'PUT' && /\/download\/itinerary\/(\d+)\/delete-gpx(?:\/)?(?:\?.*)?$/.test(req.url)) {
     myApp.handleDeleteItineraryUploads(req, res, token);
   } else if (req.method === 'GET' && /\/location\/shares\/?(\?.*)?$/.test(req.url)) {

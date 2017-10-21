@@ -18,19 +18,31 @@
 'use strict';
 
 var winston = require('winston');
-
-var turfLineDistance = require('@turf/line-distance');
+var turfHelpers = require('@turf/helpers');
+var turf = {
+  bbox: require('@turf/bbox'),
+  bearing: require('@turf/bearing'),
+  center: require('@turf/center'),
+  distance: require('@turf/distance'),
+  bboxPolygon: require('@turf/bbox-polygon'),
+  helpers: turfHelpers,
+  featureCollection: turfHelpers.featureCollection,
+  lineString: turfHelpers.lineString,
+  point: turfHelpers.point
+};
 
 module.exports = {
   handleError: handleError,
-  calculateElevationData: calculateElevationData,
   fillDistanceElevationForPath: fillDistanceElevationForPath,
   fillDistanceElevationForTrack: fillDistanceElevationForTrack,
   fillDistanceElevationForTracks: fillDistanceElevationForTracks,
   fillDistanceElevationForRoutes: fillDistanceElevationForRoutes,
-  unitTests: {
-    calculateDistance: calculateDistance
-  }
+  getTimeSpanForWaypoints: getTimeSpanForWaypoints,
+  getTimeSpan: getTimeSpan,
+  getWaypointBounds: getWaypointBounds,
+  getBounds: getBounds,
+  getRange: getRange,
+  getCenter: getCenter
 };
 
 function handleError(err, callback) {
@@ -41,45 +53,35 @@ function handleError(err, callback) {
   return true;
 }
 
-function calculateDistance(coords) {
-  var retval,
-      line = {
-        "type": "Feature",
-        "properties": {},
-        "geometry": {
-          "type": "LineString",
-          "coordinates": coords
-        }
-      };
-  try {
-    if (Array.isArray(coords) && coords.length > 0) {
-      retval = turfLineDistance(line);
+function fillDistanceElevationForPath(path, options) {
+  var totalDistance = 0,
+      coords = [],
+      b, d, e, h, lo, lp,
+      asc = 0, desc = 0,
+      p1, p2,
+      t1, t2,
+      totalSpeed = 0,
+      speedCount = 0,
+      startTime,
+      endTime,
+      minSpeed,
+      maxSpeed,
+      prev;
+
+  path.points.forEach(function(pt) {
+    // create array for calculating bounds
+    coords.push([pt.lng, pt.lat]);
+    if (pt.time) {
+      t2 = new Date(pt.time);
+      if (startTime === undefined || t2.getTime() < startTime.getTime()) {
+        startTime = t2;
+      }
+      if (endTime === undefined || t2.getTime() > endTime.getTime()) {
+        endTime = t2;
+      }
     }
-  } catch(e) {
-    winston.error(e);
-  }
-  return retval;
-}
-
-function convertLatLngsToCoords(points) {
-  var coords = [];
-  if (!Array.isArray(points)) {
-    winston.error('utils.js.convertLatLngsToCoords() - Points must be an array');
-    return coords;
-  } else {
-    points.forEach(function(v) {
-      coords.push([v.lng, v.lat]);
-    });
-  }
-  return coords;
-}
-
-function calculateElevationData(path) {
-  var asc = 0,
-      desc = 0,
-      e, h, lo, lp;
-  path.points.forEach(function(p) {
-    e = p.ele ? Number.parseFloat(p.ele) : Number.parseFloat(p.altitude);
+    // elevation data
+    e = pt.ele ? Number.parseFloat(pt.ele) : Number.parseFloat(pt.altitude);
     if (e) {
       if (lp) {
         if (e > lp) {
@@ -96,28 +98,106 @@ function calculateElevationData(path) {
       if (!lo || e < lo) lo = e;
       lp = e;
     }
-  });
+    // distance, speed, bearing
+    if (prev !== undefined) {
+      try {
+        p1 = turf.point([Number(prev.lng), Number(prev.lat)]);
+        p2 = turf.point([Number(pt.lng), Number(pt.lat)]);
+        // distance kilometres
+        d = turf.distance(p1, p2);
+        if (options && options.calcPoints === true) {
+          pt.distance = d;
+        }
+        totalDistance += d;
+        if (options && options.calcPoints === true) {
+          // speed km/h
+          if (prev.time && pt.time && pt.distance) {
+            t1 = new Date(prev.time);
+            t2 = new Date(pt.time);
+            pt.speed = pt.distance / ((t2.getTime() - t1.getTime()) / 1000 / 3600);
+            if (minSpeed === undefined || pt.speed < minSpeed) {
+              minSpeed = pt.speed;
+            }
+            if (maxSpeed === undefined || pt.speed > maxSpeed) {
+              maxSpeed = pt.speed;
+            }
+            totalSpeed += pt.speed;
+          }
+          // bearing degrees
+          // Convert to angle (version 4.7.3)
+          pt.bearing = turfHelpers.bearingToAngle(turf.bearing(p1, p2));
+        } // if options.calcPoints
+      } catch (e) {
+        winston.warn('Error converting path points'/*, e*/);
+      }
+    }
+    speedCount++;
+    prev = pt;
+  });  // forEach
+
+  // bounds
+  if (options && options.calcPoints === true) {
+    path.bounds = turf.bbox(turf.lineString(coords));
+  }
+
+  // elevation summary
   if (lp) {
     path.highest = h;
     path.lowest = lo;
     path.ascent = asc;
     path.descent = desc;
   }
+
+  // distance summary
+  path.distance = totalDistance;
+
+  // speed, bearing summary
+  if (options && options.calcPoints === true) {
+    path.minSpeed = minSpeed;
+    path.maxSpeed = maxSpeed;
+    if (speedCount > 0 && startTime && endTime) {
+      // winston.debug('Total distance: %d kilometres', totalDistance);
+      // winston.debug('Time %d seconds', (endTime.getTime() - startTime.getTime()) / 1000);
+      // winston.debug('Time %d hours', (endTime.getTime() - startTime.getTime()) / 1000 / 3600);
+      path.avgSpeed = totalDistance / ((endTime.getTime() - startTime.getTime()) / 1000 / 3600);
+      // winston.debug('Average: %d\n', path.avgSpeed);
+    }
+    path.startTime = startTime;
+    path.endTime = endTime;
+  }
+
 }
 
-function fillDistanceElevationForPath(path) {
-  var coords = convertLatLngsToCoords(path.points);
-  path.distance = calculateDistance(coords);
-  calculateElevationData(path);
-}
-
-function fillDistanceElevationForRoutes(routes) {
+function fillDistanceElevationForRoutes(routes, options) {
+  var bounds;
   routes.forEach(function(v) {
-    fillDistanceElevationForPath(v);
+    fillDistanceElevationForPath(v, options);
+    if (options && options.calcPoints === true) {
+      if (bounds === undefined) {
+        bounds = v.bounds;
+      } else {
+        bounds = turf.bbox(
+          turf.featureCollection(
+            [turf.bboxPolygon(bounds),
+             turf.bboxPolygon(v.bounds)]
+          ));
+      }
+    }
+    if (v.startTime &&
+        (routes.startTime === undefined || v.startTime.getTime() < routes.startTime.getTime())) {
+      routes.startTime = v.startTime;
+    }
+    if (v.endTime &&
+        (routes.endTime === undefined || v.endTime.getTime() > routes.endTime.getTime())) {
+      routes.endTime = v.endTime;
+    }
   });
+  if (bounds !== undefined) {
+    routes.bounds = bounds;
+  }
 }
 
-function fillDistanceElevationForTrack(track) {
+function fillDistanceElevationForTrack(track, options) {
   var path;
   path = {};
   path.points = [];
@@ -126,16 +206,136 @@ function fillDistanceElevationForTrack(track) {
       path.points.push(v);
     });
   });
-  fillDistanceElevationForPath(path);
+  fillDistanceElevationForPath(path, options);
+  if (path.bounds) {
+    track.bounds = path.bounds;
+  }
   track.distance = path.distance;
   track.highest = path.highest;
   track.lowest = path.lowest;
   track.ascent = path.ascent;
   track.descent = path.descent;
+  if (options && options.calcPoints === true) {
+    track.startTime = path.startTime;
+    track.endTime = path.endTime;
+    track.minSpeed = path.minSpeed;
+    track.maxSpeed = path.maxSpeed;
+    track.avgSpeed = path.avgSpeed;
+  }
 }
 
-function fillDistanceElevationForTracks(tracks) {
+function fillDistanceElevationForTracks(tracks, options) {
+  var bounds;
   tracks.forEach(function(t) {
-    fillDistanceElevationForTrack(t);
+    fillDistanceElevationForTrack(t, options);
+    if (options && options.calcPoints === true) {
+      if (bounds === undefined) {
+        bounds = t.bounds;
+      } else {
+        bounds = turf.bbox(
+          turf.featureCollection(
+            [turf.bboxPolygon(bounds),
+             turf.bboxPolygon(t.bounds)]
+          ));
+      }
+    }
+    if (t.startTime &&
+        (tracks.startTime === undefined || t.startTime.getTime() < tracks.startTime.getTime())) {
+      tracks.startTime = t.startTime;
+    }
+    if (t.endTime &&
+        (tracks.endTime === undefined || t.endTime.getTime() > tracks.endTime.getTime())) {
+      tracks.endTime = t.endTime;
+    }
   });
+  if (bounds !== undefined) {
+    tracks.bounds = bounds;
+  }
+}
+
+function getTimeSpan(elements) {
+  var s, e;
+  if (elements && Array.isArray(elements)) {
+    elements.forEach(function(v) {
+      if (v.startTime &&
+          (s === undefined || v.startTime.getTime() < s.getTime())) {
+        s = v.startTime;
+      }
+      if (v.endTime &&
+          (e === undefined || v.endTime.getTime() > e.getTime())) {
+        e = v.endTime;
+      }
+    });
+  } else {
+    winston.warn('Invalid elements passed to getTimeSpan()');
+  }
+  return {startTime: s, endTime: e};
+}
+
+function getTimeSpanForWaypoints(waypoints) {
+  var s, e, t;
+  if (waypoints && Array.isArray(waypoints)) {
+    waypoints.forEach(function(pt) {
+      if (pt.time) {
+        t = new Date(pt.time);
+        if (s === undefined || t.getTime() < s.getTime()) {
+          s = t;
+        }
+        if (e === undefined || t.getTime() > s.getTime()) {
+          e = t;
+        }
+      }
+    });
+  }
+  return {startTime: s, endTime: e};
+}
+
+function getWaypointBounds(waypoints) {
+  var coords = [];
+  if (waypoints && Array.isArray(waypoints)) {
+    waypoints.forEach(function(pt) {
+      coords.push([pt.lng, pt.lat]);
+    });
+  }
+  if (coords.length > 1) {
+    return turf.bbox(turf.lineString(coords));
+  } else if (coords.length === 1) {
+    return [ coords[0][0], coords[0][1], coords[0][0], coords[0][1] ];
+  }
+  return null;
+}
+
+function getRange(bounds) {
+  if (bounds && Array.isArray(bounds) && bounds[0] !== null) {
+    return turf.distance(turf.point(bounds.slice(0, 2)), turf.point(bounds.slice(2,4)));
+  }
+  return null;
+}
+
+function getBounds(bounds) {
+  var polys = [];
+  if (bounds && Array.isArray(bounds)) {
+    bounds.forEach(function(b) {
+      if (b && Array.isArray(b) && b.length === 4) {
+        polys.push(turf.bboxPolygon(b));
+      } else {
+        winston.warn('Invalid element passed to getBounds()');
+      }
+    });
+    if (polys.length > 0) {
+      return turf.bbox(turf.featureCollection(polys));
+    }
+  }
+  return null;
+}
+
+function getCenter(bounds) {
+  var retval;
+  if (bounds && Array.isArray(bounds) && bounds[0] !== null) {
+    retval = turf.center(turf.featureCollection([turf.bboxPolygon(bounds)]));
+    if (retval && retval.geometry) {
+      return retval.geometry.coordinates;
+    }
+  }
+  return null;
 }
