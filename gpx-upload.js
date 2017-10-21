@@ -250,7 +250,7 @@ function importFile(itineraryId, pathname, deleteFlag, callback) {
     }
     if (utils.handleError(err, callback)) {
       utils.fillDistanceElevationForRoutes(routes);
-      utils.fillDistanceElevationForTracks(tracks);
+      utils.fillDistanceElevationForTracks(tracks, {calcSegments: true});
       db.createItineraryWaypoints(itineraryId, waypoints, function(err) {
         lastError = lastError ? lastError : err;
         db.createItineraryRoutes(itineraryId, routes, function(err) {

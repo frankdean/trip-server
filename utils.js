@@ -201,10 +201,15 @@ function fillDistanceElevationForTrack(track, options) {
   var path;
   path = {};
   path.points = [];
-  track.segments.forEach(function(v) {
-    v.points.forEach(function(v) {
+  track.segments.forEach(function(seg) {
+    // Create additional list to calculate just this segment
+    seg.points.forEach(function(v) {
       path.points.push(v);
     });
+    if (options && options.calcSegments === true) {
+      // calculate each segment in addition to the overall path
+      fillDistanceElevationForPath(seg, options);
+    }
   });
   fillDistanceElevationForPath(path, options);
   if (path.bounds) {

@@ -625,12 +625,24 @@ function getItineraryTrackSegmentForUser(username, itineraryId, segmentId, offse
         db.getItineraryTrackSegmentPointCount(segmentId, function(err, count) {
           if (utils.handleError(err, callback)) {
             if (count > 0) {
-              db.getItineraryTrackSegment(itineraryId, segmentId, offset, limit, function(err, segment) {
+              db.getItineraryTrackSegmentPoints(itineraryId, segmentId, offset, limit, function(err, points) {
                 if (utils.handleError(err, callback)) {
-                  callback(err, {count: count, points: segment});
+                  if (offset && limit) {
+                    // If called to get just a page of segment points
+                    callback(err, {count: count, points: points});
+                  } else {
+                    // As we're getting all the segment points, return a segment populated with its attributes
+                    db.getItineraryTrackSegment(itineraryId, segmentId, function(err, segment) {
+                      if (utils.handleError(err, callback)) {
+                        segment.count = count;
+                        segment.points = points;
+                        callback(err, segment);
+                      }
+                    });
+                  }
                 }
               });
-            } else {
+          } else {
               callback(null, {count: 0, points: []});
             }
           }
@@ -655,7 +667,7 @@ function saveItineraryTrack(username, itineraryId, trackId, newTrack, segments, 
               db.getItineraryTracks(itineraryId, [trackId], function(err, result) {
                 if (utils.handleError(err, callback)) {
                   if (result.length > 0) {
-                    utils.fillDistanceElevationForTrack(result[0]);
+                    utils.fillDistanceElevationForTrack(result[0], {calcSegments: true});
                     db.updateItineraryTrackDistanceElevation(itineraryId, trackId, result[0], callback);
                   } else {
                     winston.warn('Failed to find any matching tracks for track id: %d', trackId);
@@ -673,7 +685,7 @@ function saveItineraryTrack(username, itineraryId, trackId, newTrack, segments, 
               db.getItineraryTracks(itineraryId, [newTrackId], function(err, result) {
                 if (utils.handleError(err, callback)) {
                   if (result.length > 0) {
-                    utils.fillDistanceElevationForTrack(result[0]);
+                    utils.fillDistanceElevationForTrack(result[0], {calcSegments: true});
                     db.updateItineraryTrackDistanceElevation(itineraryId, newTrackId, result[0], callback);
                   } else {
                     winston.warn('Failed to find any matching tracks for track id: %d', newTrackId);
@@ -700,7 +712,7 @@ function deleteItineraryTrackSegmentsForUser(username, itineraryId, trackId, seg
               // Re-calculate track length etc.
               db.getItineraryTracks(itineraryId, [trackId], function(err, result) {
                 if (utils.handleError(err, callback) && result.length > 0) {
-                  utils.fillDistanceElevationForTrack(result[0]);
+                  utils.fillDistanceElevationForTrack(result[0], {calcSegments: true});
                   db.updateItineraryTrackDistanceElevation(itineraryId, trackId, result[0], callback);
                 }
               });
@@ -722,7 +734,7 @@ function deleteItineraryTrackSegmentPointsForUser(username, itineraryId, trackId
               // Re-calculate track length etc.
               db.getItineraryTracks(itineraryId, [trackId], function(err, result) {
                 if (utils.handleError(err, callback) && result.length > 0) {
-                  utils.fillDistanceElevationForTrack(result[0]);
+                  utils.fillDistanceElevationForTrack(result[0], {calcSegments: true});
                   db.updateItineraryTrackDistanceElevation(itineraryId, trackId, result[0], callback);
                 }
               });

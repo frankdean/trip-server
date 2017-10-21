@@ -109,10 +109,11 @@ module.exports = {
   getItineraryRoutePointsCount: getItineraryRoutePointsCount,
   getItineraryRoutePoints: getItineraryRoutePoints,
   getItineraryTracks: getItineraryTracks,
+  getItineraryTrackSegment: getItineraryTrackSegment,
   getItineraryTrackSegmentCount: getItineraryTrackSegmentCount,
   getItineraryTrackSegments: getItineraryTrackSegments,
   getItineraryTrackSegmentPointCount: getItineraryTrackSegmentPointCount,
-  getItineraryTrackSegment: getItineraryTrackSegment,
+  getItineraryTrackSegmentPoints: getItineraryTrackSegmentPoints,
   deleteItineraryTrackSegments: deleteItineraryTrackSegments,
   replaceItineraryTrackSegments: replaceItineraryTrackSegments,
   deleteItineraryTrackSegmentPoints: deleteItineraryTrackSegmentPoints,
@@ -1806,6 +1807,31 @@ function getItineraryTracks(itineraryId, trackIds, callback) {
   });
 }
 
+function getItineraryTrackSegment(itineraryId, segmentId, callback) {
+  callback = typeof callback === 'function' ? callback : function() {};
+  pg.connect(config.db.uri, function(err, client, done) {
+    if (err) {
+      callback(err);
+    } else {
+      client.query('SELECT its.id, its.distance, its.ascent, its.descent, its.lowest, its.highest FROM itinerary_track_segment its JOIN itinerary_track it ON its.itinerary_track_id=it.id WHERE it.itinerary_id=$1 AND its.id=$2',
+                   [itineraryId, segmentId],
+                   function(err, result) {
+                     // release the client back to the pool
+                     done();
+                     if (err) {
+                       callback(err);
+                     } else {
+                       if (result && result.rowCount) {
+                         callback(err, result.rows[0]);
+                       } else {
+                         callback(null, null);
+                       }
+                     }
+                   });
+    }
+  });
+}
+
 function getItineraryTrackSegmentCount(trackId, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
   pg.connect(config.db.uri, function(err, client, done) {
@@ -1889,7 +1915,7 @@ function getItineraryTrackSegmentPointCount(segmentId, callback) {
   });
 }
 
-function getItineraryTrackSegment(itineraryId, segmentId, offset, limit, callback) {
+function getItineraryTrackSegmentPoints(itineraryId, segmentId, offset, limit, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
   var track, segments = [];
   pg.connect(config.db.uri, function(err, client, done) {
@@ -2121,6 +2147,30 @@ function updateItineraryTrackName(itineraryId, trackId, name, color, callback) {
   });
 }
 
+function localUpdateItineraryTrackSegmentDistanceElevation(client, trackId, segments, callback) {
+  var counter = segments.length;
+  if (counter === 0) callback();
+  segments.forEach(function(segment) {
+    client.query({name: 'crt-itnry-rtept',
+                  text: 'UPDATE itinerary_track_segment SET distance=$3, ascent=$4, descent=$5, lowest=$6, highest=$7 WHERE itinerary_track_id=$1 AND id=$2',
+                  values: [trackId,
+                           segment.id,
+                           segment.distance,
+                           segment.ascent,
+                           segment.descent,
+                           segment.lowest,
+                           segment.highest
+                          ]}, function(err, result) {
+                             if (err) {
+                               winston.error('Failure updatting itinerary track segment', err);
+                             }
+                             if (--counter === 0) {
+                               callback(err);
+                             }
+                           });
+  });
+}
+
 function updateItineraryTrackDistanceElevation(itineraryId, trackId, track, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
   pg.connect(config.db.uri, function(err, client, done) {
@@ -2141,7 +2191,10 @@ function updateItineraryTrackDistanceElevation(itineraryId, trackId, track, call
                      if (err) {
                        callback(err);
                      } else {
-                       callback(err, result.rowCount === 1);
+                       localUpdateItineraryTrackSegmentDistanceElevation(client, trackId, track.segments, function() {
+                         done();
+                         callback(err, result.rowCount === 1);
+                       });
                      }
                    });
     }
@@ -2361,8 +2414,14 @@ function localCreateItineraryTrackSegments(client, trackId, segments, callback) 
   } else {
     segments.forEach(function(ts) {
       client.query({name: 'crt-itnry-trkseg',
-                    text: 'INSERT INTO itinerary_track_segment (itinerary_track_id) VALUES ($1) RETURNING id',
-                    values: [trackId]}, function(err, result) {
+                    text: 'INSERT INTO itinerary_track_segment (itinerary_track_id, distance, ascent, descent, lowest, highest) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
+                    values: [trackId,
+                             ts.distance,
+                             ts.ascent,
+                             ts.descent,
+                             ts.lowest,
+                             ts.highest
+                            ]}, function(err, result) {
                       if (err) {
                         winston.error('Failure inserting itinerary track segment', err);
                       }
