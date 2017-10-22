@@ -212,7 +212,12 @@ ALTER SEQUENCE itinerary_track_point_seq OWNED BY itinerary_track_point.id;
 
 CREATE TABLE itinerary_track_segment (
     id integer NOT NULL,
-    itinerary_track_id integer NOT NULL
+    itinerary_track_id integer NOT NULL,
+    distance numeric(12,2),
+    ascent numeric(9,1),
+    descent numeric(9,1),
+    lowest numeric(8,1),
+    highest numeric(8,1)
 );
 
 

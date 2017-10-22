@@ -38,7 +38,7 @@ var tracks = require('./tracks');
 var reports = require('./reports');
 
 var myApp = myApp || {};
-myApp.version = '0.15.0-rc.2';
+myApp.version = '0.15.0-rc.3';
 module.exports = myApp;
 
 winston.level = config.log.level;

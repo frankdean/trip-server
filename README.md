@@ -109,7 +109,7 @@ application.  This gives you a complete working development environment.
 
 **Note:** When the VM is initially provisioned, if the `node_modules`
 sub-folder exists, it is removed and the contents re-installed/rebuilt to
-ensure that all of the `npm` installed binaries are compatible with the VM's
+ensure that all of the `yarn` installed binaries are compatible with the VM's
 operating system.  Similarly, you may need to remove and re-create this folder
 if you choose to run the trip server directly on the local guest machine.
 
@@ -163,13 +163,15 @@ configured to run behind an [Apache web server][Apache] using HTTPS.
 1.  Install [Node.js][].  See
     [Installing Node on Linux](http://www.fdsd.co.uk/wiki/Tech/NodeJS.html).
 
+1.  Install [yarn][]
+
 1.  Download the `trip-server` application and install it in an appropriate
     folder, e.g. `/usr/local/trip-server`
 
 1.  Install the packages required by `trip-server`:
 
 		$ cd /usr/local/trip-server
-		$ npm install
+		$ yarn install
 
 	If `bcrypt` fails to build, you probably need to install C++ build tools
 	etc.  In Debian this is most easily achieved by installing the
@@ -195,7 +197,7 @@ configured to run behind an [Apache web server][Apache] using HTTPS.
 1.  Install the packages required by `trip-web-client`:
 
 		$ cd /usr/local/trip-server/app
-		$ npm install
+		$ yarn install
 
 1.  Create and modify `config.json` by initially making a copy of
     `config-dist.json`.  Make sure the file is not world-readable as it will
@@ -628,7 +630,7 @@ a release of the web client.
 
 1.  Create backup of application's folder structure on target server
 
-1.  Run `npm run lint`
+1.  Run `yarn run lint`
 
 1.  Update the version number in `index.js myApp.version`
 
@@ -636,11 +638,11 @@ a release of the web client.
 
 1.  On the target server, pull the changes
 
-1.  Run `npm install` on the target server
+1.  Run `yarn install` on the target server
 
-1.  Run`npm outdated` and compare versions with test environment
+1.  Optionally, run`yarn outdated` and compare versions with test environment
 
-1.  If necessary run `npm update`
+1.  If necessary run `yarn upgrade`
 
 
 ## Next Release
@@ -676,3 +678,4 @@ The following database table change is required to versions prior to v0.15.0.
 [Traccar Client]: https://www.traccar.org/client/
 [Vagrant]: https://www.vagrantup.com "Development Environments Made Easy"
 [VirtualBox]: https://www.virtualbox.org "A x86 and AMD64/Intel64 virtualization product"
+[yarn]: https://yarnpkg.com/ "Fast, reliable and secure dependency management"

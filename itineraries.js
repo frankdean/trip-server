@@ -80,8 +80,17 @@ function formatKmlSnippetDate(date) {
     hour: '2-digit', minute: '2-digit', second: '2-digit',
     year: 'numeric'});
   s = dtf.format(date);
-  parts = /^(\D{3}),?\s+(\D+)\s+(\d+),?\s+(\d+),?\s+(.*)$/.exec(s);
-  if (parts.length > 0) {
+  // node v6.11.3 "Sat, Sep 02, 2017, 13:30:45"
+  // node v6.11.4 "Sat, 02 Sep 2017, 13:30:45"
+  parts = /^(\D{3}),?\s+(\d+)\s+(\D+)\s+(\d+),?\s+(.*)$/.exec(s);
+  if (parts && parts.length > 0) {
+    // winston.debug('Successfully parsed as Node v6.11.4 format');
+    return parts[1] + ' ' + parts[3] + ' ' + Number(parts[2]) + ' ' + parts[5] + ' ' + parts[4];
+  } else {
+    winston.warn('Failed to parse date "%s", trying Node v6.11.3 format', s);
+    parts = /^(\D{3}),?\s+(\D+)\s+(\d+),?\s+(\d+),?\s+(.*)$/.exec(s);
+  }
+  if (parts && parts.length > 0) {
     return parts[1] + ' ' + parts[2] + ' ' + Number(parts[3]) + ' ' + parts[5] + ' ' + parts[4];
   } else {
     return s;

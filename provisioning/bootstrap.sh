@@ -2,9 +2,14 @@
 
 apt-get update
 apt-get upgrade
-apt-get install -y g++ git nginx postgresql postgresql-contrib apg screen
+apt-get install -y g++ git nginx postgresql postgresql-contrib apg screen apt-transport-https
 
-NODE_VERSION="v6.11.3"
+curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+apt-get update
+apt-get install -y yarn
+
+NODE_VERSION="v6.11.4"
 NODE_FILENAME="node-${NODE_VERSION}-linux-x64"
 NODE_TAR_FILENAME="${NODE_FILENAME}.tar.xz"
 NODE_EXTRACT_DIR="${NODE_FILENAME}"
@@ -24,7 +29,7 @@ if [ ! -d "/usr/local/share/${NODE_FILENAME}" ]; then
 		ln -s "$NODE_EXTRACT_DIR" node-current
 		cd  /usr/local/bin
 		ln -s ../share/node-current/bin/node
-		ln -s ../share/node-current/bin/npm
+		#ln -s ../share/node-current/bin/npm
 		cd /usr/local/include
 		ln -s ../share/node-current/include/node/
 		cd /usr/local/lib
@@ -40,7 +45,7 @@ if [ ! -d "/usr/local/share/${NODE_FILENAME}" ]; then
 		cd systemtap/tapset
 		ln -s ../../node-current/share/systemtap/tapset/node.stp
 	fi
-	npm install bower -g
+	#npm install bower -g
 	if [ -e /vagrant/node_modules ]; then
 		cd /vagrant
 		rm -rf node_modules

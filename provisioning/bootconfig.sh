@@ -8,11 +8,11 @@
 # Uncomment the following to debug the script
 #set -x
 
-TRIP_WEB_CLIENT_VERSION='v0.14.0'
+TRIP_WEB_CLIENT_VERSION='v0.15.0'
 PG_VERSION=9.6
 
 su - postgres -c 'createuser -drs vagrant' 2>/dev/null
-su - vagrant -c 'cd /vagrant && npm install'
+su - vagrant -c 'cd /vagrant && yarn install'
 cd /vagrant
 if [ -e config.json ]; then
 	SECRET=$(grep '"uri"' /vagrant/config.json | cut -d ':' -f 4 | cut -d '@' -f 1)
@@ -98,7 +98,7 @@ if [ ! -e /var/www/trip/app/bower_components ]; then
 			ln -s /vagrant-trip-web-client/app
 		fi
 		if [ ! -d /vagrant-trip-web-client/node_modules ]; then
-			su - vagrant -c 'cd /vagrant-trip-web-client && npm install'
+			su - vagrant -c 'cd /vagrant-trip-web-client && yarn install'
 		fi
 	elif [ -f /vagrant/trip-web-client/package.json ]; then
 		echo "Configuring to run with web application under /vagrant/trip-web-client/"
@@ -107,7 +107,7 @@ if [ ! -e /var/www/trip/app/bower_components ]; then
 			ln -s /vagrant/trip-web-client/app
 		fi
 		if [ ! -d /vagrant/trip-web-client/node_modules ]; then
-			su - vagrant -c 'cd /vagrant/trip-web-client && npm install'
+			su - vagrant -c 'cd /vagrant/trip-web-client && yarn install'
 		fi
 	else
 		echo "Configuring to run with a downloaded version of the web application"
@@ -136,7 +136,7 @@ if [ ! -e /etc/systemd/system/trip.socket ]; then
 fi
 
 if [ ! -z "$ADMIN_PWD" ]; then
-	$ADMIN_PWD_PHONETIC=$(echo $ADMIN_PWD_TEXT | cut -d ' ' -f 2)
+	ADMIN_PWD_PHONETIC=$(echo $ADMIN_PWD_TEXT | cut -d ' ' -f 2)
 	>&2 echo
 	>&2 echo "******************************************************************************"
 	>&2 echo "I have created an initial admin user for TRIP"
