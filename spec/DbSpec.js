@@ -231,7 +231,7 @@ describe('db.js', function() {
       describe('By nickname', function() {
 
         beforeEach(function(done) {
-          Db.getUsers(1, 2, 'secret', undefined, 'exact', function(_err_, _result_) {
+          Db.getUsers(1, 2, 'user', undefined, 'exact', function(_err_, _result_) {
             err = _err_;
             result = _result_;
             done();
@@ -250,7 +250,7 @@ describe('db.js', function() {
       describe('By email', function() {
 
         beforeEach(function(done) {
-          Db.getUsers(1, 2, undefined, 'secret@secret.org', 'exact', function(_err_, _result_) {
+          Db.getUsers(1, 2, undefined, 'admin@trip.test', 'exact', function(_err_, _result_) {
             err = _err_;
             result = _result_;
             done();
@@ -269,7 +269,7 @@ describe('db.js', function() {
       describe('By nickname and email', function() {
 
         beforeEach(function(done) {
-          Db.getUsers(1, 2, 'secret', 'secret@secret.org', 'exact', function(_err_, _result_) {
+          Db.getUsers(1, 2, 'admin', 'admin@trip.test', 'exact', function(_err_, _result_) {
             err = _err_;
             result = _result_;
             done();
@@ -292,7 +292,7 @@ describe('db.js', function() {
       describe('By nickname', function() {
 
         beforeEach(function(done) {
-          Db.getUsers(1, 2, 'secret', undefined, 'partial', function(_err_, _result_) {
+          Db.getUsers(1, 2, 'admin', undefined, 'partial', function(_err_, _result_) {
             err = _err_;
             result = _result_;
             done();
@@ -311,7 +311,7 @@ describe('db.js', function() {
       describe('By email', function() {
 
         beforeEach(function(done) {
-          Db.getUsers(1, 2, undefined, 'secret@secret.org', 'partial', function(_err_, _result_) {
+          Db.getUsers(1, 2, undefined, 'admin@trip.test', 'partial', function(_err_, _result_) {
             err = _err_;
             result = _result_;
             done();
@@ -330,7 +330,7 @@ describe('db.js', function() {
       describe('By nickname and email', function() {
 
         beforeEach(function(done) {
-          Db.getUsers(1, 2, 'secret', 'secret@secret.org', 'partial', function(_err_, _result_) {
+          Db.getUsers(1, 2, 'admin', 'admin@trip.test', 'partial', function(_err_, _result_) {
             err = _err_;
             result = _result_;
             done();
@@ -355,7 +355,7 @@ describe('db.js', function() {
         describe('By nickname', function() {
 
           beforeEach(function(done) {
-            Db.getUserCount('secret', undefined, 'exact', function(_err_, _result_) {
+            Db.getUserCount('admin', undefined, 'exact', function(_err_, _result_) {
               err = _err_;
               result = _result_;
               done();
@@ -374,7 +374,7 @@ describe('db.js', function() {
         describe('By email', function() {
 
           beforeEach(function(done) {
-            Db.getUserCount(undefined, 'secret@secret.org', 'exact', function(_err_, _result_) {
+            Db.getUserCount(undefined, 'admin@trip.test', 'exact', function(_err_, _result_) {
               err = _err_;
               result = _result_;
               done();
@@ -393,7 +393,7 @@ describe('db.js', function() {
         describe('By nickname and email', function() {
 
           beforeEach(function(done) {
-            Db.getUserCount('secret', 'secret@secret.org', 'exact', function(_err_, _result_) {
+            Db.getUserCount('admin', 'admin@trip.test', 'exact', function(_err_, _result_) {
               err = _err_;
               result = _result_;
               done();
@@ -416,7 +416,7 @@ describe('db.js', function() {
         describe('By nickname', function() {
 
           beforeEach(function(done) {
-            Db.getUserCount('secret', undefined, 'partial', function(_err_, _result_) {
+            Db.getUserCount('admin', undefined, 'partial', function(_err_, _result_) {
               err = _err_;
               result = _result_;
               done();
@@ -435,7 +435,7 @@ describe('db.js', function() {
         describe('By email', function() {
 
           beforeEach(function(done) {
-            Db.getUserCount(undefined, 'secret@secret.org', 'partial', function(_err_, _result_) {
+            Db.getUserCount(undefined, 'admin@trip.test', 'partial', function(_err_, _result_) {
               err = _err_;
               result = _result_;
               done();
@@ -454,7 +454,7 @@ describe('db.js', function() {
         describe('By nickname and email', function() {
 
           beforeEach(function(done) {
-            Db.getUserCount('secret', 'secret@secret.org', 'partial', function(_err_, _result_) {
+            Db.getUserCount('admin', 'admin@trip.test', 'partial', function(_err_, _result_) {
               err = _err_;
               result = _result_;
               done();

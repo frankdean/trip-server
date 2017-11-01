@@ -24,7 +24,7 @@ describe('shares.js', function() {
 
   var err, result;
 
-  var testUsername = 'no_secrets@secret.org';
+  var testUsername = 'trip_user@trip.test';
 
   var share1 = {nickname: 'nick',
                 recentDays: 1,

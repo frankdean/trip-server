@@ -21,7 +21,7 @@ describe('tracks.js', function() {
   var Tracks = require('../tracks.js');
   var db = require('../db.js');
   var testId = 42;
-  var testUsername = 'no_secrets@secret.org';
+  var testUsername = 'trip_user@trip.test';
 
   describe('constrainSharedLocationDates()', function() {
       var err, from, to;

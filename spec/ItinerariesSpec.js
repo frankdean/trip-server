@@ -24,7 +24,7 @@ describe('itinerary.js', function() {
   var Itineraries = require('../itineraries.js');
   var db = require('../db.js');
 
-  var testUsername = 'no_secrets@secret.org';
+  var testUsername = 'trip_user@trip.test';
   var testUserId = 42;
   var err, itinerary = {};
 

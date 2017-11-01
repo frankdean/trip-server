@@ -118,7 +118,7 @@ Rendering of map tiles is disabled by default, in order to respect
 follow the instructions below, in the *Tile Server Configuration* section,
 before map tiles are rendered.
 
-If you forget the admin user (`admin@secret.org`) password, login into the VM
+If you forget the admin user (`admin@trip.test`) password, login into the VM
 and modify the database entry in the [PostgreSQL][] database.  Replace
 `SECRET` with your desired password.
 

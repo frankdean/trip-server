@@ -66,7 +66,7 @@ if [ "$CREATED_DB" == "y" ]; then
 		su - postgres -c 'psql trip' >/dev/null <<EOF
 CREATE EXTENSION pgcrypto;
 INSERT INTO role (name) VALUES ('Admin'), ('User');
-WITH upd AS (INSERT INTO usertable (firstname, lastname, email, uuid, password, nickname) VALUES ('admin', 'admin', 'admin@secret.org', '224ea8e1-d534-4ba7-bc55-b0a63fe56e52', crypt('$ADMIN_PWD', gen_salt('bf')), 'admin') RETURNING id) INSERT INTO user_role (user_id, role_id) SELECT upd.id, r.id AS role_id FROM upd, role as r WHERE name='Admin';
+WITH upd AS (INSERT INTO usertable (firstname, lastname, email, uuid, password, nickname) VALUES ('admin', 'admin', 'admin@trip.test', '224ea8e1-d534-4ba7-bc55-b0a63fe56e52', crypt('$ADMIN_PWD', gen_salt('bf')), 'admin') RETURNING id) INSERT INTO user_role (user_id, role_id) SELECT upd.id, r.id AS role_id FROM upd, role as r WHERE name='Admin';
 EOF
 	fi
 fi
@@ -140,6 +140,6 @@ if [ ! -z "$ADMIN_PWD" ]; then
 	>&2 echo
 	>&2 echo "******************************************************************************"
 	>&2 echo "I have created an initial admin user for TRIP"
-	>&2 echo "login as 'admin@secret.org' with password '$ADMIN_PWD' $ADMIN_PWD_PHONETIC"
+	>&2 echo "login as 'admin@trip.test' with password '$ADMIN_PWD' $ADMIN_PWD_PHONETIC"
 	>&2 echo "******************************************************************************"
 fi

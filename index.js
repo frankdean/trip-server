@@ -1628,9 +1628,9 @@ myApp.serveStaticFiles = function(req, res) {
         req.url = m[1];
         myApp.fileServer.serve(req, res, function(err, result) {
           if (err) {
-            winston.debug('Error attempting to serve file:', err);
+            winston.debug('Error attempting to serve file: %s', req.url, err);
             if (err.status === 404) {
-              winston.debug('Trying to retun /app/index.html instead');
+              winston.debug('Trying to return /app/index.html instead');
               // Might be a page reload with a "pretty" URL
               myApp.fileServer.serveFile('/app/index.html', 200, {}, req, res).addListener('error', function(err) {
                 winston.error('Error serving /app/index.html');
@@ -1638,7 +1638,7 @@ myApp.serveStaticFiles = function(req, res) {
                 res.end();
               });
             } else {
-              winston.warn('Error serving static file %s - %s', req.url, err.message);
+              winston.error('Error serving static file %s - %s', req.url, err.message);
               res.writeHead(err.status, err.headers);
               res.end();
             }

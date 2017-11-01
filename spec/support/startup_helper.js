@@ -36,8 +36,8 @@ process.stderr.write('\nThe output of this application should be piped to the\n'
 process.stderr.write('PostgreSQL psql application, e.g.:\n\n');
 process.stderr.write('node startup_helper.js | psql trip');
 
-rl.question('Enter initial user admin email [admin@secret.org]: ', function(answer) {
-  email = answer ? answer : 'admin@secret.org';
+rl.question('Enter initial user admin email [admin@trip.test]: ', function(answer) {
+  email = answer ? answer : 'admin@trip.test';
 
   rl.question('Enter a nickname [admin]: ', function(answer) {
     nickname = answer ? answer : 'admin';

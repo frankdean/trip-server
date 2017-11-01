@@ -24,7 +24,7 @@ describe('login.js', function() {
   var jwt = require('jsonwebtoken');
 
   var err, result;
-  var username = 'anyone@secret.org';
+  var username = 'anyone@trip.test';
   var password = 'any_secret';
   var testHash = 'hashed_secret';
   var testSalt = 42;
@@ -565,7 +565,7 @@ describe('login.js', function() {
         beforeEach(function(done) {
           Login.updateUser({"id": 99,
                             "nickname": "test",
-                            "username": "test@secret.org",
+                            "username": "test@trip.test",
                             "lastname": "Smith",
                             "firstname": "John",
                             "admin": true}, function(_err_) {
@@ -587,7 +587,7 @@ describe('login.js', function() {
         beforeEach(function(done) {
           Login.updateUser({"id": 99,
                             "nickname": "test",
-                            "username": "test@secret.org",
+                            "username": "test@trip.test",
                             "lastname": "Smith",
                             "firstname": "John",
                             "admin": false}, function(_err_) {
@@ -609,7 +609,7 @@ describe('login.js', function() {
         beforeEach(function(done) {
           Login.updateUser({"id": 99,
                             "nickname": "test",
-                            "username": "test@secret.org",
+                            "username": "test@trip.test",
                             "lastname": "Smith",
                             "firstname": "John"}, function(_err_) {
                               done();
@@ -640,7 +640,7 @@ describe('login.js', function() {
         beforeEach(function(done) {
           Login.updateUser({"id": 99,
                             "nickname": "test",
-                            "username": "test@secret.org",
+                            "username": "test@trip.test",
                             "lastname": "Smith",
                             "firstname": "John",
                             "admin": false}, function(_err_) {
@@ -662,7 +662,7 @@ describe('login.js', function() {
         beforeEach(function(done) {
           Login.updateUser({"id": 99,
                             "nickname": "test",
-                            "username": "test@secret.org",
+                            "username": "test@trip.test",
                             "lastname": "Smith",
                             "firstname": "John",
                             "admin": true}, function(_err_) {
@@ -684,7 +684,7 @@ describe('login.js', function() {
         beforeEach(function(done) {
           Login.updateUser({"id": 99,
                             "nickname": "test",
-                            "username": "test@secret.org",
+                            "username": "test@trip.test",
                             "lastname": "Smith",
                             "firstname": "John"}, function(_err_) {
                               done();
