@@ -137,7 +137,15 @@ function fillDistanceElevationForPath(path, options) {
 
   // bounds
   if (options && options.calcPoints === true) {
-    path.bounds = turf.bbox(turf.lineString(coords));
+    winston.debug('coords: %j', coords);
+    if (coords.length > 1) {
+      path.bounds = turf.bbox(turf.lineString(coords));
+    } else if (coords.length === 1) {
+      path.bounds = [coords[0][0], coords[0][1], coords[0][0], coords[0][1]];
+    } else {
+      path.bounds = undefined;
+    }
+      winston.debug('bounds: %j', path.bounds);
   }
 
   // elevation summary

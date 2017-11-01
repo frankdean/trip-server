@@ -1016,7 +1016,7 @@ function speedText(kmh) {
     speed = null;
     units = null;
   }
-  return speed.toFixed(1) + ' ' + units;
+  return speed ? (speed.toFixed(1) + ' ' + units) : '';
 }
 
 function distanceText(km) {
@@ -1031,7 +1031,7 @@ function distanceText(km) {
     dist = null;
     units = null;
   }
-  return dist.toFixed(1) + ' ' + units;
+  return dist ? (dist.toFixed(1) + ' ' + units) : '';
 }
 
 function writeKmlWaypointsFolder(doc, waypoints) {
@@ -1109,7 +1109,7 @@ function writeKmlRoutesFolder(doc, routes) {
 }
 
 function writeKmlTracksFolder(doc, tracks) {
-  var speed, speedUnits, folder, folder2, folder3, coords, mgstr, lstr, count;
+  var speed, speedUnits, folder, folder2, folder3, placemark, coords, mgstr, lstr, count;
   if (tracks && Array.isArray(tracks) && tracks.length > 0) {
     folder = doc.e('Folder');
     folder.e('name', null, 'Tracks');
@@ -1121,23 +1121,25 @@ function writeKmlTracksFolder(doc, tracks) {
         .insertAfter('description')
         .dat('<table>\n' +
              '<tr><td><b>Distance</b> ' + distanceText(t.distance) + ' </td></tr>\n' +
-             '<tr><td><b>Min Alt</b> ' +  t.lowest.toFixed(3) + ' meters </td></tr>\n' +
-             '<tr><td><b>Max Alt</b> ' + t.highest.toFixed(3) + ' meters </td></tr>\n' +
-             '<tr><td><b>Max Speed</b> ' + speedText(t.maxSpeed) + ' </td></tr>\n' +
-             '<tr><td><b>Avg Speed</b> ' + speedText(t.avgSpeed) + ' </td></tr>\n' +
-             '<tr><td><b>Start Time</b> ' + t.startTime.toISOString() + '</td></tr>\n' +
-             '<tr><td><b>End Time</b> ' + t.endTime.toISOString() + '</td></tr>\n' +
-             '</table>')
-        .insertAfter('TimeSpan')
-        .e('begin', null, t.startTime.toISOString())
-        .insertAfter('end', null, t.endTime.toISOString());
+             (t.lowest ? ('<tr><td><b>Min Alt</b> ' +  t.lowest.toFixed(3) + ' meters </td></tr>\n') : '') +
+             (t.highest ? ('<tr><td><b>Max Alt</b> ' + t.highest.toFixed(3) + ' meters </td></tr>\n') : '') +
+             (t.maxSpeed  ? ('<tr><td><b>Max Speed</b> ' + speedText(t.maxSpeed) + ' </td></tr>\n') : '') +
+             (t.avgSpeed ? ('<tr><td><b>Avg Speed</b> ' + speedText(t.avgSpeed) + ' </td></tr>\n') : '') +
+             (t.startTime ? ('<tr><td><b>Start Time</b> ' + t.startTime.toISOString() + '</td></tr>\n') : '') +
+             (t.endTime ? ('<tr><td><b>End Time</b> ' + t.endTime.toISOString() + '</td></tr>\n') : '') +
+             '</table>');
+      if (t.startTime && t.endTime) {
+        folder2.e('TimeSpan')
+          .e('begin', null, t.startTime.toISOString())
+          .insertAfter('end', null, t.endTime.toISOString());
+      }
       folder3 = folder2.e('Folder');
       folder3.e('name', null, 'Points');
       count = 0;
       t.segments.forEach(function(seg) {
         seg.points.forEach(function(p) {
-          folder3.e('Placemark')
-            .e('name', null, t.name + '-' + count++)
+          placemark = folder3.e('Placemark');
+          placemark.e('name', null, t.name + '-' + count++)
             .insertAfter('snippet')
             .insertAfter('description')
             .dat('\n<table>' + '\n' +
@@ -1146,16 +1148,18 @@ function writeKmlTracksFolder(doc, tracks) {
                  '<tr><td>Altitude: ' + Number(p.altitude).toFixed(3) + ' meters </td></tr>\n' +
                  (p.speed ? ('<tr><td>Speed: ' + speedText(p.speed) + ' </td></tr>\n') : '') +
                  '<tr><td>Heading: ' + (p.bearing ? Number(p.bearing).toFixed(1) : '359.5') + ' </td></tr>\n' +
-                 '<tr><td>Time: ' + p.time.toISOString() + ' </td></tr>\n' +
+                 (p.time ? ('<tr><td>Time: ' + p.time.toISOString() + ' </td></tr>\n') : '') +
                  '</table>\n')
             .insertAfter('LookAt')
             .e('longitude', null, p.lng.toFixed(6))
             .insertAfter('latitude', null, p.lat.toFixed(6))
-            .insertAfter('tilt', null, 66)
-            .up().insertAfter('TimeStamp')
-            .e('when', null, p.time.toISOString())
-            .up().insertAfter('styleUrl', null, '#track')
-            .insertAfter('Point')
+            .insertAfter('tilt', null, 66);
+          if (p.time) {
+            placemark.e('TimeStamp')
+              .e('when', null, p.time.toISOString());
+          }
+          placemark.e('styleUrl', null, '#track');
+          placemark.e('Point')
             .e('coordinates', null, pointToCoordinateString(p));
         }); // forEach segment point
       }); // foreach segment
