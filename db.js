@@ -2151,7 +2151,7 @@ function localUpdateItineraryTrackSegmentDistanceElevation(client, trackId, segm
   var counter = segments.length;
   if (counter === 0) callback();
   segments.forEach(function(segment) {
-    client.query({name: 'crt-itnry-rtept',
+    client.query({name: 'upd-itnry-trkseg',
                   text: 'UPDATE itinerary_track_segment SET distance=$3, ascent=$4, descent=$5, lowest=$6, highest=$7 WHERE itinerary_track_id=$1 AND id=$2',
                   values: [trackId,
                            segment.id,
