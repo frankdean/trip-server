@@ -38,7 +38,7 @@ var tracks = require('./tracks');
 var reports = require('./reports');
 
 var myApp = myApp || {};
-myApp.version = '0.15.0';
+myApp.version = '0.16.0-rc.1';
 module.exports = myApp;
 
 winston.level = config.log.level;
@@ -1618,13 +1618,34 @@ myApp.handleAuthenticatedRequests = function(req, res, token) {
 };
 
 myApp.serveStaticFiles = function(req, res) {
+  var m;
   myApp.fileServer.serve(req, res, function(err, result) {
     if (err) {
-      winston.warn('Error serving static file %s - %s', req.url, err.message);
-      if (err.status === 404 || err.status === 500) {
-        res.writeHead(err.status, err.headers);
-        res.end();
+      // If the URL is prefixed with /trip/ try it without the prefix
+      if (err.status === 404  && /^\/trip(\/.+)$/.test(req.url)) {
+        m = /^\/trip(\/.+)$/.exec(req.url);
+        winston.debug('Attempting to serve %s instead of %s', m[1], req.url);
+        req.url = m[1];
+        myApp.fileServer.serve(req, res, function(err, result) {
+          if (err) {
+            winston.debug('Error attempting to serve file:', err);
+            if (err.status === 404) {
+              winston.debug('Trying to retun /app/index.html instead');
+              // Might be a page reload with a "pretty" URL
+              myApp.fileServer.serveFile('/app/index.html', 200, {}, req, res).addListener('error', function(err) {
+                winston.error('Error serving /app/index.html');
+                res.statusCode = 501;
+                res.end();
+              });
+            } else {
+              winston.warn('Error serving static file %s - %s', req.url, err.message);
+              res.writeHead(err.status, err.headers);
+              res.end();
+            }
+          }
+        });
       } else {
+        winston.warn('Error serving static file %s - %s', req.url, err.message);
         res.writeHead(err.status, err.headers);
         res.end();
       }
@@ -1664,7 +1685,7 @@ myApp.server = http.createServer(function(req, res) {
   } else if (req.method === 'GET' && /^\/\?id=[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}&timestamp=\d+&lat=[-.\d]+&lon=[-.\d]+&speed=[-.\d]+&bearing=[-.\d]+&altitude=[-.\d]+&batt=[-.\d]+/.test(req.url)) {
     // special handling for Traccar Client that has hard-coded call to root URL
     myApp.handleLogPoint(req, res);
-  } else if (req.method === 'GET' && /^\/app(?:(?:\/)?|\/.*)$/.test(req.url)) {
+  } else if (req.method === 'GET' && /^(?:\/trip)?\/app(?:(?:\/)?|\/.*)$/.test(req.url)) {
     if (config.staticFiles.allow) {
       myApp.serveStaticFiles(req, res);
     } else {

@@ -36,6 +36,10 @@ server {
 		proxy_pass http://127.0.0.1:8080;
 	}
 
+	location /trip/app/ {
+		rewrite ^/trip(/app/.*)$ $1 last;
+	}
+
 	# Workaround for vagrant/development/demo environments
 	location  /socket.io/ {
 		proxy_pass http://127.0.0.1:8080/socket.io/;
@@ -56,16 +60,16 @@ server {
 			rewrite ^.*$ /trip/rest/log_point?$1;
 		}
 
-		# First attempt to serve request as file, then
-		# as directory, then fall back to displaying a 404.
-		try_files $uri $uri/ =404;
+		# First attempt to serve request as file, then as directory, then fall
+		# back to displaying the application index page.
+		try_files $uri $uri/ /app/index.html;
 	}
 
 
-	if ($scheme = http) {
-	   rewrite ^/trip/app https://$server_name$request_uri redirect;
-	   #return 302 https://$server_name$request_uri;
-	}
+	# if ($scheme = http) {
+	#    rewrite ^/trip/app https://$server_name$request_uri redirect;
+	#    #return 302 https://$server_name$request_uri;
+	# }
 	# pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
 	#
 	#location ~ \.php$ {
