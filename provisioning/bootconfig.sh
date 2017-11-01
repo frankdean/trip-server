@@ -8,7 +8,7 @@
 # Uncomment the following to debug the script
 #set -x
 
-TRIP_WEB_CLIENT_VERSION='v0.15.0'
+TRIP_WEB_CLIENT_VERSION='v0.16.0'
 PG_VERSION=9.6
 
 su - postgres -c 'createuser -drs vagrant' 2>/dev/null

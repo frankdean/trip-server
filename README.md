@@ -651,14 +651,7 @@ This section describes any environmental changes, such as database changes or
 configuration changes that need to be made since the last release, when
 upgrading to the next release.
 
-The following database table change is required to versions prior to v0.15.0.
-
-	ALTER TABLE itinerary_track_segment
-	ADD COLUMN distance numeric(12,2),
-	ADD COLUMN ascent numeric(9,1),
-	ADD COLUMN descent numeric(9,1),
-	ADD COLUMN lowest numeric(8,1),
-	ADD COLUMN highest numeric(8,1);
+n/a
 
 [trip-web-client]: https://github.com/frankdean/trip-web-client
 [AngularJS]: https://angularjs.org
