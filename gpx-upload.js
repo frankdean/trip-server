@@ -19,6 +19,7 @@
 
 var fs = require('fs');
 var sax = require('sax');
+var validator = require('validator');
 var winston = require('winston');
 
 var db = require('./db');
@@ -143,7 +144,23 @@ function parseFile(itineraryId, pathname, callback) {
         switch (currentTag.parent.name) {
         case 'wpt':
           if (tagName !== 'extensions') {
-            waypoint[tagName] = lastText;
+            switch (tagName) {
+            case 'time':
+              if (validator.isISO8601(lastText)) {
+                waypoint[tagName] = lastText;
+              } else {
+                var dt = utils.isoDate(lastText);
+                if (dt !== null) {
+                  winston.debug('Converted invalid date of "%s" to "%s"', lastText, dt.toISOString());
+                  waypoint[tagName] = dt.toISOString();
+                } else {
+                  winston.warn('waypoint %j has an invalid date of "%s"', waypoint, lastText);
+                }
+              }
+              break;
+            default:
+              waypoint[tagName] = lastText;
+            }
           }
           break;
         case 'rte':
@@ -196,6 +213,12 @@ function parseFile(itineraryId, pathname, callback) {
       }
     }
     lastText = null;
+  });
+  parser.on('cdata', function(data) {
+    lastText = data;
+    if (currentTag) {
+      currentTag.children.push(data);
+    }
   });
   parser.on('text', function(text) {
     lastText = text;

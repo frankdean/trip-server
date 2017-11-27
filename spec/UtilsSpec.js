@@ -352,4 +352,48 @@ describe('utils.js', function() {
     expect(result).toBeNull();
   });
 
+ describe('ISO Date Convertion', function() {
+
+    it('should convert a valid ISO 8601 date', function () {
+      var result = Utils.isoDate('2017-11-27T12:41:06.643Z');
+      expect(result).toEqual(new Date(2017, 10, 27, 12, 41, 6, 643));
+    });
+
+    it('should convert a variant of a valid ISO 8601 date', function () {
+      var result = Utils.isoDate('2017-11-26T13:01:48123:00');
+      expect(result).toEqual(new Date(2017, 10, 26, 13, 1, 48, 123));
+    });
+
+    it('should convert a variant of a valid ISO 8601 date without a time zone', function () {
+      var result = Utils.isoDate('2017-11-26T13:01:48123');
+      expect(result).toEqual(new Date(2017, 10, 26, 13, 1, 48, 123));
+    });
+
+    it('should convert a variant of a valid ISO 8601 date without milliseconds', function () {
+      var result = Utils.isoDate('2017-11-26T13:01:48:00');
+      expect(result).toEqual(new Date(2017, 10, 26, 13, 1, 48, 0));
+    });
+
+    it('should convert a variant of a valid ISO 8601 date without timezone or milliseconds', function () {
+      var result = Utils.isoDate('2017-11-26T13:01:48');
+      expect(result).toEqual(new Date(2017, 10, 26, 13, 1, 48, 0));
+    });
+
+    it('should convert a nearly valid ISO 8601 date with a positive time zone', function () {
+      var result = Utils.isoDate('2017-11-26T13:01:48123:01');
+      expect(result).toEqual(new Date(2017, 10, 26, 12, 1, 48, 123));
+    });
+
+    it('should handle a null string', function () {
+      var result = Utils.isoDate(null);
+      expect(result).toBeNull();
+    });
+
+    it('should handle an empty string', function () {
+      var result = Utils.isoDate("");
+      expect(result).toBeNull();
+    });
+
+  });
+
 });

@@ -42,7 +42,8 @@ module.exports = {
   getWaypointBounds: getWaypointBounds,
   getBounds: getBounds,
   getRange: getRange,
-  getCenter: getCenter
+  getCenter: getCenter,
+  isoDate: isoDate
 };
 
 function handleError(err, callback) {
@@ -348,6 +349,52 @@ function getCenter(bounds) {
     retval = turf.center(turf.featureCollection([turf.bboxPolygon(bounds)]));
     if (retval && retval.geometry) {
       return retval.geometry.coordinates;
+    }
+  }
+  return null;
+}
+
+function isValidDate(dt) {
+  if (Object.prototype.toString.call(dt) === '[object Date]') {
+    if (isNaN(dt.getTime())) {
+      return false;
+    } else {
+      return true;
+    }
+  } else {
+    return false;
+  }
+}
+
+/**
+ * Converts a valid ISO 8601 formatted date to a Date object.  It additionally
+ * attempts to recognise some other variants of the ISO 8601 format.
+ *
+ * @param {string} s containing a valid ISO 8601 formatted date.
+ *
+ * @return A Date object if the date is valid, else null.
+ */
+function isoDate(s) {
+  if (s === null) {
+    return null;
+  }
+  var dt = new Date(s);
+  if (isValidDate(dt)) {
+    return dt;
+  }
+  // Format seen from Avenza Maps export
+  var m = /^(\d{2,4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})(?:\.)?(\d{3})?:?(\d{2})?$/.exec(s);
+  if (m) {
+    var s2 = m[1];
+    if (m[2]) {
+      s2 += '.' + m[2];
+    }
+    if (m[3]) {
+      s2 += '+' + m[3] + ':00';
+    }
+    dt = new Date(s2);
+    if (isValidDate(dt)) {
+      return dt;
     }
   }
   return null;
