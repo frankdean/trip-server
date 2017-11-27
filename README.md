@@ -511,6 +511,17 @@ the Apache &lt;VirtualHost\&gt; sections:
 The following sections mostly relate to information around system maintenance
 and application development.
 
+
+### Tile usage monthly cumulative totals for the last year:
+
+		SELECT year, month, max(count) AS cumulative_total FROM (
+			SELECT time, extract(year from time) AS year,
+			extract(month from time) AS month,
+			extract(day from time) AS day,
+			count FROM tile_metric ORDER BY time DESC) AS q
+		GROUP BY q.year, q.month ORDER BY q.year desc, q.month DESC LIMIT 12;
+
+
 ### Deleting expired tiles from the cache
 
 Count how many tiles are expired:
