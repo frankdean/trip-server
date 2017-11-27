@@ -51,6 +51,7 @@ function parseFile(itineraryId, pathname, callback) {
   var firstError = null;
   // winston.debug('Importing file %s', pathname);
   var parser = sax.createStream(false, {lowercasetags: true, trim: true}),
+      dt,
       waypoints = [],
       waypoint = null,
       routes = [],
@@ -149,7 +150,7 @@ function parseFile(itineraryId, pathname, callback) {
               if (validator.isISO8601(lastText)) {
                 waypoint[tagName] = lastText;
               } else {
-                var dt = utils.isoDate(lastText);
+                dt = utils.isoDate(lastText);
                 if (dt !== null) {
                   winston.debug('Converted invalid date of "%s" to "%s"', lastText, dt.toISOString());
                   waypoint[tagName] = dt.toISOString();
@@ -178,7 +179,23 @@ function parseFile(itineraryId, pathname, callback) {
           trackSegment[tagName] = lastText;
           break;
         case 'trkpt':
-          trackPoint[tagName] = lastText;
+          switch (tagName) {
+          case 'time':
+            if (validator.isISO8601(lastText)) {
+              trackPoint[tagName] = lastText;
+            } else {
+              dt = utils.isoDate(lastText);
+              if (dt !== null) {
+                winston.debug('Converted invalid date of "%s" to "%s"', lastText, dt.toISOString());
+                trackPoint[tagName] = dt.toISOString();
+              } else {
+                winston.warn('trackPoint %j has an invalid date of "%s"', trackPoint, lastText);
+              }
+            }
+            break;
+          default:
+            trackPoint[tagName] = lastText;
+          }
           break;
         case 'extensions':
           if (waypoint && currentTag && currentTag.name === 'color') {
