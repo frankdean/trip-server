@@ -1,6 +1,6 @@
 /**
  * @license TRIP - Trip Recording and Itinerary Planning application.
- * (c) 2016, 2017 Frank Dean <frank@fdsd.co.uk>
+ * (c) 2016-2018 Frank Dean <frank@fdsd.co.uk>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 var http = require('http');
 var util = require('util');
 
-var validator = require('validator');
+var _ = require('lodash');
 var winston = require('winston');
 
 var db = require('./db');
@@ -124,10 +124,10 @@ function fetchRemoteTile(id, x, y, z, callback) {
 
 function fetchTile(id, x, y, z, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  if (validator.isInt('' + id, {min: 0, max: config.tile.providers.length - 1}) &&
-      validator.isInt('' + x, {min: 0}) &&
-      validator.isInt('' + y, {min: 0}) &&
-      validator.isInt('' + z, {min: 0, max: 19})) {
+  if (_.isInteger(Number(id)) && _.inRange(id, config.tile.providers.length) &&
+      _.isInteger(Number(x)) && _.inRange(x, Number.MAX_SAFE_INTEGER) &&
+      _.isInteger(Number(y)) && _.inRange(y, Number.MAX_SAFE_INTEGER) &&
+      _.isInteger(Number(z)) && _.inRange(z, 19)) {
     db.tileExists(id, x, y, z, config.tile.cache.maxAge, function(err, exists) {
       if (err) {
         callback(err);

@@ -1,6 +1,6 @@
 /**
  * @license TRIP - Trip Recording and Itinerary Planning application.
- * (c) 2016, 2017 Frank Dean <frank@fdsd.co.uk>
+ * (c) 2016-2018 Frank Dean <frank@fdsd.co.uk>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 
 var builder = require('xmlbuilder');
 var uuid = require('uuid');
-var validator = require('validator');
+var _ = require('lodash');
 var winston = require('winston');
 
 var db = require('./db');
@@ -33,7 +33,10 @@ module.exports = {
   getTrackingInfo: getTrackingInfo,
   logPoint: logPoint,
   updateTrackingInfo: updateTrackingInfo,
-  unitTests: {constrainSharedLocationDates: constrainSharedLocationDates}
+  unitTests: {
+    constrainSharedLocationDates: constrainSharedLocationDates,
+    toNum: toNum
+  }
 };
 
 function getNicknames(username, callback) {
@@ -259,8 +262,7 @@ function getLocationsAsXml(query, callback) {
 }
 
 function toNum(v) {
-  var r = (v === undefined || validator.isEmpty('' + v)) ? undefined : Number(v);
-  return r !== undefined ? r : undefined;
+  return _.isEmpty(v) ? undefined : Number(v);
 }
 
 function doLogPoint(q, callback) {
@@ -271,37 +273,36 @@ function doLogPoint(q, callback) {
     q.sat = toNum(q.sat);
     q.speed = toNum(q.speed);
     q.bearing = toNum(q.bearing);
-    if (q.note !== undefined && validator.isEmpty(q.note)) {
+    if (q.note !== undefined && _.isEmpty(q.note)) {
       q.note = undefined;
     }
     q.lng = q.lng !== undefined ? q.lng : q.lon;
-    if (q.lat !== undefined && q.lng !== undefined &&
-        validator.isFloat('' + q.lat, {min: -90, max: 90}) && validator.isFloat('' + q.lng, {min: -180, max: 180})) {
-      if (!validator.isFloat('' + q.hdop, {min: 0, max: 99999.9})) {
+    if (_.inRange(q.lat, -90, 90) && _.inRange(q.lng, -180, 180)) {
+      if (q.hdop !== undefined && !_.inRange(q.hdop, 99999.9)) {
         winston.debug('Received invalid hdop for location %j', q);
         q.hdop = undefined;
       }
-      if(q.altitude !== undefined && !validator.isFloat('' + q.altitude, {min: -999999.99999, max: 999999.99999})) {
+      if(q.altitude !== undefined && !_.inRange(q.altitude, -999999.99999, 999999.99999)) {
         winston.debug('Received invalid altitude for location %j', q);
         q.altitude = undefined;
       }
-      if(q.speed !== undefined && !validator.isFloat('' + q.speed, {min: -99999.9, max: 99999.9})) {
+      if(q.speed !== undefined && !_.inRange(q.speed, -99999.9, 99999.9)) {
         winston.debug('Received invalid speed for location %j', q);
         q.speed = undefined;
       }
-      if (q.bearing !== undefined && !validator.isFloat('' + q.bearing, {min: -999999.99999, max: 999999.99999})) {
+      if (q.bearing !== undefined && !_.inRange(q.bearing, -999999.99999, 999999.99999)) {
         winston.debug('Received invalid bearing for location %j', q);
         q.bearing = undefined;
       }
-      if (q.sat !== undefined && !validator.isInt('' + q.sat, {min: 0, max: 32767})) {
+      if (q.sat !== undefined && (!_.isInteger(Number(q.sat)) || !_.inRange(q.sat, 32767))) {
         winston.debug('Received invalid satellite count for location %j', q);
         q.sat = undefined;
       }
-      if (q.batt !== undefined && !validator.isFloat('' + q.batt, {min: 0, max: 999.9})) {
+      if (q.batt !== undefined && !_.inRange(q.batt, 999.9)) {
         winston.debug('Received invalid battery value for location %j', q);
         q.batt = undefined;
       }
-      if (q.mstime !== undefined && validator.isInt('' + q.mstime)) {
+      if (q.mstime !== undefined && _.inRange(q.mstime, Number.MAX_SAFE_INTEGER)) {
         db.findUserByUuid(q.uuid, function(err, user) {
           if (err) {
             winston.info('User not found for UUID', q.uuid, q.id);
@@ -331,22 +332,27 @@ function doLogPoint(q, callback) {
 }
 
 function logPoint(q, callback) {
-  var provParams, offsetParams, offsetIndex, offset;
+  var provParams, offsetParams, offsetIndex, offset, dt;
   if (q.uuid === undefined && q.id !== undefined) {
     q.uuid = q.id;
   }
   // Do not redefine mstime
   if (q.mstime === undefined) {
-    if (q.unixtime === undefined && q.timestamp && validator.isInt('' + q.timestamp)) {
+    if (q.unixtime === undefined && q.timestamp && _.inRange(q.timestamp, Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER)) {
       q.unixtime = q.timestamp;
     }
-    if (q.unixtime !== undefined && validator.isInt('' + q.unixtime)) {
+    if (q.unixtime !== undefined && _.inRange(q.unixtime, Number.MIN_SAFE_INTEGER / 1000, Number.MAX_SAFE_INTEGER / 1000)) {
       q.mstime = q.unixtime * 1000;
     }
+
     // ISO8601 formatted date
-    if (q.time !== undefined && validator.isISO8601('' + q.time)) {
-      q.mstime = Date.parse(q.time);
+    if (q.time !== undefined) {
+      dt = new Date(q.time);
+      if (_.isDate(dt)) {
+        q.mstime = dt.getTime();
+      }
     }
+
     if (q.mstime) {
       // Workaround for bug on some Android devices where GPS time is consistently wrong
       // Apply a second or millisecond correction, max range 25 hours
@@ -376,7 +382,7 @@ function logPoint(q, callback) {
             offset = q.offset;
           }
         }
-        if (validator.isInt('' + offset, {min: -90000, max: 90000})) {
+        if (_.inRange(offset, -90000, 90000)) {
           winston.debug('Modifying time by %d seconds', offset);
           q.mstime += Number(offset) * 1000;
         } else {
@@ -399,7 +405,7 @@ function logPoint(q, callback) {
             offset = q.msoffset;
           }
         }
-        if (validator.isInt('' + offset, {min: -90000000, max: 90000000})) {
+        if (_.inRange(offset, -90000000, 90000000)) {
           winston.debug('Modifying time by %d milliseconds', offset);
           q.mstime += Number(offset);
         } else {

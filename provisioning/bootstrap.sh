@@ -1,17 +1,18 @@
 #!/usr/bin/env bash
 
 apt-get update
-apt-get upgrade
-apt-get install -y g++ git nginx postgresql postgresql-contrib apg screen apt-transport-https
+apt-get upgrade --yes
+apt-get install --yes g++ git nginx postgresql postgresql-contrib apg screen apt-transport-https
 
 curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
 echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
 apt-get update
-apt-get install -y yarn
+apt-get install --yes yarn
 
-NODE_VERSION="v6.11.4"
+NODE_VERSION="v6.14.2"
 NODE_FILENAME="node-${NODE_VERSION}-linux-x64"
 NODE_TAR_FILENAME="${NODE_FILENAME}.tar.xz"
+NODE_SHA256="8c5005f8fd55ddbff35122dbe69bd5f50beea56038c2812dc9610dad19086c28  ${NODE_TAR_FILENAME}"
 NODE_EXTRACT_DIR="${NODE_FILENAME}"
 NODE_DOWNLOAD_URL="https://nodejs.org/dist/${NODE_VERSION}/${NODE_TAR_FILENAME}"
 
@@ -22,6 +23,11 @@ if [ ! -d "/usr/local/share/${NODE_FILENAME}" ]; then
 		fi
 		cd /vagrant/provisioning/downloads
 		wget --no-verbose $NODE_DOWNLOAD_URL 2>&1
+		echo "$NODE_SHA256" | shasum -c -
+		if [ $? -ne "0" ]; then
+			>&2 echo "Checksum of downloaded file does not match expected value of ${NODE_SHA256}"
+			exit 1
+		fi
 	fi
 	if [ -e "/vagrant/provisioning/downloads/${NODE_TAR_FILENAME}" ]; then
 		cd /usr/local/share

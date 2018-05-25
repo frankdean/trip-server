@@ -763,7 +763,7 @@ function getLocations(userId, from, to, maxHdop, notesOnlyFlag, order, offset, l
     } else {
       var criteria = createLocationQueryClauses(userId, from, to, maxHdop, notesOnlyFlag);
       var sql = 'SELECT id, location[1] as lat, location[0] as lng, time, hdop, altitude, speed, bearing, sat, provider, battery, note ' +
-            criteria.from + ' ORDER BY time ' + order;
+            criteria.from + ' ORDER BY time ' + order + ', id ' + order;
       if (offset !== undefined) {
         sql += ' OFFSET ' + offset;
       }

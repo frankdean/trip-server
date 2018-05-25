@@ -1,6 +1,6 @@
 /**
  * @license TRIP - Trip Recording and Itinerary Planning application.
- * (c) 2016, 2017 Frank Dean <frank@fdsd.co.uk>
+ * (c) 2016-2018 Frank Dean <frank@fdsd.co.uk>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -395,5 +395,116 @@ describe('utils.js', function() {
     });
 
   });
+
+  describe('JSON', function() {
+
+    describe('parse', function() {
+
+      it('should handle bad JSON', function() {
+        expect(Utils.parseJSON('rubbish')).toEqual(undefined);
+      });
+
+      it('should handle bad JSON', function() {
+        expect(Utils.parseJSON('{"a":"fred","b":"jane","c":{"d":"ok"},"list":["1","2"}')).toEqual(undefined);
+      });
+
+      it('should handle goood JSON', function() {
+        var test = {a: 'fred', b: 'jane', c: {d: 'ok'}, list: ['1', '2', '3']};
+        expect(Utils.parseJSON(JSON.stringify(test))).toEqual(test);
+      });
+
+    });
+
+    describe('is JSON', function() {
+
+      it('should handle bad JSON', function() {
+        expect(Utils.isJSON('rubbish')).toEqual(false);
+      });
+
+      it('should handle undefined', function() {
+        expect(Utils.isJSON(undefined)).toEqual(false);
+      });
+
+      it('should handle NaN', function() {
+        expect(Utils.isJSON(NaN)).toEqual(false);
+      });
+
+      it('should handle null', function() {
+        expect(Utils.isJSON(null)).toEqual(false);
+      });
+
+      it('should handle an empty string', function() {
+        expect(Utils.isJSON('')).toEqual(false);
+      });
+
+      it('should handle an number', function() {
+        expect(Utils.isJSON(42)).toEqual(false);
+      });
+
+      it('should handle bad JSON', function() {
+        expect(Utils.isJSON('{"a":"fred","b":"jane","c":{"d":"ok"},"list":["1","2"}')).toEqual(false);
+      });
+
+      it('should handle goood JSON', function() {
+        var test = {a: 'fred', b: 'jane', c: {d: 'ok'}, list: ['1', '2', '3']};
+        expect(Utils.isJSON(JSON.stringify(test))).toEqual(true);
+      });
+
+    });
+
+  });
+
+  describe('ISO8601 validation', function() {
+
+    it('should reject null', function() {
+      expect(Utils.isISO8601(null)).toEqual(false);
+    });
+
+    it('should reject undefined', function() {
+      expect(Utils.isISO8601(undefined)).toEqual(false);
+    });
+
+    it('should accept a valid date', function() {
+      var dt = new Date(2018, 0, 24, 17, 30, 32, 0);
+      expect(Utils.isISO8601(dt.toISOString())).toEqual(true);
+    });
+
+  });
+
+  describe('Email validation', function() {
+
+    it('should accept a valid email address', function() {
+      expect(Utils.isEmail('test@example.com')).toEqual(true);
+    });
+
+    it('should accept a valid email address with subdomain', function() {
+      expect(Utils.isEmail('big.test@sub-domain.example.com')).toEqual(true);
+    });
+
+    it('should reject an invalid email address with more than one @ symbol', function() {
+      expect(Utils.isEmail('big.test@sub-domain@example.com')).toEqual(false);
+    });
+
+    it('should reject an invalid email address', function() {
+      expect(Utils.isEmail('@example.com')).toEqual(false);
+    });
+
+    it('should reject an invalid email address', function() {
+      expect(Utils.isEmail('test@test')).toEqual(false);
+    });
+
+    it('should reject an empty email address', function() {
+      expect(Utils.isEmail('')).toEqual(false);
+    });
+
+    it('should reject a null email address', function() {
+      expect(Utils.isEmail(null)).toEqual(false);
+    });
+
+    it('should reject an undefined email address', function() {
+      expect(Utils.isEmail(undefined)).toEqual(false);
+    });
+
+   });
 
 });

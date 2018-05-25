@@ -1,6 +1,6 @@
 /**
  * @license TRIP - Trip Recording and Itinerary Planning application.
- * (c) 2016, 2017 Frank Dean <frank@fdsd.co.uk>
+ * (c) 2016-2018 Frank Dean <frank@fdsd.co.uk>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -417,6 +417,113 @@ describe('tracks.js', function() {
 
     });
 
+    describe('GPSLogger format with invalid satellite count', function() {
+
+      beforeEach(function(done) {
+        spyOn(db, 'logPoint').and.callFake(
+          function(userId, params, callback) {
+            callback(null, testUserId);
+          });
+        Tracks.logPoint({lat: validGPSLoggerPoint.lat,
+                         lon: validGPSLoggerPoint.lng,
+                         bearing: '180',
+                         sat: '19.6',
+                         unixtime: 1516806728.0348,
+                         uuid: validGPSLoggerPoint.uuid},
+                        function(_err_) {
+                          err = _err_;
+                          done();
+                        });
+      });
+
+      it('should save the point with satellite count set to undefined', function() {
+        expect(err).toBeNull();
+        expect(db.findUserByUuid).toHaveBeenCalledWith(validGPSLoggerPoint.uuid, jasmine.any(Function));
+        expect(db.logPoint).toHaveBeenCalledWith(testUserId, {
+          lat: validGPSLoggerPoint.lat,
+          lon: '-0.3', bearing: 180, unixtime: 1516806728.0348, uuid: '63ee806c-2529-499d-ad2c-308d9ad1ef77', mstime: 1516806728034.8, hdop: undefined, altitude: undefined, batt: undefined, sat: undefined, speed: undefined, lng: '-0.3'}, jasmine.any(Function));
+      });
+
+    });
+
+    describe('GPSLogger format with invalid latitude', function() {
+
+      beforeEach(function(done) {
+        spyOn(db, 'logPoint').and.callFake(
+          function(userId, params, callback) {
+            callback(null, testUserId);
+          });
+        Tracks.logPoint({lat: 120,
+                         lon: validGPSLoggerPoint.lng,
+                         bearing: 'abc',
+                         time: validGPSLoggerPoint.time,
+                         uuid: validGPSLoggerPoint.uuid},
+                        function(_err_) {
+                          err = _err_;
+                          done();
+                        });
+      });
+
+      it('should not save the point', function() {
+        expect(err).not.toBeNull();
+        expect(db.findUserByUuid).not.toHaveBeenCalled();
+        expect(db.logPoint).not.toHaveBeenCalled();
+      });
+
+    });
+
+    describe('GPSLogger format with non-numeric latitude', function() {
+
+      beforeEach(function(done) {
+        spyOn(db, 'logPoint').and.callFake(
+          function(userId, params, callback) {
+            callback(null, testUserId);
+          });
+        Tracks.logPoint({lat: 'x',
+                         lon: validGPSLoggerPoint.lng,
+                         bearing: 'abc',
+                         time: validGPSLoggerPoint.time,
+                         uuid: validGPSLoggerPoint.uuid},
+                        function(_err_) {
+                          err = _err_;
+                          done();
+                        });
+      });
+
+      it('should not save the point', function() {
+        expect(err).not.toBeNull();
+        expect(db.findUserByUuid).not.toHaveBeenCalled();
+        expect(db.logPoint).not.toHaveBeenCalled();
+      });
+
+    });
+
+    describe('GPSLogger format with invalid longitude', function() {
+
+      beforeEach(function(done) {
+        spyOn(db, 'logPoint').and.callFake(
+          function(userId, params, callback) {
+            callback(null, testUserId);
+          });
+        Tracks.logPoint({lat: validGPSLoggerPoint.lat,
+                         lon: 181,
+                         bearing: 'abc',
+                         time: validGPSLoggerPoint.time,
+                         uuid: validGPSLoggerPoint.uuid},
+                        function(_err_) {
+                          err = _err_;
+                          done();
+                        });
+      });
+
+      it('should not save the point', function() {
+        expect(err).not.toBeNull();
+        expect(db.findUserByUuid).not.toHaveBeenCalled();
+        expect(db.logPoint).not.toHaveBeenCalled();
+      });
+
+    });
+
     describe('Traccar format', function() {
 
       beforeEach(function(done) {
@@ -455,6 +562,50 @@ describe('tracks.js', function() {
       });
 
     });
+  });
+
+  describe('utils', function() {
+
+    it('should convert a valid string to a number', function() {
+      expect(Tracks.unitTests.toNum('34')).toEqual(34);
+    });
+
+    it('should convert a valid floating point string to a number', function() {
+      expect(Tracks.unitTests.toNum('3.142')).toEqual(3.142);
+    });
+
+    it('should convert a negative string to a number', function() {
+      expect(Tracks.unitTests.toNum('-3.142')).toEqual(-3.142);
+    });
+
+    it('should convert a string to a number', function() {
+      expect(Tracks.unitTests.toNum('.142')).toEqual(0.142);
+    });
+
+    it('should convert a negative string to a number', function() {
+      expect(Tracks.unitTests.toNum('-.142')).toEqual(-0.142);
+    });
+
+    it('should fail to convert an invalid floating point string to a number', function() {
+      expect(Tracks.unitTests.toNum('3.142.')).toEqual(NaN);
+    });
+
+    it('should convert a valid hexadecimal string to a number', function() {
+      expect(Tracks.unitTests.toNum('0x22')).toEqual(34);
+    });
+
+    it('should fail to convert an invalid string to a number', function() {
+      expect(Tracks.unitTests.toNum('x34')).toEqual(NaN);
+    });
+
+    it('should fail to convert an invalid string to a number', function() {
+      expect(Tracks.unitTests.toNum('')).toEqual(undefined);
+    });
+
+    it('should fail to convert an undefined value to a number', function() {
+      expect(Tracks.unitTests.toNum(undefined)).toEqual(undefined);
+    });
+
   });
 
 });

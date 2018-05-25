@@ -19,6 +19,7 @@
 
 describe('tiles.js', function() {
   var Tiles = require('../tiles.js');
+  var db = require('../db.js');
 
   describe('Tile URL transliteration', function() {
     var url;
@@ -42,6 +43,91 @@ describe('tiles.js', function() {
 
     it('should transliterate the url', function() {
       expect(url).toEqual('/trip/rest/tile?z=8&x=3&x=5');
+    });
+
+  });
+
+  describe('Fetching tile validation', function() {
+    var err;
+
+    beforeEach(function() {
+      spyOn(db, 'tileExists').and.callFake(
+        function(id, x, y, z, maxage, callback) {
+          callback(null, true);
+        });
+      spyOn(db, 'fetchTile').and.callFake(
+        function(id, x, y, z, maxage, callback) {
+          callback(null, {image: {}});
+        });
+    });
+
+    describe('Positive values', function() {
+
+      beforeEach(function(done) {
+        Tiles.fetchTile(0, 0, 0, 0, function(_err_, _tile_) {
+          err = _err_;
+          done();
+        });
+      });
+
+      it('should allow zero tile values for x, y and z', function() {
+        expect(err).toBeNull();
+        expect(db.tileExists).toHaveBeenCalled();
+        expect(db.fetchTile).toHaveBeenCalled();
+      });
+
+    });
+
+    describe('Negative values', function() {
+
+      beforeEach(function(done) {
+        Tiles.fetchTile(0, 0, -1, 0, function(_err_, _tile_) {
+          err = _err_;
+          done();
+        });
+      });
+
+      it('should not allow a negative tile value for y', function() {
+        expect(err).not.toBeNull();
+        expect(db.tileExists).not.toHaveBeenCalled();
+      });
+
+    });
+
+    describe('Non integer values', function() {
+      var err;
+
+      describe('string', function() {
+        
+        beforeEach(function(done) {
+          Tiles.fetchTile(0, 0, 'x', 0, function(_err_, _tile_) {
+            err = _err_;
+            done();
+          });
+        });
+
+        it('should not allow a string value for tile y', function() {
+          expect(err).not.toBeNull();
+          expect(db.tileExists).not.toHaveBeenCalled();
+        });
+
+      });
+
+      describe('out of range', function() {
+
+        beforeEach(function(done) {
+          Tiles.fetchTile(0, 0, Number.MAX_SAFE_INTEGER + 1, 0, function(_err_, _tile_) {
+            err = _err_;
+            done();
+          });
+        });
+
+        it('should not allow values outside the integer range for y', function() {
+          expect(err).not.toBeNull();
+          expect(db.tileExists).not.toHaveBeenCalled();
+        });
+      });
+
     });
 
   });

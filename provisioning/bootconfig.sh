@@ -8,7 +8,9 @@
 # Uncomment the following to debug the script
 #set -x
 
-TRIP_WEB_CLIENT_VERSION='v0.16.0'
+TRIP_WEB_CLIENT_VERSION='v0.16.1'
+TRIP_WEB_CLIENT_RELEASE="trip-web-release-${TRIP_WEB_CLIENT_VERSION}.tar.gz"
+TRIP_WEB_CLIENT_SHA256="1b808a5b05d54a2f7251e703d5177c50ad44811c02b448aa6a6ea36eb37b69bd  ${TRIP_WEB_CLIENT_RELEASE}"
 PG_VERSION=9.6
 
 su - postgres -c 'createuser -drs vagrant' 2>/dev/null
@@ -111,17 +113,20 @@ if [ ! -e /var/www/trip/app/bower_components ]; then
 		fi
 	else
 		echo "Configuring to run with a downloaded version of the web application"
-		TRIP_WEB_CLIENT_RELEASE="trip-web-release-${TRIP_WEB_CLIENT_VERSION}.tar.gz"
 		# If not, download and extract release
 		if [ ! -e /vagrant/provisioning/downloads/${TRIP_WEB_CLIENT_RELEASE} ]; then
 			cd /vagrant/provisioning/downloads
 			wget --no-verbose https://github.com/frankdean/trip-web-client/releases/download/${TRIP_WEB_CLIENT_VERSION}/${TRIP_WEB_CLIENT_RELEASE} 2>&1
+			echo "$TRIP_WEB_CLIENT_SHA256" | shasum -c -
+			if [ $? -ne "0" ]; then
+				>&2 echo "Checksum of downloaded file does not match expected value of ${TRIP_WEB_CLIENT_VERSION_SHA256}"
+				exit 1
+			fi
 		fi
 		cd /var/www/trip
 		tar --no-same-owner --no-same-permissions -xf /vagrant/provisioning/downloads/${TRIP_WEB_CLIENT_RELEASE}
 	fi
 fi
-
 if [ ! -L /usr/local/trip-server ]; then
 	cd /usr/local
 	ln -s /vagrant trip-server

@@ -67,6 +67,13 @@
   "log": {
     "level": "info"
   },
+  "validation": {
+	"headers" : {
+	  "contentType" : {
+		"warn": true
+	  }
+	}
+  },
   "reporting": {
     "metrics": {
       "tile": {

@@ -1,6 +1,6 @@
 /**
  * @license TRIP - Trip Recording and Itinerary Planning application.
- * (c) 2016, 2017 Frank Dean <frank@fdsd.co.uk>
+ * (c) 2016-2018 Frank Dean <frank@fdsd.co.uk>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,13 +17,14 @@
  */
 'use strict';
 
+var _ = require('lodash');
 var bcrypt = require('bcrypt');
 var jwt = require('jsonwebtoken');
 var uuid = require('uuid');
-var validator = require('validator');
 var winston = require('winston');
 
 var db = require('./db');
+var utils = require('./utils');
 var config = require('./config.json');
 
 var validNickname = /^[!-\.0->@-~]+$/;
@@ -130,10 +131,10 @@ function deleteUser(id, callback) {
 function getUsers(offset, limit, nickname, email, searchType, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
   searchType = searchType !== 'partial' ? 'exact' : 'partial';
-  if (!nickname || !validator.isLength('' + nickname, {min: 1, max: 120})) {
+  if (_.isEmpty(nickname) || !_.inRange(nickname.length, 1, 120)) {
     nickname = undefined;
   }
-  if (!email || !validator.isLength('' + email, {min: 1, max: 120})) {
+  if (_.isEmpty(email) || !_.inRange(email.length, 1, 120)) {
     email = undefined;
   }
   db.getUserCount(nickname, email, searchType, function(err, count) {
@@ -155,7 +156,7 @@ function getNicknameForUsername(username, callback) {
 
 function createUser(user, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  if (validator.isEmail('' + user.username) && validNickname.test(user.nickname) &&
+  if (utils.isEmail(user.username) && validNickname.test(user.nickname) &&
       printableRegex.test(user.password) &&
       printableRegexPlusSpace.test(user.firstname) &&
       printableRegexPlusSpace.test(user.lastname)) {
@@ -184,8 +185,8 @@ function createUser(user, callback) {
 
 function updateUser(user, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  if (validator.isInt('' + user.id) &&
-      validator.isEmail('' + user.username) &&
+  if (_.isInteger(user.id) && _.inRange(user.id, Number.MAX_SAFE_INTEGER) &&
+      utils.isEmail(user.username) &&
       validNickname.test(user.nickname) &&
       printableRegexPlusSpace.test(user.firstname) &&
       printableRegexPlusSpace.test(user.lastname)) {

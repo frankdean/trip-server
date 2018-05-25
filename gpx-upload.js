@@ -1,6 +1,6 @@
 /**
  * @license TRIP - Trip Recording and Itinerary Planning application.
- * (c) 2016, 2017 Frank Dean <frank@fdsd.co.uk>
+ * (c) 2016-2018 Frank Dean <frank@fdsd.co.uk>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 
 var fs = require('fs');
 var sax = require('sax');
-var validator = require('validator');
+var _ = require('lodash');
 var winston = require('winston');
 
 var db = require('./db');
@@ -147,7 +147,8 @@ function parseFile(itineraryId, pathname, callback) {
           if (tagName !== 'extensions') {
             switch (tagName) {
             case 'time':
-              if (validator.isISO8601(lastText)) {
+              dt = new Date(lastText);
+              if (_.isDate(dt)) {
                 waypoint[tagName] = lastText;
               } else {
                 dt = utils.isoDate(lastText);
@@ -181,7 +182,8 @@ function parseFile(itineraryId, pathname, callback) {
         case 'trkpt':
           switch (tagName) {
           case 'time':
-            if (validator.isISO8601(lastText)) {
+            dt = new Date(lastText);
+            if (_.isDate(dt)) {
               trackPoint[tagName] = lastText;
             } else {
               dt = utils.isoDate(lastText);

@@ -1,6 +1,6 @@
 /**
  * @license TRIP - Trip Recording and Itinerary Planning application.
- * (c) 2016, 2017 Frank Dean <frank@fdsd.co.uk>
+ * (c) 2016-2018 Frank Dean <frank@fdsd.co.uk>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
  */
 'use strict';
 
-var validator = require('validator');
+var _ = require('lodash');
 
 var db = require('./db');
 
@@ -99,19 +99,19 @@ function getLocationShares(username, offset, pageSize, callback) {
 function validateShare(share) {
   return share.nickname !== undefined && validNickname.test(share.nickname) &&
     (share.recentDays === undefined || share.recentDays === null ||
-     validator.isInt('' + share.recentDays)) &&
+     _.isInteger(share.recentDays)) &&
     (share.recentHours === undefined || share.recentHours === null ||
-     validator.isInt('' + share.recentHours)) &&
+     _.isInteger(share.recentHours)) &&
     (share.recentMinutes === undefined || share.recentMinutes === null ||
-     validator.isInt('' + share.recentMinutes)) &&
+     _.isInteger(share.recentMinutes)) &&
     (share.maximumDays === undefined || share.maximumDays === null ||
-     validator.isInt('' + share.maximumDays)) &&
+     _.isInteger(share.maximumDays)) &&
     (share.maximumHours === undefined || share.maximumHours === null ||
-     validator.isInt('' + share.maximumHours)) &&
+     _.isInteger(share.maximumHours)) &&
     (share.maximumMinutes === undefined || share.maximumMinutes === null ||
-     validator.isInt('' + share.maximumMinutes)) &&
+     _.isInteger(share.maximumMinutes)) &&
     (share.active === undefined || share.active === null ||
-     validator.isBoolean('' + share.active));
+     _.isBoolean(share.active));
 }
 
 function validateShares(shares) {

@@ -46,7 +46,7 @@ The following features are provided:
 
 ## Requirements
 
-* [Node.js][] - v4.x.x LTS
+* [Node.js][] - v6.x.x
 
 * [PostgreSQL][] database server - (Known to run on version 9.4)
 
@@ -553,7 +553,7 @@ To see how much space is begin used by the whole database:
 
 To see how much space is beging used the the tiles table:
 
-	SELECT pg_size_pretty(pg_table_size('tile');
+	SELECT pg_size_pretty(pg_table_size('tile'));
 
 Normally, a PostgreSQL installation will be configured to run the
 [VACUUM](https://www.postgresql.org/docs/9.4/static/sql-vacuum.html) command

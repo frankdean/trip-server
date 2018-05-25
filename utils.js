@@ -1,6 +1,6 @@
 /**
  * @license TRIP - Trip Recording and Itinerary Planning application.
- * (c) 2016, 2017 Frank Dean <frank@fdsd.co.uk>
+ * (c) 2016-2018 Frank Dean <frank@fdsd.co.uk>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
  */
 'use strict';
 
+var _ = require('lodash');
 var winston = require('winston');
 var turfHelpers = require('@turf/helpers');
 var turf = {
@@ -43,7 +44,11 @@ module.exports = {
   getBounds: getBounds,
   getRange: getRange,
   getCenter: getCenter,
-  isoDate: isoDate
+  isoDate: isoDate,
+  parseJSON: parseJSON,
+  isJSON: isJSON,
+  isISO8601: isISO8601,
+  isEmail: isEmail
 };
 
 function handleError(err, callback) {
@@ -138,7 +143,7 @@ function fillDistanceElevationForPath(path, options) {
 
   // bounds
   if (options && options.calcPoints === true) {
-    winston.debug('coords: %j', coords);
+    // winston.debug('coords: %j', coords);
     if (coords.length > 1) {
       path.bounds = turf.bbox(turf.lineString(coords));
     } else if (coords.length === 1) {
@@ -146,7 +151,7 @@ function fillDistanceElevationForPath(path, options) {
     } else {
       path.bounds = undefined;
     }
-      winston.debug('bounds: %j', path.bounds);
+    // winston.debug('bounds: %j', path.bounds);
   }
 
   // elevation summary
@@ -333,7 +338,7 @@ function getBounds(bounds) {
       if (b && Array.isArray(b) && b.length === 4) {
         polys.push(turf.bboxPolygon(b));
       } else {
-        winston.warn('Invalid element passed to getBounds()');
+        winston.warn('Invalid element passed to getBounds(): %j', bounds);
       }
     });
     if (polys.length > 0) {
@@ -398,4 +403,41 @@ function isoDate(s) {
     }
   }
   return null;
+}
+
+function parseJSON(string) {
+  try {
+    return JSON.parse(string);
+  } catch(e) {
+    return undefined;
+  }
+}
+
+function isJSON(string) {
+  if (_.isString(string)) {
+    try {
+      JSON.parse(string);
+      return true;
+    } catch(e) {
+      //
+    }
+  }
+  return false;
+}
+
+function isISO8601(string) {
+  if (_.isString(string)) {
+    var dt = new Date(string);
+    return _.isDate(dt);
+  }
+  return false;
+}
+
+function isEmail(string) {
+  // This is intended as a reasonably simplistic implementation, for a sophisticated alternative see
+  // https://stackoverflow.com/questions/201323/using-a-regular-expression-to-validate-an-email-address
+  if (_.isString(string)) {
+    return /^[!-?A-~]+@[!-?A-~]+\.[!-?A-~]{2,}$/.test(string);
+  }
+  return false;
 }

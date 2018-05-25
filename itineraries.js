@@ -1,6 +1,6 @@
 /**
  * @license TRIP - Trip Recording and Itinerary Planning application.
- * (c) 2016, 2017 Frank Dean <frank@fdsd.co.uk>
+ * (c) 2016-2018 Frank Dean <frank@fdsd.co.uk>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,8 +17,8 @@
  */
 'use strict';
 
+var _ = require('lodash');
 var builder = require('xmlbuilder');
-var validator = require('validator');
 var winston = require('winston');
 
 var db = require('./db');
@@ -104,20 +104,19 @@ function getItinerary(username, id, callback) {
 
 function saveItinerary(username, itinerary, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  if (!itinerary.title || validator.isEmpty(itinerary.title)) {
+  if (_.isEmpty(itinerary.title)) {
     callback(new Error('Invalid title'));
     return;
   }
-  if (itinerary.date && !validator.isISO8601('' + itinerary.start)) {
+  if (itinerary.date && !utils.isISO8601(itinerary.start)) {
     callback(new Error('Invalid start date'));
     return;
   }
-  if (itinerary.date && !validator.isISO8601('' + itinerary.finish)) {
+  if (itinerary.date && !utils.isISO8601(itinerary.finish)) {
     callback(new Error('Invalid finish date'));
     return;
   }
-  itinerary.description = itinerary.description !== undefined &&
-    !validator.isEmpty('' + itinerary.description) ? itinerary.description : null;
+  itinerary.description = _.isEmpty(itinerary.description) ? null : itinerary.description;
   db.getUserIdByUsername(username, function(err, userId) {
     if (err) {
       callback(err);
@@ -244,8 +243,7 @@ function shareItinerary(username, itineraryId, share, callback) {
 }
 
 function validateItineraryShare(share) {
-  return share.nickname !== undefined && validNickname.test(share.nickname) &&
-    (share.active === undefined || validator.isBoolean('' + share.active));
+  return share.nickname !== undefined && validNickname.test(share.nickname) && _.isBoolean(share.active);
 }
 
 function validateItineraryShares(shares) {
@@ -1191,7 +1189,7 @@ function writeKmlTracksFolder(doc, tracks) {
 function downloadItineraryKml(username, itineraryId, params, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
   var root, doc, tmpFolder, tmpFolder2, tmpFolder3, lookAt,
-      bounds, center, timeSpan, range;
+      bounds, boundsQuery, center, timeSpan, range;
   db.confirmItinerarySharedAccess(username, itineraryId, function(err, result) {
     if (utils.handleError(err, callback)) {
       if (result !== true) {
@@ -1205,15 +1203,27 @@ function downloadItineraryKml(username, itineraryId, params, callback) {
                   utils.fillDistanceElevationForRoutes(routes, {calcPoints: true});
                   utils.fillDistanceElevationForTracks(tracks, {calcPoints: true});
                   timeSpan = utils.getTimeSpanForWaypoints(waypoints);
+                  boundsQuery = [];
                   // NOTE: bounds has lng/lat order, not lat/lng
                   bounds = utils.getWaypointBounds(waypoints);
-                  bounds = utils.getBounds([bounds, routes.bounds, tracks.bounds]);
-                  center = utils.getCenter(bounds);
-                  timeSpan = utils.getTimeSpan([timeSpan, routes, tracks]);
-                  // length of the diagonal of the bounding box in kms
-                  range = utils.getRange(bounds);
-                  if (range < 1) {
-                    range = 1;
+                  if (bounds) {
+                    boundsQuery.push(bounds);
+                  }
+                  if (routes.bounds) {
+                    boundsQuery.push(routes.bounds);
+                  }
+                  if (tracks.bounds) {
+                    boundsQuery.push(tracks.bounds);
+                  }
+                  if (boundsQuery.length > 0) {
+                    bounds = utils.getBounds(boundsQuery);
+                    center = utils.getCenter(bounds);
+                    timeSpan = utils.getTimeSpan([timeSpan, routes, tracks]);
+                    // length of the diagonal of the bounding box in kms
+                    range = utils.getRange(bounds);
+                    if (range < 1) {
+                      range = 1;
+                    }
                   }
                   root = builder.create('kml', {version: '1.0', encoding: 'UTF-8'});
                   root.a('xmlns', 'http://www.opengis.net/kml/2.2')
