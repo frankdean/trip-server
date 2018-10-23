@@ -22,6 +22,7 @@ var sax = require('sax');
 var _ = require('lodash');
 var winston = require('winston');
 
+var elevation = require('./elevation').init();
 var db = require('./db');
 var utils = require('./utils');
 
@@ -277,7 +278,7 @@ function parseFile(itineraryId, pathname, callback) {
  * waypoints and the third a list of routes.
  */
 function importFile(itineraryId, pathname, deleteFlag, callback) {
-  var lastError = null;
+  var elevationFillError = null, error = null, elevationFillOptions = {force: false, skipIfAnyExist: true};
   // winston.debug('importing from %s', pathname);
   parseFile(itineraryId, pathname, function(err, waypoints, routes, tracks) {
     // winston.debug('Imported %d waypoints', waypoints.length);
@@ -291,18 +292,26 @@ function importFile(itineraryId, pathname, deleteFlag, callback) {
       winston.warn('Error on parsing GPX import', err);
     }
     if (utils.handleError(err, callback)) {
-      utils.fillDistanceElevationForRoutes(routes);
-      utils.fillDistanceElevationForTracks(tracks, {calcSegments: true});
-      db.createItineraryWaypoints(itineraryId, waypoints, function(err) {
-        lastError = lastError ? lastError : err;
-        db.createItineraryRoutes(itineraryId, routes, function(err) {
-          lastError = lastError ? lastError : err;
-          db.createItineraryTracks(itineraryId, tracks, function(err) {
-            lastError = lastError ? lastError : err;
-            if (lastError) {
-              winston.error('Database error saving imported GPX file', lastError);
-            }
-            callback(lastError, {waypointCount: waypoints.length, routeCount: routes.length, trackCount: tracks.length});
+      elevation.fillElevationsForRoutes(routes, elevationFillOptions, function(err) {
+        if (err) {
+          winston.error('Error filling elevations values for routes', err);
+        }
+        elevationFillError = err;
+        utils.fillDistanceElevationForRoutes(routes);
+        utils.fillDistanceElevationForTracks(tracks, {calcSegments: true});
+        db.createItineraryWaypoints(itineraryId, waypoints, function(err) {
+          error = error ? error : err;
+          db.createItineraryRoutes(itineraryId, routes, function(err) {
+            error = error ? error : err;
+            db.createItineraryTracks(itineraryId, tracks, function(err) {
+              error = error ? error : err;
+              // If error not set by database imports, report any error during filling elevation values
+              error = err ? err : elevationFillError;
+              if (error) {
+                winston.error('Error importing GPX file', error);
+              }
+              callback(error, {waypointCount: waypoints.length, routeCount: routes.length, trackCount: tracks.length});
+            });
           });
         });
       });

@@ -39,7 +39,7 @@ var reports = require('./reports');
 var utils = require('./utils');
 
 var myApp = myApp || {};
-myApp.version = '0.16.1';
+myApp.version = '0.17.0';
 module.exports = myApp;
 
 winston.level = config.log.level;
@@ -1156,6 +1156,9 @@ myApp.handlePostLogPoint = function(req, res) {
       // return;
       q = url.parse(req.url, true).query;
     }
+    // if (config.debug) {
+    //   winston.debug('BODY:', body);
+    // }
     if (q !== undefined) {
       if (q.decodenote === 'true' && q.note && q.note.length > 0) {
         // fix where note has been URI encoded twice

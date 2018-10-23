@@ -24,8 +24,10 @@ The [web client][trip-web-client] is an [AngularJS][] single-page application
 
 The following features are provided:
 
-* Remote tracking server—client applications such as [GPSLogger][] can be
-  used to submit locations to the server.
+* Remote tracking server—client applications such as
+  [TripLogger Remote for iOS][TripLogger] or
+  [GPSLogger for Android][GPSLogger] can be used to submit locations to the
+  server.
 
 * Sharing tracks with others.
 
@@ -74,13 +76,13 @@ involves downloading approximately 600MB of data.  Perhaps more of an
     to use to host the application and VM:
 
 		$ cd ~/projects
-		$ git clone https://github.com/frankdean/trip-server.git
+		$ git clone git://www.fdsd.co.uk/trip-server.git
 
 1.  Clone the TRIP web client application to have the same parent folder as
     the TRIP server
 
 		$ cd ~/projects
-		$ git clone https://github.com/frankdean/trip-web-client.git
+		$ git clone git://www.fdsd.co.uk/trip-web-client.git
 
 1.  Start the Vagrant VM
 
@@ -187,12 +189,6 @@ configured to run behind an [Apache web server][Apache] using HTTPS.
 
 	On systems that do not support symlinks, it can be installed in the `app`
     sub-folder for running as a standalone development server.
-
-	Alternatively, download a release build of the web client from the GitHub
-    trip-web-client
-    [releases page.](https://github.com/frankdean/trip-web-client/releases)
-    and extract the contents to the `app` sub-folder of the trip-server
-    application.
 
 1.  Install the packages required by `trip-web-client`:
 
@@ -664,7 +660,7 @@ upgrading to the next release.
 
 n/a
 
-[trip-web-client]: https://github.com/frankdean/trip-web-client
+[trip-web-client]: https://www.fdsd.co.uk/trip-web-client-docs/
 [AngularJS]: https://angularjs.org
 [Apache]: http://httpd.apache.org
 [Debian]: https://www.debian.org "a free operating system (OS) for your computer"
@@ -680,6 +676,7 @@ n/a
 [semver]: http://semver.org
 [spa]: https://en.wikipedia.org/wiki/Single-page_application "Single-page application"
 [Traccar Client]: https://www.traccar.org/client/
+[TripLogger]: https://www.fdsd.co.uk/triplogger/ "TripLogger Remote for iOS"
 [Vagrant]: https://www.vagrantup.com "Development Environments Made Easy"
 [VirtualBox]: https://www.virtualbox.org "A x86 and AMD64/Intel64 virtualization product"
 [yarn]: https://yarnpkg.com/ "Fast, reliable and secure dependency management"

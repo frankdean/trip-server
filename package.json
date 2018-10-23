@@ -4,7 +4,7 @@
   "description": "TRIP - Trip Recording and Itinerary Planner RESTful server",
   "author": {
     "name": "Frank Dean",
-    "email": "frankdean@users.noreply.github.com"
+    "email": "support@fdsd.co.uk"
   },
   "license": "GPL-3.0+",
   "private": true,
@@ -32,9 +32,10 @@
     "@turf/distance": "^4.7.3",
     "@turf/helpers": "^4.7.3",
     "@turf/invariant": "^4.7.3",
-    "autoquit": "github:frankdean/node-autoquit#0.1.7-rc.2",
+    "autoquit": "https://www.fdsd.co.uk/trip-server/download/node-autoquit-0.1.7-rc.2.tar.gz",
     "bcrypt": "^1.0.3",
     "formidable": "^1.1.1",
+    "gdal": "^0.9.8",
     "jsonwebtoken": "^7.4.1",
     "lodash": "^4.17.4",
     "node-static": "^0.7.9",

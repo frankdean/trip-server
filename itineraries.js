@@ -23,6 +23,7 @@ var winston = require('winston');
 
 var db = require('./db');
 var config = require('./config.json');
+var elevation = require('./elevation').init();
 var utils = require('./utils');
 
 var validNickname = /^[!-\.0->@-~]+$/;
@@ -321,16 +322,19 @@ function getItineraryWaypointCount(username, itineraryId, callback) {
 }
 
 function saveItineraryRoute(username, itineraryId, routeId, route, callback) {
+  var elevationFillOptions = {force: false, skipIfAnyExist: false};
   db.confirmItineraryOwnership(username, itineraryId, function(err, result) {
     if (utils.handleError(err, callback)) {
       if (result) {
         if (!routeId) {
-          utils.fillDistanceElevationForPath(route);
-          // winston.debug('itineries.js saving route: %j', route);
-          db.createItineraryRoute(itineraryId, route, function(err, result) {
-            if (utils.handleError(err, callback)) {
-              callback(err, result);
-            }
+          elevation.fillElevations(route.points, elevationFillOptions, function(err) {
+            // Ignore err - try to save the route anyway
+            utils.fillDistanceElevationForPath(route);
+            db.createItineraryRoute(itineraryId, route, function(err, result) {
+              if (utils.handleError(err, callback)) {
+                callback(err, result);
+              }
+            });
           });
         } else {
           winston.error('Update itinerary route not yet implemented');
@@ -344,16 +348,19 @@ function saveItineraryRoute(username, itineraryId, routeId, route, callback) {
 }
 
 function replaceItineraryRoutePoints(username, itineraryId, routeId, points, callback) {
+  var route =  {points: points},
+      elevationFillOptions = {force: false, skipIfAnyExist: false};
   db.confirmItineraryOwnership(username, itineraryId, function(err, result) {
     if (utils.handleError(err, callback)) {
       if (result) {
-        var route =  {points: points};
-        utils.fillDistanceElevationForPath(route);
-        db.updateItineraryDistanceElevationData(itineraryId, routeId, route, function(err) {
-          if (utils.handleError(err, callback)) {
-            db.updateItineraryRoutePoints(itineraryId, routeId, points, callback);
-          }
-        });
+          elevation.fillElevations(route.points, elevationFillOptions, function(err) {
+            utils.fillDistanceElevationForPath(route);
+            db.updateItineraryDistanceElevationData(itineraryId, routeId, route, function(err) {
+              if (utils.handleError(err, callback)) {
+                db.updateItineraryRoutePoints(itineraryId, routeId, points, callback);
+              }
+            });
+          });
       } else {
         callback(new Error('Access denied'));
       }
@@ -380,11 +387,22 @@ function deleteItineraryRoutePoints(username, itineraryId, routeId, points, call
 }
 
 function getItineraryRouteNames(username, itineraryId, callback) {
+  var t;
   db.confirmItinerarySharedAccess(username, itineraryId, function(err, result) {
     if (utils.handleError(err, callback)) {
       if (result) {
         db.getItineraryRouteNames(itineraryId, function(err, result) {
-          callback(err, result);
+          if (utils.handleError(err, callback)) {
+            result.forEach(function(v) {
+              if (v.distance != null && v.ascent != null) {
+                // Calculation using Scarf's Equivalence based on flat speed of 4 km/h
+                t = (Number(v.distance) + Number(v.ascent) * 0.00792) / 4;
+                v.hours = Math.floor(t);
+                v.minutes = Math.round((t - v.hours) * 60);
+              }
+            });
+            callback(err, result);
+          }
         });
       } else {
         callback(new Error('Access denied'));
@@ -532,38 +550,48 @@ function getSpecifiedItineraryWaypointsForUser(username, itineraryId, waypointId
 }
 
 function saveItineraryWaypoint(username, itineraryId, waypointId, waypoint, callback) {
+  var elevationFillOptions = {force: false, skipIfAnyExist: true};
   callback = typeof callback === 'function' ? callback : function() {};
   db.confirmItineraryOwnership(username, itineraryId, function(err, result) {
     if (utils.handleError(err, callback)) {
       if (result !== true) {
         callback(new Error('Access denied'));
       } else {
-        if (waypointId) {
-          db.updateItineraryWaypoint(itineraryId, waypointId, waypoint, function(err) {
-            if (utils.handleError(err, callback)) {
-              callback(null);
-            }
-          });
-        } else {
-          db.createItineraryWaypoint(itineraryId, waypoint, function(err, newWaypointId) {
-            if (utils.handleError(err, callback)) {
-              callback(null, newWaypointId);
-            }
-          });
-        }
+        elevation.fillElevations([waypoint], elevationFillOptions, function(err) {
+          if (waypoint.ele && !waypoint.altitude) {
+            waypoint.altitude = waypoint.ele;
+          }
+          // Ignore any error and carry on
+          if (waypointId) {
+            db.updateItineraryWaypoint(itineraryId, waypointId, waypoint, function(err) {
+              if (utils.handleError(err, callback)) {
+                callback(null);
+              }
+            });
+          } else {
+            db.createItineraryWaypoint(itineraryId, waypoint, function(err, newWaypointId) {
+              if (utils.handleError(err, callback)) {
+                callback(null, newWaypointId);
+              }
+            });
+          }
+        });
       }
     }
   });
 }
 
 function moveItineraryWaypoint(username, itineraryId, waypointId, position, callback) {
+  var elevationFillOptions = {force: true, skipIfAnyExist: false};
   callback = typeof callback === 'function' ? callback : function() {};
   db.confirmItineraryOwnership(username, itineraryId, function(err, result) {
     if (utils.handleError(err, callback)) {
       if (result !== true) {
         callback(new Error('Access denied'));
       } else {
-        db.moveItineraryWaypoint(itineraryId, waypointId, position, callback);
+        elevation.fillElevations([position], elevationFillOptions, function(err) {
+          db.moveItineraryWaypoint(itineraryId, waypointId, position, callback);
+        });
       }
     }
   });

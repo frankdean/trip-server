@@ -1449,12 +1449,13 @@ function moveItineraryWaypoint(itineraryId, waypointId, w, callback) {
     if (err) {
       callback(err);
     } else {
-      client.query('UPDATE itinerary_waypoint SET position=POINT($3, $4) WHERE itinerary_id=$1 AND id=$2',
+      client.query('UPDATE itinerary_waypoint SET position=POINT($3, $4), altitude=$5 WHERE itinerary_id=$1 AND id=$2',
                    [
                      itineraryId,
                      waypointId,
                      w.lng,
                      w.lat,
+                     w.ele
                    ],
                    function(err, result) {
                      // release the client back to the pool
