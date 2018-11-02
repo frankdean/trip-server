@@ -39,7 +39,7 @@ var reports = require('./reports');
 var utils = require('./utils');
 
 var myApp = myApp || {};
-myApp.version = '0.17.0';
+myApp.version = '0.17.1-rc.1';
 module.exports = myApp;
 
 winston.level = config.log.level;

@@ -2,150 +2,228 @@
 -- PostgreSQL database dump
 --
 
+-- Dumped from database version 9.6.10
+-- Dumped by pg_dump version 9.6.10
+
 SET statement_timeout = 0;
 SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
 SET check_function_bodies = false;
 SET client_min_messages = warning;
-
-SET search_path = public, pg_catalog;
+SET row_security = off;
 
 --
 -- Data for Name: waypoint_symbol; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-COPY waypoint_symbol (key, value) FROM stdin;
-ATV	ATV
-Airport	Airport
-Amusement Park	Amusement Park
-Anchor	Anchor
-Animal Tracks	Animal Tracks
-Ball Park	Ball Park
-Bank	Bank
-Bar	Bar
-Beach	Beach
-Bell	Bell
-Big Game	Big Game
-Bike Trail	Bike Trail
-Blind	Blind
-Block, Blue	Block, Blue
-Block, Green	Block, Green
-Block, Red	Block, Red
-Blood Trail	Blood Trail
-Boat Ramp	Boat Ramp
-Bowling	Bowling
-Bridge	Bridge
-Building	Building
-Buoy, White	Buoy, White
-Campground	Campground
-Car	Car
-Car Rental	Car Rental
-Car Repair	Car Repair
-Cemetery	Cemetery
-Church	Church
-City (Large)	City (Large)
-City (Medium)	City (Medium)
-City (Small)	City (Small)
-Civil	Civil
-Controlled Area	Controlled Area
-Convenience Store	Convenience Store
-Covey	Covey
-Crossing	Crossing
-Dam	Dam
-Danger Area	Danger Area
-Department Store	Department Store
-Diver Down Flag 1	Diver Down Flag 1
-Diver Down Flag 2	Diver Down Flag 2
-Drinking Water	Drinking Water
-Fast Food	Fast Food
-Fishing Area	Fishing Area
-Fishing Hot Spot Facility	Fishing Hot Spot Facility
-Fitness Center	Fitness Center
-Flag, Blue	Flag, Blue
-Flag, Green	Flag, Green
-Flag, Red	Flag, Red
-Food Source	Food Source
-Forest	Forest
-Furbearer	Furbearer
-Gas Station	Gas Station
-Geocache	Geocache
-Geocache Found	Geocache Found
-Glider Area	Glider Area
-Golf Course	Golf Course
-Horn	Horn
-Ice Skating	Ice Skating
-Information	Information
-Light	Light
-Live Theater	Live Theater
-Lodge	Lodge
-Lodging	Lodging
-Man Overboard	Man Overboard
-Medical Facility	Medical Facility
-Mine	Mine
-Movie Theater	Movie Theater
-Museum	Museum
-Navaid, Amber	Navaid, Amber
-Navaid, Black	Navaid, Black
-Navaid, Blue	Navaid, Blue
-Navaid, Green	Navaid, Green
-Navaid, Green/Red	Navaid, Green/Red
-Navaid, Green/White	Navaid, Green/White
-Navaid, Orange	Navaid, Orange
-Navaid, Red	Navaid, Red
-Navaid, Red/Green	Navaid, Red/Green
-Navaid, Red/White	Navaid, Red/White
-Navaid, Violet	Navaid, Violet
-Navaid, White	Navaid, White
-Navaid, White/Green	Navaid, White/Green
-Navaid, White/Red	Navaid, White/Red
-Oil Field	Oil Field
-Parachute Area	Parachute Area
-Park	Park
-Parking Area	Parking Area
-Pharmacy	Pharmacy
-Picnic Area	Picnic Area
-Pin, Blue	Pin, Blue
-Pin, Green	Pin, Green
-Pin, Red	Pin, Red
-Pizza	Pizza
-Police Station	Police Station
-Post Office	Post Office
-RV Park	RV Park
-Radio Beacon	Radio Beacon
-Residence	Residence
-Restaurant	Restaurant
-Restricted Area	Restricted Area
-Restroom	Restroom
-Scales	Scales
-Scenic Area	Scenic Area
-School	School
-Shipwreck	Shipwreck
-Shopping Center	Shopping Center
-Short Tower	Short Tower
-Shower	Shower
-Ski Resort	Ski Resort
-Skiing Area	Skiing Area
-Skull and Crossbones	Skull and Crossbones
-Small Game	Small Game
-Stadium	Stadium
-Summit	Summit
-Swimming Area	Swimming Area
-Tall Tower	Tall Tower
-Telephone	Telephone
-Toll Booth	Toll Booth
-Trail Head	Trail Head
-Tree Stand	Tree Stand
-Treed Quarry	Treed Quarry
-Truck	Truck
-Truck Stop	Truck Stop
-Tunnel	Tunnel
-Ultralight Area	Ultralight Area
-Upland Game	Upland Game
-Water Source	Water Source
-Waterfowl	Waterfowl
-Wrecker	Wrecker
-Zoo	Zoo
+COPY public.waypoint_symbol (key, value) FROM stdin;
+parking	Parking (ViewRanger)
+lodging	Lodging (ViewRanger)
+peak   	Peak (ViewRanger)
+medicalfacility	Medical Facility (ViewRanger)
+1	01 (ViewRanger)
+2	02 (ViewRanger)
+3	03 (ViewRanger)
+4	04 (ViewRanger)
+5	05 (ViewRanger)
+6	06 (ViewRanger)
+7	07 (ViewRanger)
+8	08 (ViewRanger)
+9	09 (ViewRanger)
+10	10 (ViewRanger)
+11	11 (ViewRanger)
+12	12 (ViewRanger)
+13	13 (ViewRanger)
+14	14 (ViewRanger)
+15	15 (ViewRanger)
+16	16 (ViewRanger)
+17	17 (ViewRanger)
+18	18 (ViewRanger)
+19	19 (ViewRanger)
+20	20 (ViewRanger)
+21	21 (ViewRanger)
+22	22 (ViewRanger)
+23	23 (ViewRanger)
+24	24 (ViewRanger)
+25	25 (ViewRanger)
+26	26 (ViewRanger)
+27	27 (ViewRanger)
+28	28 (ViewRanger)
+29	29 (ViewRanger)
+30	30 (ViewRanger)
+None	None (ViewRanger)
+warningflag	Warning Flag (ViewRanger)
+turnright	Turn right (ViewRanger)
+turnleft	Turn left (ViewRanger)
+steeprocks	Steep Rocks / Cliff (ViewRanger)
+hutshelter	Hut / Shelter (ViewRanger)
+helipad	Helipad (ViewRanger)
+drinkingwater	Drinking Water (ViewRanger)
+crossing	Crossing (ViewRanger)
+forest	Wood / Forest (ViewRanger)
+wildcamping	Wild Camping (ViewRanger)
+waterfall	Waterfall (ViewRanger)
+viewpoint	Viewpoint (ViewRanger)
+geocache	Geocache (ViewRanger)
+touristinformation	Tourist Information (ViewRanger)
+shop	Shop (ViewRanger)
+restaurant	Restaurant (ViewRanger)
+publictoilets	Public Toilets (ViewRanger)
+pub	Pub (ViewRanger)
+place	Place (ViewRanger)
+picnicarea	Picnic Area (ViewRanger)
+poi_red	Point of Interest - red (ViewRanger)
+poi_purple	Point of Interest - purple (ViewRanger)
+poi_orange	Point of Interest - orange (ViewRanger)
+poi_green	Point of Interest - green (ViewRanger)
+outdoorswimming	Outdoor Swimming (ViewRanger)
+obstacle	Stile / Obstacle (ViewRanger)
+landmark	Landmark (ViewRanger)
+water	Water (ViewRanger)
+jetty	Jetty (ViewRanger)
+flora	Flora (ViewRanger)
+fauna	Fauna (ViewRanger)
+farm	Farm (ViewRanger)
+dot	Dot (ViewRanger)
+beach	Beach (ViewRanger)
+activity	Activity (ViewRanger)
+camp	Camp (ViewRanger)
+building	Building (ViewRanger)
+bridge	Bridge (ViewRanger)
+ATV	ATV (Garmin)
+Airport	Airport (Garmin)
+Amusement Park	Amusement Park (Garmin)
+Anchor	Anchor (Garmin)
+Animal Tracks	Animal Tracks (Garmin)
+Ball Park	Ball Park (Garmin)
+Bank	Bank (Garmin)
+Bar	Bar (Garmin)
+Beach	Beach (Garmin)
+Bell	Bell (Garmin)
+Big Game	Big Game (Garmin)
+Bike Trail	Bike Trail (Garmin)
+Blind	Blind (Garmin)
+Block, Blue	Block, Blue (Garmin)
+Block, Green	Block, Green (Garmin)
+Block, Red	Block, Red (Garmin)
+Blood Trail	Blood Trail (Garmin)
+Boat Ramp	Boat Ramp (Garmin)
+Bowling	Bowling (Garmin)
+Bridge	Bridge (Garmin)
+Building	Building (Garmin)
+Buoy, White	Buoy, White (Garmin)
+Campground	Campground (Garmin)
+Car	Car (Garmin)
+Car Rental	Car Rental (Garmin)
+Car Repair	Car Repair (Garmin)
+Cemetery	Cemetery (Garmin)
+Church	Church (Garmin)
+City (Large)	City (Large) (Garmin)
+City (Medium)	City (Medium) (Garmin)
+City (Small)	City (Small) (Garmin)
+Civil	Civil (Garmin)
+Controlled Area	Controlled Area (Garmin)
+Convenience Store	Convenience Store (Garmin)
+Covey	Covey (Garmin)
+Crossing	Crossing (Garmin)
+Dam	Dam (Garmin)
+Danger Area	Danger Area (Garmin)
+Department Store	Department Store (Garmin)
+Diver Down Flag 1	Diver Down Flag 1 (Garmin)
+Diver Down Flag 2	Diver Down Flag 2 (Garmin)
+Drinking Water	Drinking Water (Garmin)
+Fast Food	Fast Food (Garmin)
+Fishing Area	Fishing Area (Garmin)
+Fishing Hot Spot Facility	Fishing Hot Spot Facility (Garmin)
+Fitness Center	Fitness Center (Garmin)
+Flag, Blue	Flag, Blue (Garmin)
+Flag, Green	Flag, Green (Garmin)
+Flag, Red	Flag, Red (Garmin)
+Food Source	Food Source (Garmin)
+Forest	Forest (Garmin)
+Furbearer	Furbearer (Garmin)
+Gas Station	Gas Station (Garmin)
+Geocache	Geocache (Garmin)
+Geocache Found	Geocache Found (Garmin)
+Glider Area	Glider Area (Garmin)
+Golf Course	Golf Course (Garmin)
+Horn	Horn (Garmin)
+Ice Skating	Ice Skating (Garmin)
+Information	Information (Garmin)
+Light	Light (Garmin)
+Live Theater	Live Theater (Garmin)
+Lodge	Lodge (Garmin)
+Lodging	Lodging (Garmin)
+Man Overboard	Man Overboard (Garmin)
+Medical Facility	Medical Facility (Garmin)
+Mine	Mine (Garmin)
+Movie Theater	Movie Theater (Garmin)
+Museum	Museum (Garmin)
+Navaid, Amber	Navaid, Amber (Garmin)
+Navaid, Black	Navaid, Black (Garmin)
+Navaid, Blue	Navaid, Blue (Garmin)
+Navaid, Green	Navaid, Green (Garmin)
+Navaid, Green/Red	Navaid, Green/Red (Garmin)
+Navaid, Green/White	Navaid, Green/White (Garmin)
+Navaid, Orange	Navaid, Orange (Garmin)
+Navaid, Red	Navaid, Red (Garmin)
+Navaid, Red/Green	Navaid, Red/Green (Garmin)
+Navaid, Red/White	Navaid, Red/White (Garmin)
+Navaid, Violet	Navaid, Violet (Garmin)
+Navaid, White	Navaid, White (Garmin)
+Navaid, White/Green	Navaid, White/Green (Garmin)
+Navaid, White/Red	Navaid, White/Red (Garmin)
+Oil Field	Oil Field (Garmin)
+Parachute Area	Parachute Area (Garmin)
+Park	Park (Garmin)
+Parking Area	Parking Area (Garmin)
+Pharmacy	Pharmacy (Garmin)
+Picnic Area	Picnic Area (Garmin)
+Pin, Blue	Pin, Blue (Garmin)
+Pin, Green	Pin, Green (Garmin)
+Pin, Red	Pin, Red (Garmin)
+Pizza	Pizza (Garmin)
+Police Station	Police Station (Garmin)
+Post Office	Post Office (Garmin)
+RV Park	RV Park (Garmin)
+Radio Beacon	Radio Beacon (Garmin)
+Residence	Residence (Garmin)
+Restaurant	Restaurant (Garmin)
+Restricted Area	Restricted Area (Garmin)
+Restroom	Restroom (Garmin)
+Scales	Scales (Garmin)
+Scenic Area	Scenic Area (Garmin)
+School	School (Garmin)
+Shipwreck	Shipwreck (Garmin)
+Shopping Center	Shopping Center (Garmin)
+Short Tower	Short Tower (Garmin)
+Shower	Shower (Garmin)
+Ski Resort	Ski Resort (Garmin)
+Skiing Area	Skiing Area (Garmin)
+Skull and Crossbones	Skull and Crossbones (Garmin)
+Small Game	Small Game (Garmin)
+Stadium	Stadium (Garmin)
+Summit	Summit (Garmin)
+Swimming Area	Swimming Area (Garmin)
+Tall Tower	Tall Tower (Garmin)
+Telephone	Telephone (Garmin)
+Toll Booth	Toll Booth (Garmin)
+Trail Head	Trail Head (Garmin)
+Tree Stand	Tree Stand (Garmin)
+Treed Quarry	Treed Quarry (Garmin)
+Truck	Truck (Garmin)
+Truck Stop	Truck Stop (Garmin)
+Tunnel	Tunnel (Garmin)
+Ultralight Area	Ultralight Area (Garmin)
+Upland Game	Upland Game (Garmin)
+Water Source	Water Source (Garmin)
+Waterfowl	Waterfowl (Garmin)
+Wrecker	Wrecker (Garmin)
+Zoo	Zoo (Garmin)
+poi_yellow	Point of Interest - yellow (ViewRanger)
 \.
 
 

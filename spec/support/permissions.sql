@@ -1,3 +1,4 @@
+GRANT CONNECT ON DATABASE trip  TO trip_role;
 GRANT SELECT, INSERT ON role TO trip_role;
 GRANT SELECT, INSERT ON location TO trip_role;
 GRANT SELECT, INSERT, UPDATE, DELETE ON itinerary TO trip_role;

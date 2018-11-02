@@ -1594,7 +1594,7 @@ function getItineraryWaypoints(itineraryId, callback) {
     if (err) {
       callback(err);
     } else {
-      client.query('SELECT id, name, position[1] as lat, position[0] as lng, time, comment, symbol, altitude, type FROM itinerary_waypoint WHERE itinerary_id=$1 ORDER BY name, symbol, id',
+      client.query('SELECT id, name, position[1] as lat, position[0] as lng, time, comment, symbol, altitude, type, ws.value AS symbol_text FROM itinerary_waypoint iw LEFT JOIN waypoint_symbol ws ON iw.symbol=ws.key WHERE itinerary_id=$1 ORDER BY name, symbol, id',
                    [itineraryId],
                    function(err, result) {
                      // release the client back to the pool
