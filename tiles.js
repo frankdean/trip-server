@@ -122,6 +122,13 @@ function fetchRemoteTile(id, x, y, z, callback) {
   req.end();
 }
 
+/**
+ * @param {number} id the ID of the tile source.  Each source has it's own set of
+ * tiles.
+ * @param {number} x the x coordinate of the tile
+ * @param {number} y the y coordinate of the tile
+ * @param {number} z the zoom level of the tile
+ */
 function fetchTile(id, x, y, z, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
   if (_.isInteger(Number(id)) && _.inRange(id, config.tile.providers.length) &&
@@ -133,27 +140,27 @@ function fetchTile(id, x, y, z, callback) {
         callback(err);
       } else {
         if (exists) {
-          // winston.debug('Fetching existing tile', id, x, y, z);
+          // winston.debug('Fetching existing tile, id:%d, x:%d, y:%d, z:%d', id, x, y, z);
           db.fetchTile(id, x, y, z, config.tile.cache.maxAge, function(err, tile) {
             if (err || tile === undefined || tile.image === undefined) {
-              winston.warn('Error retrieving tile', id, x, y, z, err);
+              winston.warn('Error retrieving tile, id:%d, x:%d, y:%d, z:%d', id, x, y, z, err);
               fetchRemoteTile(id, x, y, z, callback);
             } else {
               callback(null, tile);
             }
           });
         } else {
-          // winston.debug('Fetching non-existent or expired tile from remote site', x, y, z);
+          // winston.debug('Fetching non-existent or expired tile from remote site: id:%d, x:%d, y:%d, z:%d', id, x, y, z);
           fetchRemoteTile(id, x, y, z, function(err, buffer) {
             if (err || !buffer) {
-              winston.warn('Failed to fetch remote tile', id, x, y, z);
+              winston.warn('Failed to fetch remote tile: id:%d, x:%d, y:%d, z:%d', id, x, y, z);
               // Fall back to attempting to fetch a stale tile
               db.fetchTile(id, x, y, z, null, function(err, tile) {
                 if (err || tile === undefined || tile.image === undefined) {
-                  winston.warn('Error retrieving local tile', x, y, z, err);
+                  winston.warn('Error retrieving local tile: id:%d, x:%d, y:%d, z:%d', id, x, y, z, err);
                   callback(err);
                 } else {
-                  winston.warn('Fetched stale tile from cache', x, y, z);
+                  // winston.debug('Fetched stale tile from cache: id: %d, x:%d, y:%d, z:%d', id, x, y, z);
                   callback(null, tile);
                 }
               });

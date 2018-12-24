@@ -338,7 +338,7 @@ function deleteUser(userId, callback) {
   });
 }
 
-function getPassword(username, password, callback) {
+function getPassword(username, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
   pg.connect(config.db.uri, function(err, client, done) {
     if (err) {

@@ -19,6 +19,7 @@
 
 var _ = require('lodash');
 var bcrypt = require('bcrypt');
+var crypt = require('crypto');
 var jwt = require('jsonwebtoken');
 var uuid = require('uuid');
 var winston = require('winston');
@@ -33,7 +34,9 @@ var printableRegexPlusSpace = /^[ -~]+$/;
 
 module.exports = {
   UnauthorizedError: UnauthorizedError,
+  InvalidCredentialsError: InvalidCredentialsError,
   checkAuthenticated: checkAuthenticated,
+  checkAuthenticatedForBasicResources: checkAuthenticatedForBasicResources,
   getUser: getUser,
   getUsers: getUsers,
   getNicknameForUsername: getNicknameForUsername,
@@ -41,7 +44,9 @@ module.exports = {
   updateUser: updateUser,
   deleteUser: deleteUser,
   doLogin: doLogin,
-  resetPassword: resetPassword
+  updateToken: updateToken,
+  resetPassword: resetPassword,
+  changePassword: changePassword
 };
 
 function UnauthorizedError(message) {
@@ -51,6 +56,14 @@ function UnauthorizedError(message) {
 }
 UnauthorizedError.prototype = Object.create(Error.prototype);
 UnauthorizedError.prototype.constructor = UnauthorizedError;
+
+function InvalidCredentialsError(message) {
+  this.name = 'InvalidCredentialsError';
+  this.message  = message || 'Invalid credentials';
+  this.stack = (new Error()).stack;
+}
+InvalidCredentialsError.prototype = Object.create(Error.prototype);
+InvalidCredentialsError.prototype.constructor = InvalidCredentialsError;
 
 function resetPassword(username, password, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
@@ -71,9 +84,94 @@ function resetPassword(username, password, callback) {
   });
 }
 
-function doLogin(username, password, callback) {
+function changePassword(username, oldPassword, newPassword, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  db.getPassword(username, password, function(err, hash) {
+  db.getPassword(username, function(err, hash) {
+    if (err) {
+      callback(err);
+    } else {
+      bcrypt.compare(oldPassword, hash, function(err, result) {
+        if (err) {
+          callback(new InvalidCredentialsError('Failure retrieving user credentials'));
+        } else {
+          if (result) {
+            bcrypt.genSalt(10, function(err, salt) {
+              if (err) {
+                callback(err);
+              } else {
+                bcrypt.hash(newPassword, salt, function(err, hash) {
+                  if (err) {
+                    callback(err);
+                  } else {
+                    db.resetPassword(username, hash, function(err) {
+                      callback(err);
+                    });
+                  }
+                });
+              }
+            });
+          } else {
+            callback(new InvalidCredentialsError());
+          }
+        }
+      });
+    }
+  });
+}
+
+function updateToken(res, username, callback) {
+  var payload, xsrfToken, expiresIn, resourceExpiresIn, renewWithin;
+  expiresIn =  config.app.token && config.app.token.expiresIn ? config.app.token.expiresIn : 7200;
+  resourceExpiresIn =  config.app.resourceToken && config.app.resourceToken.expiresIn ? config.app.resourceToken.expiresIn : 86400;
+  renewWithin = config.app.token && config.app.token.renewWithin ? config.app.token.renewWithin : 3600;
+  // Check for admin role
+  db.hasRole(username, 'Admin', function(err, roleResult) {
+    if (err) {
+      callback(err);
+    } else {
+      payload = {
+        uk_co_fdsd_trip_admin: roleResult,
+        uk_co_fdsd_trip_renewWithin: renewWithin
+      };
+      jwt.sign(payload,
+               config.jwt.signingKey,
+               {
+                 subject: username,
+                 expiresIn: expiresIn
+               },
+               function(err, token) {
+                 if (err) {
+                   winston.error('Failure signing JWT token for', username, err);
+                   callback(err);
+                 } else {
+                   xsrfToken = crypt.createHmac('sha256', config.jwt.signingKey).update(token).digest('hex');
+                   res.setHeader('Set-Cookie', [/*'access_token=' + token + '; path=/; HttpOnly;',*/ 'TRIP-XSRF-TOKEN=' + xsrfToken + '; path=/;']);
+
+                   // Create a resource token that should be much longer lasting
+                   // than the authentication but allow access to map tiles
+                   // which expose the token in GET requests and are only
+                   // renewed when auth tokens are renewed.
+                   jwt.sign({ uk_co_fdsd_trip_admin:false },
+                            config.jwt.resourceSigningKey,
+                            {
+                              subject: 'anon',
+                              expiresIn: resourceExpiresIn
+                            },
+                            function(err, resourceToken) {
+                              if (err) {
+                                winston.error('Failure signing resource JWT token for', username, err);
+                              }
+                              callback(err, {token: token, resourceToken: resourceToken});
+                            });
+                 }
+               });
+    }
+  });
+}
+
+function doLogin(res, username, password, callback) {
+  callback = typeof callback === 'function' ? callback : function() {};
+  db.getPassword(username, function(err, hash) {
     if (err) {
       callback(err);
     } else {
@@ -82,25 +180,8 @@ function doLogin(username, password, callback) {
           callback(err);
         } else {
           if (result) {
-            // Check for admin role
-            db.hasRole(username, 'Admin', function(err, roleResult) {
-              if (err) {
-                callback(err);
-              } else {
-                var payload = {
-                  admin: roleResult,
-                  sub: username
-                };
-                jwt.sign(payload,
-                         config.jwt.signingKey,
-                         {noTimestamp: true},
-                         function(err, token) {
-                           if (err) {
-                             winston.error('Failure signing JWT token for', username, err);
-                           }
-                           callback(err, {token: token});
-                         });
-              }
+            updateToken(res, username, function(err, token) {
+              callback(err, token);
             });
           } else {
             callback(new UnauthorizedError('Invalid credentials'));
@@ -111,9 +192,36 @@ function doLogin(username, password, callback) {
   });
 }
 
-function checkAuthenticated(token, callback) {
+function checkAuthenticated(token, xsrfToken, callback) {
+  var hmac;
   callback = typeof callback === 'function' ? callback : function() {};
   jwt.verify(token, config.jwt.signingKey, function(err, decoded) {
+    if (!err) {
+      // Check XSRF token <https://docs.angularjs.org/api/ng/service/$http>
+      hmac = crypt.createHmac('sha256', config.jwt.signingKey).update(token).digest('hex');
+      if (hmac !== xsrfToken) {
+        winston.warn('Invalid XSRF-TOKEN');
+        err = new Error('Invalid XSRF-TOKEN');
+      }
+    }
+    callback(err, decoded);
+  });
+}
+
+/**
+ * Implements a simpler authentication method for resources such as tiles.
+ */
+function checkAuthenticatedForBasicResources(token, callback) {
+  callback = typeof callback === 'function' ? callback : function() {};
+  jwt.verify(token, config.jwt.resourceSigningKey, function(err, decoded) {
+    if (err  && config.debug) {
+      var decodedToken = jwt.decode(token, {complete: true});
+      winston.debug('Token header: %j', decodedToken.header);
+      winston.debug('Token payload: %j', decodedToken.payload);
+      var exp = new Date(0);
+      exp.setUTCSeconds(decodedToken.payload.exp);
+      winston.debug('Expires: %j', exp);
+    }
     callback(err, decoded);
   });
 }

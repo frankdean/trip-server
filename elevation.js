@@ -216,6 +216,7 @@ function fetchRemoteElevations(points, callback) {
     // }
   });
   req.on('error', function(err) {
+    winston.error('Failure fetching elevation data from remote server:', err);
     callback(err);
   });
   req.setHeader('Connection', 'keep-alive');

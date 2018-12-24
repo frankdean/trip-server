@@ -1,6 +1,6 @@
 {
   "name": "trip-server",
-  "version": "0.0.0",
+  "version": "1.0.0-rc.4",
   "description": "TRIP - Trip Recording and Itinerary Planner RESTful server",
   "author": {
     "name": "Frank Dean",

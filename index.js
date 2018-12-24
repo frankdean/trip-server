@@ -29,6 +29,7 @@ var systemd = require('systemd');
 var winston = require('winston');
 
 var config = require('./config.json');
+var npm_package = require('./package.json');
 var itineraries = require('./itineraries.js');
 var gpxUpload = require('./gpx-upload.js');
 var login = require('./login');
@@ -39,7 +40,7 @@ var reports = require('./reports');
 var utils = require('./utils');
 
 var myApp = myApp || {};
-myApp.version = '0.17.1-rc.1';
+myApp.version = npm_package.version;
 module.exports = myApp;
 
 winston.level = config.log.level;
@@ -68,15 +69,18 @@ myApp.handleError = function handleError(e, res) {
   if (e) {
     if (e instanceof login.UnauthorizedError) {
       res.statusCode = 401;
+      winston.debug(e);
     } else if (e instanceof BadRequestError) {
       res.statusCode = 400;
+      winston.debug(e);
     } else if (e.name !== undefined && e.name === 'error' &&
                e.severity !== undefined && e.severity === 'FATAL') {
       res.statusCode = 500;
+      winston.error(e);
     } else {
       res.statusCode = 400;
+      winston.debug(e);
     }
-    winston.warn(e);
     var resBody = {
       error: e.message
     };
@@ -156,6 +160,17 @@ myApp.extractCredentials = function(headers, body, callback) {
   });
 };
 
+myApp.parseCookies = function(cookieHeader) {
+  var p, retval = {};
+  if (cookieHeader) {
+    cookieHeader.split(';').forEach(function(c) {
+      p = c.split('=');
+      retval[p.shift().trim()] = decodeURI(p).trim();
+    });
+  }
+  return retval;
+};
+
 myApp.handleLogin = function(req, res) {
   var body = [];
   req.on('data', function(chunk) {
@@ -166,7 +181,7 @@ myApp.handleLogin = function(req, res) {
       if (err) {
         myApp.handleError(err, res);
       } else {
-        login.doLogin(creds.email, creds.password, function(err, token) {
+        login.doLogin(res, creds.email, creds.password, function(err, token) {
           if (err) {
             myApp.handleError(err, res);
           } else {
@@ -174,6 +189,20 @@ myApp.handleLogin = function(req, res) {
             res.end(JSON.stringify(token, null, myApp.pretty) + '\n');
           }
         });
+      }
+    });
+  });
+};
+
+myApp.renewAuthenticationToken = function(req, res, token) {
+  req.on('data', function(chunk) {
+  }).on('end', function() {
+    login.updateToken(res, token.sub, function(err, token) {
+      if (err) {
+        myApp.handleError(err, res);
+      } else {
+        res.statusCode = 200;
+        res.end(JSON.stringify(token, null, myApp.pretty) + '\n');
       }
     });
   });
@@ -195,6 +224,32 @@ myApp.passwordReset = function(req, res) {
           } else {
             res.statusCode = 200;
             res.end();
+          }
+        });
+      }
+    });
+  });
+};
+
+myApp.handlePasswordChange = function(req, res, token) {
+  winston.debug('Password change requested');
+  var body = [];
+  req.on('data', function(chunk) {
+    body.push(chunk);
+  }).on('end', function() {
+    body = Buffer.concat(body).toString();
+    myApp.validateHeadersAndBody(req.headers, body, function(err) {
+      if (myApp.handleError(err, res)) {
+        var creds = JSON.parse(body);
+        login.changePassword(token.sub, creds.current, creds.password, function(err) {
+          if (err && err instanceof login.InvalidCredentialsError) {
+            res.statusCode = 400;
+            res.end();
+          } else {
+            if (myApp.handleError(err, res)) {
+              res.statusCode = 200;
+              res.end();
+            }
           }
         });
       }
@@ -311,7 +366,6 @@ myApp.handleUploadItineraryFile = function(req, res, token) {
 };
 
 myApp.handleGetItineraryWaypointCount = function(req, res, token) {
-  winston.debug('handleGetItineraryWaypointCount()');
   var match, id;
   req.on('data', function(chunk) {
   }).on('end', function() {
@@ -876,7 +930,7 @@ myApp.handleGetItineraryShares = function(req, res, token) {
   }).on('end', function() {
     myApp.validatePagingParameters(req, function(err, offset, limit) {
       if (myApp.handleError(err, res)) {
-        match = /\/itinerary\/share\/([0-9]+)(?:\?.*)$/.exec(req.url);
+        match = /\/itinerary\/share\/([0-9]+)(?:\?.*)?$/.exec(req.url);
         id = match ? match[1] : undefined;
         itineraries.getItineraryShares(token.sub, id, offset, limit, function(err, myItineraries) {
           myApp.respondWithData(err, res, myItineraries);
@@ -912,7 +966,7 @@ myApp.handleShareItinerary = function(req, res, token) {
     myApp.validateHeadersAndBody(req.headers, body, function(err) {
       if (myApp.handleError(err, res)) {
         share = JSON.parse(body);
-        match = /\/itinerary\/share\/([0-9]+)(?:\?.*)$/.exec(req.url);
+        match = /\/itinerary\/share\/([0-9]+)(?:\?.*)?$/.exec(req.url);
         id = match ? match[1] : undefined;
         if (share !== undefined) {
           itineraries.shareItinerary(token.sub, id, share, function(err) {
@@ -939,7 +993,7 @@ myApp.handleUpdateItineraryShares = function(req, res, token) {
     myApp.validateHeadersAndBody(req.headers, body, function(err) {
       if (myApp.handleError(err, res)) {
         data = JSON.parse(body);
-        match = /\/itinerary\/share\/([0-9]+)(?:\?.*)$/.exec(req.url);
+        match = /\/itinerary\/share\/([0-9]+)(?:\?.*)?$/.exec(req.url);
         id = match ? match[1] : undefined;
         if (data.updateType !== undefined && data.shares !== undefined &&
             Array.isArray(data.shares)) {
@@ -1103,24 +1157,44 @@ myApp.extractLocationQueryParams = function(req, token, callback) {
   }
 };
 
-myApp.handleGetTile = function(req, res, token) {
+myApp.handleGetTile = function(req, res) {
   var q = url.parse(req.url, true).query;
-  if (q.x !== undefined && q.y !== undefined && q.z !== undefined && q.id !== undefined) {
-    tiles.fetchTile(q.id, q.x, q.y, q.z, function(err, tile) {
-      if (myApp.handleError(err, res)) {
-        if (Buffer.isBuffer(tile.image)) {
-          res.setHeader('Expires', tile.expires.toUTCString());
-          res.setHeader('Content-type', 'image/png');
-          res.end(tile.image);
+  // Must be authorized to fetch tiles - but we use URL parameter instead of authorization header
+  if (q.access_token === undefined) {
+    myApp.handleError(new login.UnauthorizedError('Access token  missing'), res);
+  } else {
+    login.checkAuthenticatedForBasicResources(q.access_token, function(err, token) {
+      if (err) {
+        winston.debug('Token failed verification for map tile');
+        res.statusCode = 401;
+        res.end();
+      } else {
+        // User is authorized - Fetch tile
+        if (q.x !== undefined && q.y !== undefined && q.z !== undefined && q.id !== undefined) {
+          tiles.fetchTile(q.id, q.x, q.y, q.z, function(err, tile) {
+            if (err) {
+              winston.debug('Returning HTTP status 404 for tile: id:%d, x:%d, y:%d, z:%d', q.id, q.x, q.y, q.z);
+              res.statusCode = 404;
+              res.end();
+            } else {
+              if (Buffer.isBuffer(tile.image)) {
+                res.setHeader('Expires', tile.expires.toUTCString());
+                res.setHeader('Content-type', 'image/png');
+                res.statusCode = 200;
+                res.end(tile.image);
+              } else {
+                winston.warn('Failure retrieving tile - image is not a Buffer', q.x, q.y, q.z);
+                winston.warn('Returning HTTP status 500 for tile: id:%d, x:%d, y:%d, z:%d', q.id, q.x, q.y, q.z);
+                res.statusCode = 500;
+                res.end();
+              }
+            }
+          });
         } else {
-          winston.warn('Failure retrieving tile - image is not a Buffer', q.x, q.y, q.z);
-          res.statusCode = 500;
-          res.end();
+          myApp.handleError(new BadRequestError('Invalid tile parameters'), res);
         }
       }
     });
-  } else {
-    myApp.handleError(new BadRequestError('Invalid tile parameters'), res);
   }
 };
 
@@ -1171,7 +1245,7 @@ myApp.handlePostLogPoint = function(req, res) {
         }
       });
     } else {
-      winston.debug('Failure parsing data handling POSTed location with content-type: %s', contentType); 
+      winston.debug('Failure parsing data handling POSTed location with content-type: %s', contentType);
     }
   });
 };
@@ -1415,9 +1489,9 @@ myApp.handleSaveLocationShare = function(req, res, token) {
   });
 };
 
-myApp.handleAuthenticatedRequests = function(req, res, token) {
-  if (req.method === 'GET' && /\/tile\/?(\?.*)?$/.test(req.url)) {
-    myApp.handleGetTile(req, res, token);
+myApp.handleFullyAuthenticatedRequests = function(req, res, token) {
+  if (req.method === 'GET' && /\/login\/token\/renew/.test(req.url))  {
+    myApp.renewAuthenticationToken(req, res, token);
   } else if (req.method === 'GET' && /\/nicknames\/?(\?.*)?$/.test(req.url)) {
     myApp.handleGetNicknames(req, res, token);
   } else if (req.method === 'GET' && /\/nickname\/?(\?.*)?$/.test(req.url)) {
@@ -1522,19 +1596,21 @@ myApp.handleAuthenticatedRequests = function(req, res, token) {
     myApp.handleShareItinerary(req, res, token);
   } else if (req.method === 'GET' && /\/config\/map\/layers\/?(\?.*)?$/.test(req.url)) {
     myApp.handleGetConfigMapAttribution(req, res, token);
-  } else if (token.admin && req.method === 'GET' && /\/admin\/user\/[\d]+\/?(\?.*)?$/.test(req.url)) {
+  } else if (req.method === 'PUT' && /\/account\/password\/?/.test(req.url)) {
+    myApp.handlePasswordChange(req, res, token);
+  } else if (token.uk_co_fdsd_trip_admin && req.method === 'GET' && /\/admin\/user\/[\d]+\/?(\?.*)?$/.test(req.url)) {
     myApp.handleGetUser(req, res);
-  } else if (token.admin && req.method === 'GET' && /\/admin\/user\/?(\?.*)?$/.test(req.url)) {
+  } else if (token.uk_co_fdsd_trip_admin && req.method === 'GET' && /\/admin\/user\/?(\?.*)?$/.test(req.url)) {
     myApp.handleGetUsers(req, res);
-  } else if (token.admin && req.method === 'POST' && /\/admin\/user\/[\d]+\/?(\?.*)?$/.test(req.url)) {
+  } else if (token.uk_co_fdsd_trip_admin && req.method === 'POST' && /\/admin\/user\/[\d]+\/?(\?.*)?$/.test(req.url)) {
     myApp.handleUpdateUser(req, res);
-  } else if (token.admin && req.method === 'POST' && /\/admin\/user\/?(\?.*)?$/.test(req.url)) {
+  } else if (token.uk_co_fdsd_trip_admin && req.method === 'POST' && /\/admin\/user\/?(\?.*)?$/.test(req.url)) {
     myApp.handleCreateUser(req, res);
-  } else if (token.admin && req.method === 'DELETE' && /\/admin\/user\/[\d]+\/?(\?.*)?$/.test(req.url)) {
+  } else if (token.uk_co_fdsd_trip_admin && req.method === 'DELETE' && /\/admin\/user\/[\d]+\/?(\?.*)?$/.test(req.url)) {
     myApp.handleDeleteUser(req, res);
-  } else if (token.admin && req.method === 'POST' && /\/admin\/password\/reset\/?(\?.*)?$/.test(req.url)) {
+  } else if (token.uk_co_fdsd_trip_admin && req.method === 'POST' && /\/admin\/password\/reset\/?(\?.*)?$/.test(req.url)) {
     myApp.passwordReset(req, res);
-  } else if (token.admin && req.method === 'GET' && /\/admin\/system\/status\/?(\?.*)?$/.test(req.url)) {
+  } else if (token.uk_co_fdsd_trip_admin && req.method === 'GET' && /\/admin\/system\/status\/?(\?.*)?$/.test(req.url)) {
     myApp.handleGetSystemStatus(req, res);
   } else {
     winston.warn('URL path not recognised: %s', req.url);
@@ -1584,6 +1660,7 @@ myApp.shutdown = function() {
 };
 
 myApp.server = http.createServer(function(req, res) {
+  var xsrfToken, token, cookies;
   if (config.debug) {
     winston.debug('method:', req.method, 'url: ', req.url);
   }
@@ -1595,7 +1672,9 @@ myApp.server = http.createServer(function(req, res) {
   req.on('error', function(err) {
     myApp.handleError(err, res);
   });
-  if (req.method === 'POST' && /\/login\/?(\?.*)?$/.test(req.url)) {
+  if (req.method === 'GET' && /\/tile\/?(\?.*)?$/.test(req.url)) {
+    myApp.handleGetTile(req, res);
+  } else if (req.method === 'POST' && /\/login\/?(\?.*)?$/.test(req.url)) {
     myApp.handleLogin(req, res);
   } else if (req.method === 'GET' && /\/log_point(?:\.php)?\/?(\?.*)?$/.test(req.url)) {
     myApp.handleLogPoint(req, res);
@@ -1620,16 +1699,22 @@ myApp.server = http.createServer(function(req, res) {
     }
   } else {
     // Must be authorized for everything else
-    var params = url.parse(req.url, true);
-    if (params.query.access_token === undefined) {
+    token = req.headers.authorization;
+    if (token && token.startsWith('Bearer ')) {
+      token = token.slice(7, token.length);
+    }
+    xsrfToken = req.headers['x-trip-xsrf-token'];
+    cookies = myApp.parseCookies(req.headers.cookie);
+    if (token == null || xsrfToken !== cookies['TRIP-XSRF-TOKEN']) {
+      winston.debug('Access token missing from request or coolkie does not match XSRF token');
       myApp.handleError(new login.UnauthorizedError('Access token  missing'), res);
     } else {
-      login.checkAuthenticated(params.query.access_token, function(err, token) {
+      login.checkAuthenticated(token, xsrfToken, function(err, token) {
         if (err) {
           res.statusCode = 401;
           res.end();
         } else {
-          myApp.handleAuthenticatedRequests(req, res, token);
+          myApp.handleFullyAuthenticatedRequests(req, res, token);
         }
       });
     }

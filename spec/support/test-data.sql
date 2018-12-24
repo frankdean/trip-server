@@ -2564,14 +2564,6 @@ SELECT pg_catalog.setval('public.role_seq', 2, true);
 
 
 --
--- Data for Name: tile; Type: TABLE DATA; Schema: public; Owner: -
---
-
-COPY public.tile (server_id, x, y, z, image, updated, expires) FROM stdin;
-\.
-
-
---
 -- Name: tile_download_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
@@ -2608,7 +2600,6 @@ COPY public.usertable (id, firstname, lastname, email, uuid, password, nickname)
 30	test	test	tes99t@trip.test	f2017e90-6f0b-24a9-ee41-e6a93530a5e7	$2a$10$lHw51RHaxpsSsJzFEih5i.49zLK6LUlCrlIjw.3eDEK5jX.pJR1Uu	test997u987
 456	purple	purple	purple@trip.test	3ef65320-f920-4e88-a3a6-bdf36bb17532	$2a$10$YGUYdOlkdi1NamxkppzV9ekIAwrq32IhlwNyzFOU.teemJzhDAcKm	purple
 791	Orange	Orange	orange@trip.test	bd54bb2d-4f64-4ace-ad4a-cc0fc4152378	$2a$10$CUzhW4pxQKEPfZxA1JwnxupDP7LyxYTAj2ueobipHWivVMEuZK1ne	orange
-1	admin	admin	admin@trip.test	38de8ade-de0b-4c71-a7ff-7ec37ab5c781	$2a$10$oKt167vnqz7QyBvA8h5JHuYKfiW29Na35Bpl.LtBo2Yxg.m5c0wlm	admin
 2	Test	Test	test2@trip.test	f68a8d21-6e39-e1f5-79f5-55dc9603b138	$2y$10$u26z37kPq5hHDFBSQe6.weD1wnjgw2S4IcZubBf2.OiSDz4AQmMGO	test2
 3	Fred	Test	fred@trip.test	1103c87d-d0f6-e01a-2114-27699feea78b	$2a$10$CNiaAPQX6ANmbe3SYzhSD.fzmmd4Zw.ga3j3hmbxI3tOYU7dW8Sae	Fred
 4	John	Test	john@trip.test	389561bd-1365-eab3-1e6f-3295e14491f1	$2y$10$fy1fmvCZ4T/gXLIVSmRftuMd/DoPUc1u1iJDeSMrKHdHCYXjt/f8y	John
@@ -2621,7 +2612,8 @@ COPY public.usertable (id, firstname, lastname, email, uuid, password, nickname)
 12	test	test	oswald3@trip.test	7ca61784-93da-db15-011f-80b71dc947d2	$2y$10$5LGcQ.mGzVRYm5noUojrJ.HL660x9/omQm5yoEpNrUFkzXbB6NdMK	oswald3
 13	test	test	oswald4@trip.test	af5f4dfd-dce8-95b9-fd1c-956b165a08ea	$2y$10$5OKage5jjnsH5tY6sCd7l.ulY.uGpFjERyWg3P.K.59DHK5JrqI8i	oswald4
 670	John	Smith	test@trip.test	c33aae96-050b-41b8-9304-a9779c7c6708	$2a$10$nxCIaZdDxggtTfudKS31L.QQ6A404cdvl1a/tdascYdxAI.kamaom	test
-29	user	user	user@trip.test	b1d747dc-197f-4aee-b095-296612a4081d	$2a$10$UbA8Zjohob/0.XO0poqh7.FxXNuajfh2sLQCMG5MLJylYgCPHGcUm	user
+1	admin	admin	admin@trip.test	38de8ade-de0b-4c71-a7ff-7ec37ab5c781	$2a$10$X/L5xzu91K5/oTIXlTRuxO53mwNHp1.R2X/GvytL3oo2rBZsGQmU2	admin
+29	user	user	user@trip.test	b1d747dc-197f-4aee-b095-296612a4081d	$2a$10$NUfVqazW8E5tFpo8SxjCHOxzHdpSKLbrNaLLmHOPs5zDrcXP8l9Wy	user
 \.
 
 

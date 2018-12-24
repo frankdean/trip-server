@@ -10,10 +10,18 @@
     },
     "autoQuit": {
       "timeOut": 300
+    },
+    "token": {
+      "expiresIn": 43200,
+      "renewWithin": 21600
+    },
+    "resourceToken": {
+      "expiresIn": 86400
     }
   },
   "jwt": {
-    "signingKey": "secret"
+    "signingKey": "secret",
+    "resourceSigningKey": "different-secret"
   },
   "tile": {
     "cache": {

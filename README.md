@@ -267,6 +267,120 @@ wrapped in HTML link tags and included in the map attribution.  The entries
 are displayed in the sequence they have been defined.
 
 
+### Elevation Data
+
+The [Consortium for Spatial Information (CGIAR CSI)][cgiar_csi] make
+[Digital Elevation Model][DEM] data covering about 80% of the globe,
+available for download.  It has been sourced and enhanced from data
+gathered by the NASA Shuttle Radar Topographic Mission (SRTM).
+
+From the main page of the [CGIAR CSI][cgiar_csi] website, follow the
+link to `SRTM Data` to download `zip` files that contain `tiff` files
+with 5m x 5m elevation data.
+
+Extract the `tiff` files to a folder, e.g. `/var/local/elevation-data`
+and configure an `elevation` section in `config.json`, e.g.
+
+    ...
+
+        "elevation" : {
+            "tileCacheMs" : 60000,
+            "datasetDir" : "/var/local/elevation-data/"
+        },
+
+    ...
+
+When the Trip Server application is started, it reads all the `tiff`
+files in the folder specified by the `elevation.datasetDir`
+parameter and creates an in memory index containing the
+area covered by each tile.  When elevation data is required for a
+specific location, the relevant tile is loaded, the response provided,
+and the tile retained in memory for the number of milliseconds
+specified by the `elevation.tileCacheMs` parameter.
+
+The `tiff` files take up a lot of space.  Where space is at a
+premium, consider storing them in a compressed file system, e.g.
+on Linux use [Squashfs][].
+
+e.g.
+
+1.  Download files to `~/downloads/srtm`
+
+        $ mkdir -p ~/downloads/srtm
+        $ cd ~/downloads/srtm
+        $ wget http://srtm.csi.cgiar.org/wp-content/uploads/files/srtm_5x5/tiff/srtm_72_22.zip
+
+1.  Extract the tiff files to `~/tmp/tiff`
+
+        $ mkdir -p ~/tmp/tiff
+        $ cd ~/tmp/tiff
+        $ find ~/downlods/srtm -name '*.zip' -exec unzip -n '{}' '*.tif' \;
+
+1.  Create a Squashfs compressed file containing the `tiff` images
+
+        $ mksquashfs ~/tmp/tiff /var/local/elevation-data.squashfs -no-recovery
+
+    The `-no-recovery` option is to stop Squashfs leaving a recovery
+    file behind in the destination folder.  However, it does mean that should the
+    operation fail, there is no recovery information to unwind the
+    command.  This is probably more of a potential problem when
+    appending to an existing Squashfs file.
+
+1.  Optionally, delete or archive the downloaded `zip` files to free
+    up space.
+
+1.  Download more files, extract them and squash them using the above
+    steps.  Repeating the `mksquashfs` command as above will append
+    to an existing Squashfs file.
+
+1.  You can list the contents of the Squashfs file with:
+
+        $ unsquashfs -i -ll /var/local/elevation-data.squashfs
+
+1.  Test mounting the Squashfs file
+
+        $ mkdir -p /var/local/elevation-data/
+        $ sudo mount -t squashfs /var/local/elevation-data.squashfs /var/local/elevation-data/
+        $ ls /var/local/elevation-data/
+        $ sudo umount /var/local/elevation-data
+
+1.  Add an entry to `/etc/fstab` to mount the Squashfs file on boot:
+
+        $ echo '/var/local/elevation-data.squashfs /var/local/elevation-data squashfs ro,defaults 0 0' \
+          | sudo tee -a /etc/fstab
+
+1.  Mount using the `/etc/fstab` entry:
+
+        $ sudo mount /var/local/elevation-data
+        $ ls /var/local/elevation-data
+        $ sudo umount /var/local/elevation-data
+
+1.  If need be in the future, you can extract the files from the Squashfs file with:
+
+        $ unsquashfs -i /var/local/elevation-data.squashfs
+
+    Which will extract all the files to a sub-folder of the current
+    working folder named `squashfs-root`.
+
+    Use the `-f` parameter if the `squashfs-root` folder already exists.
+
+1.  To extract select files, create another file containing the names
+    of the files to be extracted, prefixed by a forward-slash.  e.g.
+    `/srtm_11_03.tiff`.
+
+        $ unsquashfs -i -e list-of-files.txt /var/local/elevation-data.squashfs
+
+See [SquashFS HOWTO](http://tldp.org/HOWTO/SquashFS-HOWTO/creatingandusing.html)
+for more information
+
+
+[DEM]: https://en.wikipedia.org/wiki/Digital_elevation_model "Digital Elevation Model"
+
+[cgiar_csi]: http://srtm.csi.cgiar.org/ "Consortium for Spatial Information"
+
+[squashfs]: http://squashfs.sourceforge.net "a compressed read-only filesystem for Linux"
+
+
 ### PostgreSQL Database Configuration
 
 #### Configure md5 password access for trip user to trip database

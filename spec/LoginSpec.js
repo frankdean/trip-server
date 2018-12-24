@@ -20,6 +20,7 @@
 describe('login.js', function() {
   var Login = require('../login.js');
   var bcrypt = require('bcrypt');
+  var crypt = require('crypto');
   var db = require('../db.js');
   var jwt = require('jsonwebtoken');
 
@@ -29,6 +30,10 @@ describe('login.js', function() {
   var testHash = 'hashed_secret';
   var testSalt = 42;
   var testUuid = '6ebae2b8-3cad-f9be-f0bc-cf3a5ada8f01';
+
+  var mockResponse = {
+    setHeader: function(name, headers) {}
+  };
 
   describe('resetPassword()', function() {
 
@@ -73,14 +78,17 @@ describe('login.js', function() {
             callback(null, true);
           });
         spyOn(db, 'getPassword').and.callFake(
-          function(username, password, callback) {
+          function(username, callback) {
             callback(null, testHash);
           });
         spyOn(db, 'hasRole').and.callFake(
           function(username, role, callback) {
             callback(null, false);
           });
-        Login.doLogin(username, password, function(_err_, _result_) {
+        spyOn(mockResponse, 'setHeader').and.callFake(
+          function(name, headers) {
+          });
+        Login.doLogin(mockResponse, username, password, function(_err_, _result_) {
           err = _err_;
           result = _result_;
           done();
@@ -100,7 +108,7 @@ describe('login.js', function() {
       });
 
       it('should have retrieved the hashed password from the database', function() {
-        expect(db.getPassword).toHaveBeenCalledWith(username, password, jasmine.any(Function));
+        expect(db.getPassword).toHaveBeenCalledWith(username, jasmine.any(Function));
       });
 
       it('should have checked for admin role', function() {
@@ -113,7 +121,7 @@ describe('login.js', function() {
 
       it('should not have assigned the admin role', function() {
         var decoded = jwt.decode(result.token);
-        expect(decoded.admin).toBe(false);
+        expect(decoded.uk_co_fdsd_trip_admin).toBe(false);
         expect(decoded.sub).toEqual(username);
       });
 
@@ -127,14 +135,17 @@ describe('login.js', function() {
             callback(null, true);
           });
         spyOn(db, 'getPassword').and.callFake(
-          function(username, password, callback) {
+          function(username, callback) {
             callback(null, testHash);
           });
         spyOn(db, 'hasRole').and.callFake(
           function(username, role, callback) {
             callback(null, true);
           });
-        Login.doLogin(username, password, function(_err_, _result_) {
+        spyOn(mockResponse, 'setHeader').and.callFake(
+          function(name, headers) {
+          });
+        Login.doLogin(mockResponse, username, password, function(_err_, _result_) {
           err = _err_;
           result = _result_;
           done();
@@ -143,7 +154,7 @@ describe('login.js', function() {
 
       it('should have assigned the admin role', function() {
         var decoded = jwt.decode(result.token);
-        expect(decoded.admin).toBe(true);
+        expect(decoded.uk_co_fdsd_trip_admin).toBe(true);
         expect(decoded.sub).toEqual(username);
       });
     });
@@ -162,10 +173,13 @@ describe('login.js', function() {
 
         beforeEach(function(done) {
           spyOn(db, 'getPassword').and.callFake(
-            function(username, password, callback) {
+            function(username, callback) {
               callback(null, testHash);
             });
-          Login.doLogin(username, password, function(_err_, _result_) {
+          spyOn(mockResponse, 'setHeader').and.callFake(
+            function(name, headers) {
+            });
+          Login.doLogin(mockResponse, username, password, function(_err_, _result_) {
             err = _err_;
             result = _result_;
             done();
@@ -191,10 +205,10 @@ describe('login.js', function() {
 
         beforeEach(function(done) {
           spyOn(db, 'getPassword').and.callFake(
-            function(username, password, callback) {
+            function(username, callback) {
               callback(testFailureMessage);
             });
-          Login.doLogin(username, password, function(_err_, _result_) {
+          Login.doLogin('res', username, password, function(_err_, _result_) {
             err = _err_;
             result = _result_;
             done();
@@ -224,7 +238,7 @@ describe('login.js', function() {
 
   describe('checkAuthenticated()', function() {
     var testFailureMessage = {name: 'test-fail', message: 'Invalid token'};
-    var testDecodedToken = {sub: 'subject', admin: false};
+    var testDecodedToken = {sub: 'subject', admin: false, jti: 'validXsrfToken'};
 
     describe('success', function() {
 
@@ -233,7 +247,19 @@ describe('login.js', function() {
           function(token, key, callback) {
             callback(null, testDecodedToken);
           });
-        Login.checkAuthenticated('token', function(_err_, _decoded_) {
+        spyOn(crypt, 'createHmac').and.callFake(
+          function(algo, key) {
+            return {
+              update: function(data) {
+                return {
+                  digest: function(encoding) {
+                    return 'validXsrfToken';
+                  }
+                };
+              }
+            };
+          });
+        Login.checkAuthenticated('token', 'validXsrfToken', function(_err_, _decoded_) {
           err = _err_;
           result = _decoded_;
           done();
@@ -248,6 +274,28 @@ describe('login.js', function() {
 
     });
 
+    describe('invalid xsrfToken', function() {
+
+      beforeEach(function(done) {
+        spyOn(jwt, 'verify').and.callFake(
+          function(token, key, callback) {
+            callback(null, testDecodedToken);
+          });
+        Login.checkAuthenticated('token', 'invalidXsrfToken', function(_err_, _decoded_) {
+          err = _err_;
+          result = _decoded_;
+          done();
+        });
+      });
+
+      it('should verify tokens when checkAuthenticated called', function() {
+        expect(jwt.verify).toHaveBeenCalled();
+        expect(err).toBeTruthy();
+        expect(result).toEqual(testDecodedToken);
+      });
+
+    });
+
     describe('failure', function() {
 
       beforeEach(function(done) {
@@ -255,7 +303,7 @@ describe('login.js', function() {
           function(token, key, callback) {
             callback(testFailureMessage);
           });
-        Login.checkAuthenticated('token', function(_err_, _decoded_) {
+        Login.checkAuthenticated('token', 'invalidXsrfToken', function(_err_, _decoded_) {
           err = _err_;
           result = _decoded_;
           done();
