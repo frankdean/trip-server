@@ -50,7 +50,7 @@ The following features are provided:
 
 * [Node.js][] - v6.x.x
 
-* [PostgreSQL][] database server - (Known to run on version 9.4)
+* [PostgreSQL][] database server - (Known to run on version 9.4 and 9.6)
 
 
 ## Quick Start Using [Vagrant][]
@@ -136,6 +136,10 @@ commands on the guest VM and following the prompts:
 	$ sudo dpkg-reconfigure tzdata
 	$ sudo dpkg-reconfigure locales
 
+Optionally, apply the latest Debian updates with:
+
+	$ sudo apt-get upgrade
+
 View the `Vagrantfile` configuration file in the root of the `trip-server`
 folder for some examples you can modify.  E.g. you can enable the
 `config.vm.network "public_network"` option to make the VM accessible from the
@@ -144,6 +148,40 @@ using a GPS enabled device sharing the same private LAN as the host VM.
 [Note the warnings](https://www.vagrantup.com/docs/networking/public_network.html)
 in the Vagrant documentation for this setting, as for convenience, **the VM is
 insecure by default and design.**
+
+
+### Trouble-shooting
+
+#### Guest additions on this VM do not match the installed version of VirtualBox!
+
+This means the installed box needs updating or an older version of VirtualBox
+needs to be used.
+
+A simple solution is to install
+the [vagrant-vbguest](https://github.com/dotless-de/vagrant-vbguest)
+package.
+
+		$ vagrant plugin install vagrant-vbguest
+
+See also <https://stackoverflow.com/questions/20308794/how-to-upgrade-to-virtualbox-guest-additions-on-vm-box>
+
+
+#### Vagrant has detected a configuration issue which exposes a vulnerability with the installed version of VirtualBox
+
+e.g.
+
+		Vagrant has detected a configuration issue which exposes a
+		vulnerability with the installed version of VirtualBox. The
+		current guest is configured to use an E1000 NIC type for a
+		network adapter which is vulnerable in this version of VirtualBox.
+		Ensure the guest is trusted to use this configuration or update
+		the NIC type using one of the methods below:
+
+		  https://www.vagrantup.com/docs/virtualbox/configuration.html#default-nic-type
+		  https://www.vagrantup.com/docs/virtualbox/networking.html#virtualbox-nic-type
+
+Should be fixed in VirtualBox 5.2.22, but error still reported by version
+2.2.22 of Vagrant.  See <https://github.com/hashicorp/vagrant/issues/10481>
 
 
 ## Standard Setup and Configuration
@@ -530,6 +568,17 @@ Using a browser, navigate to <http://localhost:8080/app/index.html>.  The
 application should load in the browser and prompt for login.
 
 The server can be stoped using `ctrl-c` in the terminal window.
+
+
+## Nginx Web Server
+
+The application can be deployed with either the [Apache][] or [Nginx][] web
+servers.  The section below this section describes setting up Apache.
+
+Setting up [Nginx][] isn't documented here but can readily be determined by
+looking at the Vagrant setup scripts under the `./provisioning/` folder in the
+source distribution, or by deploying using Vagrant and examining the working
+Vagrant installation.
 
 
 ## Apache

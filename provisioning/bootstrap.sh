@@ -1,18 +1,22 @@
 #!/usr/bin/env bash
 
+# Uncomment the following to debug the script
+#set -x
+
 apt-get update
-apt-get upgrade --yes
-apt-get install --yes g++ git nginx postgresql postgresql-contrib apg screen apt-transport-https
+#apt-get upgrade --yes
+apt-get install apt-transport-https
+apt-get install --yes g++ git nginx postgresql postgresql-contrib apg screen
 
 curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
 echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
 apt-get update
 apt-get install --yes yarn+ cmdtest- nodejs-
 
-NODE_VERSION="v6.14.4"
+NODE_VERSION="v6.16.0"
 NODE_FILENAME="node-${NODE_VERSION}-linux-x64"
 NODE_TAR_FILENAME="${NODE_FILENAME}.tar.xz"
-NODE_SHA256="66d052fe10f90e3b05fdda3117f26bc24da10d436eecf6e298c317f437647aab  ${NODE_TAR_FILENAME}"
+NODE_SHA256="56c701b19777ffd122832ead132bf0590c9b6280a5cabe19e7642441167f7262  ${NODE_TAR_FILENAME}"
 NODE_EXTRACT_DIR="${NODE_FILENAME}"
 NODE_DOWNLOAD_URL="https://nodejs.org/dist/${NODE_VERSION}/${NODE_TAR_FILENAME}"
 

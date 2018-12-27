@@ -8,9 +8,9 @@
 # Uncomment the following to debug the script
 #set -x
 
-TRIP_WEB_CLIENT_VERSION='v0.17.0'
-TRIP_WEB_CLIENT_RELEASE="trip-web-release-${TRIP_WEB_CLIENT_VERSION}.tar.gz"
-TRIP_WEB_CLIENT_SHA256="e9370f310deff4f1718c7bc22dcc3079e7cf4a24ea45296d91cde1597fd517d0  ${TRIP_WEB_CLIENT_RELEASE}"
+TRIP_WEB_CLIENT_VERSION='v1.0.0'
+TRIP_WEB_CLIENT_RELEASE="trip-web-client-release-${TRIP_WEB_CLIENT_VERSION}.tar.gz"
+TRIP_WEB_CLIENT_SHA256="3e491482ffeddf11b4ed223431c831f16f5bf42a5443f05d2ebf3b3e0c4016af  ${TRIP_WEB_CLIENT_RELEASE}"
 PG_VERSION=9.6
 
 su - postgres -c 'createuser -drs vagrant' 2>/dev/null
@@ -26,7 +26,7 @@ else
 	cp config-dist.json config.json
 	$UMASK
 
-	sed "s/\"signingKey\".*/\"signingKey\": \"${SIGNING_KEY}\"/; s/\"maxAge\": *[0-9]\+/\"maxAge\": 999/; s/\"host\": *\".*\", */\"host\": \"localhost\",/; s/\"path\": *\".*\", *$/\"path\": \"\/DO_NOT_FETCH_TILES_IN_DEMO_UNTIL_PROPERLY_CONFIGURED\/{z}\/{x}\/{y}.png\",/; s/\"uri\": *\".*\"/\"uri\": \"postgresql:\/\/trip:${SECRET}@localhost\/trip\"/; s/\"allow\":.*/\"allow\": false/; s/\"level\": *\"info\"/\"level\": \"debug\"/" /vagrant/config-dist.json >/vagrant/config.json
+	sed "s/\"signingKey\".*/\"signingKey\": \"${SIGNING_KEY}\",/; s/\"maxAge\": *[0-9]\+/\"maxAge\": 999/; s/\"host\": *\".*\", */\"host\": \"localhost\",/; s/\"path\": *\".*\", *$/\"path\": \"\/DO_NOT_FETCH_TILES_IN_DEMO_UNTIL_PROPERLY_CONFIGURED\/{z}\/{x}\/{y}.png\",/; s/\"uri\": *\".*\"/\"uri\": \"postgresql:\/\/trip:${SECRET}@localhost\/trip\"/; s/\"allow\":.*/\"allow\": false/; s/\"level\": *\"info\"/\"level\": \"debug\"/" /vagrant/config-dist.json >/vagrant/config.json
 
 fi
 
@@ -90,14 +90,14 @@ fi
 chown vagrant.vagrant /var/www/trip
 if [ ! -e /var/www/trip/index.html ]; then
 	cd /var/www/trip
-	ln -s /vagrant/provisioning/nginx/index.html
+	ln -s /vagrant/provisioning/nginx/index.html /var/www/trip/index.html
 fi
 if [ ! -e /var/www/trip/app/bower_components ]; then
 	if [ -f /vagrant-trip-web-client/package.json ]; then
 		echo "Configuring web client to use shared folder under /vagrant-trip-web-client/"
 		cd /var/www/trip
 		if [ ! -L app ]; then
-			ln -s /vagrant-trip-web-client/app
+			ln -s /vagrant-trip-web-client/app /var/www/trip/app
 		fi
 		if [ ! -d /vagrant-trip-web-client/node_modules ]; then
 			su - vagrant -c 'cd /vagrant-trip-web-client && yarn install'
@@ -106,7 +106,7 @@ if [ ! -e /var/www/trip/app/bower_components ]; then
 		echo "Configuring to run with web application under /vagrant/trip-web-client/"
 		cd /var/www/trip
 		if [ ! -L app ]; then
-			ln -s /vagrant/trip-web-client/app
+			ln -s /vagrant/trip-web-client/app /var/www/trip/app
 		fi
 		if [ ! -d /vagrant/trip-web-client/node_modules ]; then
 			su - vagrant -c 'cd /vagrant/trip-web-client && yarn install'
