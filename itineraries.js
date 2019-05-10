@@ -19,7 +19,6 @@
 
 var _ = require('lodash');
 var builder = require('xmlbuilder');
-var winston = require('winston');
 
 var db = require('./db');
 var config = require('./config.json');
@@ -27,6 +26,8 @@ var elevation = require('./elevation').init();
 var utils = require('./utils');
 
 var validNickname = /^[!-\.0->@-~]+$/;
+
+var logger = require('./logger').createLogger('itineries.js');
 
 module.exports = {
   deleteItinerary: deleteItinerary,
@@ -85,10 +86,10 @@ function formatKmlSnippetDate(date) {
   // node v6.11.4 "Sat, 02 Sep 2017, 13:30:45"
   parts = /^(\D{3}),?\s+(\d+)\s+(\D+)\s+(\d+),?\s+(.*)$/.exec(s);
   if (parts && parts.length > 0) {
-    // winston.debug('Successfully parsed as Node v6.11.4 format');
+    // logger.debug('Successfully parsed as Node v6.11.4 format');
     return parts[1] + ' ' + parts[3] + ' ' + Number(parts[2]) + ' ' + parts[5] + ' ' + parts[4];
   } else {
-    winston.warn('Failed to parse date "%s", trying Node v6.11.3 format', s);
+    logger.warn('Failed to parse date "%s", trying Node v6.11.3 format', s);
     parts = /^(\D{3}),?\s+(\D+)\s+(\d+),?\s+(\d+),?\s+(.*)$/.exec(s);
   }
   if (parts && parts.length > 0) {
@@ -231,7 +232,7 @@ function shareItinerary(username, itineraryId, share, callback) {
                                           share.active,
                                           callback);
                 } else {
-                  // winston.debug('Not updating itinerary share as no change');
+                  // logger.debug('Not updating itinerary share as no change');
                   callback(null);
                 }
               }
@@ -337,7 +338,7 @@ function saveItineraryRoute(username, itineraryId, routeId, route, callback) {
             });
           });
         } else {
-          winston.error('Update itinerary route not yet implemented');
+          logger.error('Update itinerary route not yet implemented');
           callback(new Error('Update itinerary route not yet implemented'));
         }
       } else {
@@ -705,7 +706,7 @@ function saveItineraryTrack(username, itineraryId, trackId, newTrack, segments, 
                     utils.fillDistanceElevationForTrack(result[0], {calcSegments: true});
                     db.updateItineraryTrackDistanceElevation(itineraryId, trackId, result[0], callback);
                   } else {
-                    winston.warn('Failed to find any matching tracks for track id: %d', trackId);
+                    logger.warn('Failed to find any matching tracks for track id: %d', trackId);
                     callback(null);
                   }
                 }
@@ -723,7 +724,7 @@ function saveItineraryTrack(username, itineraryId, trackId, newTrack, segments, 
                     utils.fillDistanceElevationForTrack(result[0], {calcSegments: true});
                     db.updateItineraryTrackDistanceElevation(itineraryId, newTrackId, result[0], callback);
                   } else {
-                    winston.warn('Failed to find any matching tracks for track id: %d', newTrackId);
+                    logger.warn('Failed to find any matching tracks for track id: %d', newTrackId);
                     callback(null);
                   }
                 }
@@ -935,11 +936,11 @@ function downloadItineraryGpx(username, itineraryId, params, callback) {
                               if (v.hdop) trkpt.e('hdop', null, v.hdop);
                             });
                           } else {
-                            winston.error('Track segment points array is missing');
+                            logger.error('Track segment points array is missing');
                           }
                         }); // forEach trackSegment
                       } else {
-                        winston.error('Track segments array is missing');
+                        logger.error('Track segments array is missing');
                       }
                     }); // forEach track
                   }
@@ -1089,7 +1090,7 @@ function writeKmlRoutesFolder(doc, routes) {
     folder.e('name', null, 'Routes');
     routes.forEach(function(r) {
       folder2 = folder.e('Folder');
-      // winston.debug('Route:', JSON.stringify(r, ['id', 'name', 'distance', 'ascent', 'descent', 'lowest', 'highest', 'bounds'], 4));
+      // logger.debug('Route: %s', JSON.stringify(r, ['id', 'name', 'distance', 'ascent', 'descent', 'lowest', 'highest', 'bounds'], 4));
       folder2.e('name', null, (r.name ? r.name : 'RTE: ' + r.id));
       folder3 = folder2.e('Folder');
       folder3.e('name', null, 'Points');
@@ -1141,7 +1142,7 @@ function writeKmlTracksFolder(doc, tracks) {
     folder.e('name', null, 'Tracks');
     tracks.forEach(function(t) {
       folder2 = folder.e('Folder');
-      // winston.debug('Track:', JSON.stringify(t, ['id', 'name', 'distance', 'ascent', 'descent', 'lowest', 'highest', 'startTime', 'endTime', 'minSpeed', 'maxSpeed', 'avgSpeed', 'bounds'], 4));
+      // logger.debug('Track: %s', JSON.stringify(t, ['id', 'name', 'distance', 'ascent', 'descent', 'lowest', 'highest', 'startTime', 'endTime', 'minSpeed', 'maxSpeed', 'avgSpeed', 'bounds'], 4));
       folder2.e('name', null, (t.name ? t.name : 'TRK: ' + t.id))
         .insertAfter('snippet')
         .insertAfter('description')

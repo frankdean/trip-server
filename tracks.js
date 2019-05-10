@@ -20,10 +20,11 @@
 var builder = require('xmlbuilder');
 var uuid = require('uuid');
 var _ = require('lodash');
-var winston = require('winston');
 
 var db = require('./db');
 var utils = require('./utils');
+
+var logger = require('./logger').createLogger('tracks.js');
 
 module.exports = {
   getLocations: getLocations,
@@ -279,54 +280,54 @@ function doLogPoint(q, callback) {
     q.lng = q.lng !== undefined ? q.lng : q.lon;
     if (_.inRange(q.lat, -90, 90) && _.inRange(q.lng, -180, 180)) {
       if (q.hdop !== undefined && !_.inRange(q.hdop, 99999.9)) {
-        winston.debug('Received invalid hdop for location %j', q);
+        logger.debug('Received invalid hdop for location %j', q);
         q.hdop = undefined;
       }
       if(q.altitude !== undefined && !_.inRange(q.altitude, -999999.99999, 999999.99999)) {
-        winston.debug('Received invalid altitude for location %j', q);
+        logger.debug('Received invalid altitude for location %j', q);
         q.altitude = undefined;
       }
       if(q.speed !== undefined && !_.inRange(q.speed, -99999.9, 99999.9)) {
-        winston.debug('Received invalid speed for location %j', q);
+        logger.debug('Received invalid speed for location %j', q);
         q.speed = undefined;
       }
       if (q.bearing !== undefined && !_.inRange(q.bearing, -999999.99999, 999999.99999)) {
-        winston.debug('Received invalid bearing for location %j', q);
+        logger.debug('Received invalid bearing for location %j', q);
         q.bearing = undefined;
       }
       if (q.sat !== undefined && (!_.isInteger(Number(q.sat)) || !_.inRange(q.sat, 32767))) {
-        winston.debug('Received invalid satellite count for location %j', q);
+        logger.debug('Received invalid satellite count for location %j', q);
         q.sat = undefined;
       }
       if (q.batt !== undefined && !_.inRange(q.batt, 999.9)) {
-        winston.debug('Received invalid battery value for location %j', q);
+        logger.debug('Received invalid battery value for location %j', q);
         q.batt = undefined;
       }
       if (q.mstime !== undefined && _.inRange(q.mstime, Number.MAX_SAFE_INTEGER)) {
         db.findUserByUuid(q.uuid, function(err, user) {
           if (err) {
-            winston.info('User not found for UUID', q.uuid, q.id);
+            logger.info('User not found for UUID, %s, %s', q.uuid, q.id);
             callback(new Error('Invalid UUID'));
           } else {
-            winston.debug('Saving %j', q);
+            logger.debug('Saving %j', q);
             db.logPoint(user.id, q, function(err) {
               if (err) {
-                winston.error('Failure saving logged point', err);
+                logger.error('Failure saving logged point', err);
               }
               callback(err, user);
             });
           }
         });
       } else {
-        winston.debug('Invalid time-type parameter for location %j', q);
+        logger.debug('Invalid time-type parameter for location %j', q);
         callback(new Error('Invalid time-type parameter'));
       }
     } else {
-      winston.debug('Invalid or missing lat/lon parameters for location %j', q);
+      logger.debug('Invalid or missing lat/lon parameters for location %j', q);
       callback(new Error('Invalid or missing lat/lon parameters'));
     }
   } else {
-    winston.debug('log_point failed for location: %j', q);
+    logger.debug('log_point failed for location: %j', q);
     callback(new Error('Missing UUID parameter'));
   }
 }
@@ -356,10 +357,10 @@ function logPoint(q, callback) {
     if (q.mstime) {
       // Workaround for bug on some Android devices where GPS time is consistently wrong
       // Apply a second or millisecond correction, max range 25 hours
-      winston.debug('tracks.js: mstime before:', q.mstime, new Date(q.mstime));
+      logger.debug('mstime before: %d, %s', q.mstime, new Date(q.mstime));
       // Comma separated list of provider to modify the time for
       if (Array.isArray(q.offsetprovs)) {
-        winston.debug('offsetprovs parameter appears to occur more than once - has been parsed as an array');
+        logger.debug('offsetprovs parameter appears to occur more than once - has been parsed as an array');
         provParams = q.offsetprovs;
       } else {
         provParams = q.offsetprovs ? q.offsetprovs.split(',') : [];
@@ -367,7 +368,7 @@ function logPoint(q, callback) {
       offsetIndex = provParams.indexOf(q.prov);
       if (q.offset && (provParams.length === 0 || offsetIndex !== -1)) {
         if (Array.isArray(q.offset)) {
-          winston.debug('offset parameter appears to occur more than once - has been parsed as an array');
+          logger.debug('offset parameter appears to occur more than once - has been parsed as an array');
           offsetParams = q.offset;
         } else {
           offsetParams = q.offset.split(',');
@@ -376,21 +377,21 @@ function logPoint(q, callback) {
           offset = offsetParams[offsetIndex];
         } else {
           if (offsetParams.length > 1) {
-            winston.debug('offset has inconsistent number of values compared with offsetprovs parameter');
+            logger.debug('offset has inconsistent number of values compared with offsetprovs parameter');
             offset = 0;
           } else {
             offset = q.offset;
           }
         }
         if (_.inRange(offset, -90000, 90000)) {
-          winston.debug('Modifying time by %d seconds', offset);
+          logger.debug('Modifying time by %d seconds', offset);
           q.mstime += Number(offset) * 1000;
         } else {
-          winston.debug('Invalid value for offset parameter');
+          logger.debug('Invalid value for offset parameter');
         }
       } else if (q.msoffset && (provParams.length === 0 || offsetIndex !== -1)) {
         if (Array.isArray(q.msoffset)) {
-          winston.debug('msoffset parameter appears to occur more than once - has been parsed as an array');
+          logger.debug('msoffset parameter appears to occur more than once - has been parsed as an array');
           offsetParams = q.msoffset;
         } else {
           offsetParams = q.msoffset.split(',');
@@ -399,27 +400,27 @@ function logPoint(q, callback) {
           offset = offsetParams[offsetIndex];
         } else {
           if (offsetParams.length > 1) {
-            winston.debug('msoffset has inconsistent number of values compared with offsetprovs parameter');
+            logger.debug('msoffset has inconsistent number of values compared with offsetprovs parameter');
             offset = 0;
           } else {
             offset = q.msoffset;
           }
         }
         if (_.inRange(offset, -90000000, 90000000)) {
-          winston.debug('Modifying time by %d milliseconds', offset);
+          logger.debug('Modifying time by %d milliseconds', offset);
           q.mstime += Number(offset);
         } else {
-          winston.debug('Invalid value for msoffset parameter');
+          logger.debug('Invalid value for msoffset parameter');
         }
       }
     }
-    winston.debug('tracks.js: mstime: after', q.mstime, new Date(q.mstime));
+    logger.debug('mstime after : %s, %s', q.mstime, new Date(q.mstime));
     // If no time parameters specified, default to now, but not where an
     // invalid time has been passed.  If someone is trying to specify a time,
     // but it is invalid, we don't want to record a time that may be quite
     // wrong and therefore misleading.
     if (q.mstime === undefined && q.time === undefined && q.timestamp === undefined && q.unixtime === undefined) {
-      winston.debug('tracks.js no time parameter specified, logging time as now');
+      logger.debug('tracks.js no time parameter specified, logging time as now');
       q.mstime = Date.now();
     }
   }

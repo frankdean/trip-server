@@ -26,10 +26,10 @@ var formidable = require('formidable');
 var nstatic = require('node-static');
 var qs = require('qs');
 var systemd = require('systemd');
-var winston = require('winston');
 
 var config = require('./config.json');
 var npm_package = require('./package.json');
+var db = require('./db');
 var itineraries = require('./itineraries.js');
 var gpxUpload = require('./gpx-upload.js');
 var login = require('./login');
@@ -43,7 +43,8 @@ var myApp = myApp || {};
 myApp.version = npm_package.version;
 module.exports = myApp;
 
-winston.level = config.log.level;
+var logger = require('./logger').createLogger('index.js');
+
 myApp.fileServer = new(nstatic.Server)('./', {cache: 3600});
 // Set to x to indent JSON with x spaces.  Zero: no pretty print.
 myApp.pretty = config.app.json.indent.level;
@@ -69,17 +70,17 @@ myApp.handleError = function handleError(e, res) {
   if (e) {
     if (e instanceof login.UnauthorizedError) {
       res.statusCode = 401;
-      winston.debug(e);
+      logger.debug(e);
     } else if (e instanceof BadRequestError) {
       res.statusCode = 400;
-      winston.debug(e);
+      logger.debug(e);
     } else if (e.name !== undefined && e.name === 'error' &&
                e.severity !== undefined && e.severity === 'FATAL') {
       res.statusCode = 500;
-      winston.error(e);
+      logger.error(e);
     } else {
       res.statusCode = 400;
-      winston.debug(e);
+      logger.debug(e);
     }
     var resBody = {
       error: e.message
@@ -88,7 +89,7 @@ myApp.handleError = function handleError(e, res) {
       try {
         res.setHeader('Content-Type', 'application/json');
       } catch (ex) {
-        winston.error('Headers were already sent.', ex);
+        logger.error('Headers were already sent.', ex);
       }
       res.end(JSON.stringify(resBody, null, myApp.pretty) + '\n');
     } else {
@@ -104,10 +105,10 @@ myApp.validateHeadersAndBody = function(headers, body, callback) {
   if (!/(^|;)application\/json(;|$)/.test(headers['content-type'])) {
     if (config.validation && config.validation.headers && config.validation.headers.contentType &&
         config.validation.headers.contentType.warn === false) {
-      winston.error('Unexpected content-type: ' + headers['content-type']);
+      logger.error('Unexpected content-type: ' + headers['content-type']);
       err = new BadRequestError('Unexpected content-type: ' + headers['content-type']);
     } else {
-      winston.warn('Header validation failed for headers: %j', headers);
+      logger.warn('Header validation failed for headers: %j', headers);
     }
   }
   if (err) {
@@ -117,8 +118,8 @@ myApp.validateHeadersAndBody = function(headers, body, callback) {
       callback(new BadRequestError('Body is not valid JSON'));
     } else {
       // if (config.debug) {
-      //   winston.debug('BODY:', JSON.stringify(JSON.parse(body), null, 4) + '\n');
-      //   winston.debug('BODY:', body);
+      //   logger.debug('BODY: %s', JSON.stringify(JSON.parse(body), null, 4) + '\n');
+      //   logger.debug('BODY: %j', body);
       // }
       callback(null);
     }
@@ -232,7 +233,7 @@ myApp.passwordReset = function(req, res) {
 };
 
 myApp.handlePasswordChange = function(req, res, token) {
-  winston.debug('Password change requested');
+  logger.debug('Password change requested');
   var body = [];
   req.on('data', function(chunk) {
     body.push(chunk);
@@ -336,31 +337,31 @@ myApp.handleUploadItineraryFile = function(req, res, token) {
   form.maxFieldsSize = 10 * 1024 * 1024;
   form.hash = 'sha1';
   form.on('file', function(name, file) {
-    // winston.debug('File saved as %s', file.path);
-    // winston.debug('Original name: %s', file.name);
-    // winston.debug('File size: %d bytes', file.size);
-    // winston.debug('Hash: %s', file.hash);
+    // logger.debug('File saved as %s', file.path);
+    // logger.debug('Original name: %s', file.name);
+    // logger.debug('File size: %d bytes', file.size);
+    // logger.debug('Hash: %s', file.hash);
     gpxUpload.importFile(itineraryId, file.path, true, function(err, result) {
-      // winston.debug('Import result:', result);
+      // logger.debug('Import result:', result);
     });
   });
   form.on('error', function() {
-    winston.warn('Form upload failed');
+    logger.warn('Form upload failed');
     myApp.handleError(new Error('Form upload failed'));
   });
   form.on('abort', function() {
-    winston.warn('Form upload aborted');
+    logger.warn('Form upload aborted');
     myApp.handleError(new Error('Form upload aborted'));
   });
   form.on('end', function() {
-    // winston.debug('Received upload of %d bytes', form.bytesReceived);
-    // winston.debug('Expected %d bytes', form.bytesExpected);
-    // winston.debug('File path: %s', form.uploadDir);
+    // logger.debug('Received upload of %d bytes', form.bytesReceived);
+    // logger.debug('Expected %d bytes', form.bytesExpected);
+    // logger.debug('File path: %s', form.uploadDir);
     res.statusCode = 200;
     res.end();
   });
   form.parse(req, function(err, fields, files) {
-    // winston.debug('index.js - File uploaded');
+    // logger.debug('index.js - File uploaded');
   });
   return;
 };
@@ -908,11 +909,11 @@ myApp.handleGetItineraryRoute = function(req, res, token) {
     routeId = match ? match[2] : undefined;
     if (itineraryId && routeId) {
       itineraries.getItineraryRoutesForUser(token.sub, itineraryId, [routeId], function(err, routes) {
-        if (routes.length === 1) {
+        if (routes && routes.length === 1) {
           route = routes[0];
         } else {
-          if (routes.length > 1) {
-            winston.error('itineraries.getItineraryRoutesForUser() returned multiple routes when queried for a single route with id: %s', routeId);
+          if (routes && routes.length > 1) {
+            logger.error('itineraries.getItineraryRoutesForUser() returned multiple routes when queried for a single route with id: %s', routeId);
           }
           route = {};
         }
@@ -1150,7 +1151,7 @@ myApp.extractLocationQueryParams = function(req, token, callback) {
       (q.max_hdop !== undefined && !_.inRange(q.max_hdop, 99999.9)) ||
       (q.page_size !== undefined && (!_.isInteger(Number(q.page_size)) || !_.inRange(q.page_size, 1, 1000))) ||
       (q.offset !== undefined && (!_.isInteger(Number(q.offset)) || !_.inRange(q.offset, Number.MAX_SAFE_INTEGER)))) {
-    winston.error('Parameters failed validation: %j', q);
+    logger.error('Parameters failed validation: %j', q);
     callback(new BadRequestError('Parameters failed validation'));
   } else {
     callback(null, q);
@@ -1165,7 +1166,7 @@ myApp.handleGetTile = function(req, res) {
   } else {
     login.checkAuthenticatedForBasicResources(q.access_token, function(err, token) {
       if (err) {
-        winston.debug('Token failed verification for map tile');
+        logger.debug('Token failed verification for map tile');
         res.statusCode = 401;
         res.end();
       } else {
@@ -1173,7 +1174,7 @@ myApp.handleGetTile = function(req, res) {
         if (q.x !== undefined && q.y !== undefined && q.z !== undefined && q.id !== undefined) {
           tiles.fetchTile(q.id, q.x, q.y, q.z, function(err, tile) {
             if (err) {
-              winston.debug('Returning HTTP status 404 for tile: id:%d, x:%d, y:%d, z:%d', q.id, q.x, q.y, q.z);
+              logger.debug('Returning HTTP status 404 for tile: id:%d, x:%d, y:%d, z:%d', q.id, q.x, q.y, q.z);
               res.statusCode = 404;
               res.end();
             } else {
@@ -1183,8 +1184,8 @@ myApp.handleGetTile = function(req, res) {
                 res.statusCode = 200;
                 res.end(tile.image);
               } else {
-                winston.warn('Failure retrieving tile - image is not a Buffer', q.x, q.y, q.z);
-                winston.warn('Returning HTTP status 500 for tile: id:%d, x:%d, y:%d, z:%d', q.id, q.x, q.y, q.z);
+                logger.warn('Failure retrieving tile - image is not a Buffer id:%d, x:%d, y:%d, z:%d', q.id, q.x, q.y, q.z);
+                logger.warn('Returning HTTP status 500 for tile: id:%d, x:%d, y:%d, z:%d', q.id, q.x, q.y, q.z);
                 res.statusCode = 500;
                 res.end();
               }
@@ -1216,22 +1217,22 @@ myApp.handlePostLogPoint = function(req, res) {
   }).on('end', function() {
     body = Buffer.concat(body).toString();
     contentType = req.headers['content-type'];
-    winston.debug('content-type: "%s"', contentType);
+    logger.debug('content-type: "%s"', contentType);
     if (/(^|;)application\/x-www-form-urlencoded(;|$)/.test(contentType)) {
-      winston.debug('Handling as application/x-www-form-urlencoded');
+      logger.debug('Handling as application/x-www-form-urlencoded');
       q = qs.parse(body);
     } else if (/(^|;)application\/json(;|$)/.test(contentType)) {
-      winston.debug('Handling as application/json');
+      logger.debug('Handling as application/json');
       q = utils.parseJSON(body);
     } else {
       // TracCar client doesn't set content-type, so just log failure
-      winston.debug('Unexpected content-type of %s - handling as containing query parameters', contentType);
+      logger.debug('Unexpected content-type of %s - handling as containing query parameters', contentType);
       // myApp.handleError(new BadRequestError('handlePostLogPoint() unexpected content-type: ' + req.headers['content-type']), res);
       // return;
       q = url.parse(req.url, true).query;
     }
     // if (config.debug) {
-    //   winston.debug('BODY:', body);
+    //   logger.debug('BODY:', body);
     // }
     if (q !== undefined) {
       if (q.decodenote === 'true' && q.note && q.note.length > 0) {
@@ -1245,7 +1246,7 @@ myApp.handlePostLogPoint = function(req, res) {
         }
       });
     } else {
-      winston.debug('Failure parsing data handling POSTed location with content-type: %s', contentType);
+      logger.debug('Failure parsing data handling POSTed location with content-type: %s', contentType);
     }
   });
 };
@@ -1274,7 +1275,7 @@ myApp.handleDownloadLocations = function(req, res, token) {
       } else {
         tracks.getLocationsAsXml(query, function(err, result) {
           if (err) {
-            winston.warn('Error fetching tracks', err);
+            logger.warn('Error fetching tracks', err);
             myApp.handleError(err, res);
           } else {
             res.setHeader('Content-type', 'application/gpx+xml');
@@ -1405,7 +1406,7 @@ myApp.handleGetConfigMapAttribution = function(req, res, token) {
       });
       myApp.respondWithData(null, res, layers);
     } else {
-      winston.error('config.json is invalid - tile.providers must be defined as an array');
+      logger.error('config.json is invalid - tile.providers must be defined as an array');
       myApp.handleError(new SystemError('config.json is invalid - no tile.providers defined'), res);
     }
   });
@@ -1613,7 +1614,7 @@ myApp.handleFullyAuthenticatedRequests = function(req, res, token) {
   } else if (token.uk_co_fdsd_trip_admin && req.method === 'GET' && /\/admin\/system\/status\/?(\?.*)?$/.test(req.url)) {
     myApp.handleGetSystemStatus(req, res);
   } else {
-    winston.warn('URL path not recognised: %s', req.url);
+    logger.warn('URL path not recognised: %s', req.url);
     myApp.handleError(new BadRequestError('URL path not recognised: ' + req.url), res);
   }
 };
@@ -1625,28 +1626,28 @@ myApp.serveStaticFiles = function(req, res) {
       // If the URL is prefixed with /trip/ try it without the prefix
       if (err.status === 404  && /^\/trip(\/.+)$/.test(req.url)) {
         m = /^\/trip(\/.+)$/.exec(req.url);
-        winston.debug('Attempting to serve %s instead of %s', m[1], req.url);
+        logger.debug('Attempting to serve %s instead of %s', m[1], req.url);
         req.url = m[1];
         myApp.fileServer.serve(req, res, function(err, result) {
           if (err) {
-            winston.debug('Error attempting to serve file: %s', req.url, err);
+            logger.debug('Error attempting to serve file: %s', req.url, err);
             if (err.status === 404) {
-              winston.debug('Trying to return /app/index.html instead');
+              logger.debug('Trying to return /app/index.html instead');
               // Might be a page reload with a "pretty" URL
               myApp.fileServer.serveFile('/app/index.html', 200, {}, req, res).addListener('error', function(err) {
-                winston.error('Error serving /app/index.html');
+                logger.error('Error serving /app/index.html');
                 res.statusCode = 501;
                 res.end();
               });
             } else {
-              winston.error('Error serving static file %s - %s', req.url, err.message);
+              logger.error('Error serving static file %s - %s', req.url, err.message);
               res.writeHead(err.status, err.headers);
               res.end();
             }
           }
         });
       } else {
-        winston.warn('Error serving static file %s - %s', req.url, err.message);
+        logger.warn('Error serving static file %s - %s', req.url, err.message);
         res.writeHead(err.status, err.headers);
         res.end();
       }
@@ -1655,14 +1656,17 @@ myApp.serveStaticFiles = function(req, res) {
 };
 
 myApp.shutdown = function() {
-  winston.info('Shutdown');
-  process.exit(0);
+  logger.info('[index.js] shutdown');
+  db.shutdown(function() {
+    logger.info('[index.js] database pool closed');
+    //   process.exit(0);
+  });
 };
 
 myApp.server = http.createServer(function(req, res) {
   var xsrfToken, token, cookies;
   if (config.debug) {
-    winston.debug('method:', req.method, 'url: ', req.url);
+    logger.debug('method: %s url: %s', req.method, req.url);
   }
   // req.addListener('end', function() {
   // }).resume();
@@ -1683,7 +1687,7 @@ myApp.server = http.createServer(function(req, res) {
   } else if (req.method === 'GET' && /^\/(favicon.ico|apple-touch-icon(-precomposed)?.png)$/.test(req.url)) {
     // Expect front-end webserver to handle requests for /favicon.ico
     // Ignore otherwise
-    // winston.debug('Returning 404 for %s: %s', req.method, req.url);
+    // logger.debug('Returning 404 for %s: %s', req.method, req.url);
     res.statusCode = 404;
     res.end();
   } else if (req.method === 'GET' && /^\/\?id=[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}&timestamp=\d+&lat=[-.\d]+&lon=[-.\d]+&speed=[-.\d]+&bearing=[-.\d]+&altitude=[-.\d]+&batt=[-.\d]+/.test(req.url)) {
@@ -1693,7 +1697,7 @@ myApp.server = http.createServer(function(req, res) {
     if (config.staticFiles.allow) {
       myApp.serveStaticFiles(req, res);
     } else {
-      winston.warn('Serving static files disabled in config.json - ignoring request: %s', req.url);
+      logger.warn('Serving static files disabled in config.json - ignoring request: %s', req.url);
       res.statusCode = 404;
       res.end();
     }
@@ -1706,7 +1710,7 @@ myApp.server = http.createServer(function(req, res) {
     xsrfToken = req.headers['x-trip-xsrf-token'];
     cookies = myApp.parseCookies(req.headers.cookie);
     if (token == null || xsrfToken !== cookies['TRIP-XSRF-TOKEN']) {
-      winston.debug('Access token missing from request or coolkie does not match XSRF token');
+      logger.debug('Access token missing from request or cookie does not match XSRF token');
       myApp.handleError(new login.UnauthorizedError('Access token  missing'), res);
     } else {
       login.checkAuthenticated(token, xsrfToken, function(err, token) {
@@ -1732,19 +1736,22 @@ var io = require('socket.io')(myApp.server, {
                'polling']*/
 });
 
-winston.debug('Serving origins of', io.origins());
+logger.debug('Serving origins of', io.origins());
 io.on('connection', function(socket) {
-  winston.debug('Client connected to socket using transport:', socket.conn.transport.name);
+  logger.debug('Client connected to socket using transport:', socket.conn.transport.name);
   socket.on('disconnect', function() {
-    winston.debug('Client disconnected from socket');
+    logger.debug('Client disconnected from socket');
   });
 });
 
 var port = process.env.LISTEN_PID > 0 ? 'systemd' : 8080;
 if (port === 'systemd') {
   myApp.server.autoQuit({ timeOut: config.app.autoQuit.timeOut, exitFn: myApp.shutdown });
-  winston.info('TRIP v%s running under systemd with autoQuit after %d seconds', myApp.version, config.app.autoQuit.timeOut);
+  logger.info('TRIP v%s running under systemd with autoQuit after %d seconds', myApp.version, config.app.autoQuit.timeOut);
 } else {
-  winston.info('TRIP v%s running in development mode', myApp.version);
+  logger.info('TRIP v%s running in development mode', myApp.version);
 }
+myApp.server.on('close', function() {
+  logger.info('[index.js] server closed');
+});
 myApp.server.listen(port);

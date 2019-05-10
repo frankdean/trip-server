@@ -22,7 +22,6 @@ var bcrypt = require('bcrypt');
 var crypt = require('crypto');
 var jwt = require('jsonwebtoken');
 var uuid = require('uuid');
-var winston = require('winston');
 
 var db = require('./db');
 var utils = require('./utils');
@@ -31,6 +30,8 @@ var config = require('./config.json');
 var validNickname = /^[!-\.0->@-~]+$/;
 var printableRegex = /^[!-~]+$/;
 var printableRegexPlusSpace = /^[ -~]+$/;
+
+var logger = require('./logger').createLogger('login.js');
 
 module.exports = {
   UnauthorizedError: UnauthorizedError,
@@ -141,7 +142,7 @@ function updateToken(res, username, callback) {
                },
                function(err, token) {
                  if (err) {
-                   winston.error('Failure signing JWT token for', username, err);
+                   logger.error('Failure signing JWT token for %s, %j', username, err);
                    callback(err);
                  } else {
                    xsrfToken = crypt.createHmac('sha256', config.jwt.signingKey).update(token).digest('hex');
@@ -159,7 +160,7 @@ function updateToken(res, username, callback) {
                             },
                             function(err, resourceToken) {
                               if (err) {
-                                winston.error('Failure signing resource JWT token for', username, err);
+                                logger.error('Failure signing resource JWT token for %s, %j', username, err);
                               }
                               callback(err, {token: token, resourceToken: resourceToken});
                             });
@@ -200,7 +201,7 @@ function checkAuthenticated(token, xsrfToken, callback) {
       // Check XSRF token <https://docs.angularjs.org/api/ng/service/$http>
       hmac = crypt.createHmac('sha256', config.jwt.signingKey).update(token).digest('hex');
       if (hmac !== xsrfToken) {
-        winston.warn('Invalid XSRF-TOKEN');
+        logger.warn('Invalid XSRF-TOKEN');
         err = new Error('Invalid XSRF-TOKEN');
       }
     }
@@ -216,11 +217,11 @@ function checkAuthenticatedForBasicResources(token, callback) {
   jwt.verify(token, config.jwt.resourceSigningKey, function(err, decoded) {
     if (err  && config.debug) {
       var decodedToken = jwt.decode(token, {complete: true});
-      winston.debug('Token header: %j', decodedToken.header);
-      winston.debug('Token payload: %j', decodedToken.payload);
+      logger.debug('Token header: %j', decodedToken.header);
+      logger.debug('Token payload: %j', decodedToken.payload);
       var exp = new Date(0);
       exp.setUTCSeconds(decodedToken.payload.exp);
-      winston.debug('Expires: %j', exp);
+      logger.debug('Expires: %j', exp);
     }
     callback(err, decoded);
   });

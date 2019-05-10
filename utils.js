@@ -18,7 +18,6 @@
 'use strict';
 
 var _ = require('lodash');
-var winston = require('winston');
 var turfHelpers = require('@turf/helpers');
 var turf = {
   bbox: require('@turf/bbox'),
@@ -31,6 +30,8 @@ var turf = {
   lineString: turfHelpers.lineString,
   point: turfHelpers.point
 };
+
+var logger = require('./logger').createLogger('utils.js');
 
 module.exports = {
   handleError: handleError,
@@ -92,12 +93,12 @@ function fillDistanceElevationForPath(path, options) {
       if (lp) {
         if (e > lp) {
           asc += e - lp;
-          // winston.debug('ele: %d  asc: %d,   up by: %d', e, Math.round(asc * 100) / 100, Math.round((e - lp) * 100) / 100);
+          // logger.debug('ele: %d  asc: %d,   up by: %d', e, Math.round(asc * 100) / 100, Math.round((e - lp) * 100) / 100);
         } else if (e < lp) {
           desc += lp - e;
-          // winston.debug('ele: %d desc: %d, down by: %d', e, Math.round(desc * 100) / 100, Math.round((lp - e) * 100) / 100);
+          // logger.debug('ele: %d desc: %d, down by: %d', e, Math.round(desc * 100) / 100, Math.round((lp - e) * 100) / 100);
         } else {
-          // winston.debug('ele: %d', e);
+          // logger.debug('ele: %d', e);
         }
       }
       if (!h || e > h) h = e;
@@ -130,11 +131,16 @@ function fillDistanceElevationForPath(path, options) {
             totalSpeed += pt.speed;
           }
           // bearing degrees
-          // Convert to angle (version 4.7.3)
-          pt.bearing = turfHelpers.bearingToAngle(turf.bearing(p1, p2));
+          if (turfHelpers.bearingToAzimuth === undefined) {
+            // Convert to angle (version 4.7.3)
+            pt.bearing = turfHelpers.bearingToAngle(turf.bearing(p1, p2));
+          } else {
+            // Version 5.1.x
+            pt.bearing = turfHelpers.bearingToAzimuth(turf.bearing(p1, p2));
+          }
         } // if options.calcPoints
       } catch (e) {
-        winston.warn('Error converting path points'/*, e*/);
+        logger.warn('Error converting path points'/*, e*/);
       }
     }
     speedCount++;
@@ -143,7 +149,7 @@ function fillDistanceElevationForPath(path, options) {
 
   // bounds
   if (options && options.calcPoints === true) {
-    // winston.debug('coords: %j', coords);
+    // logger.debug('coords: %j', coords);
     if (coords.length > 1) {
       path.bounds = turf.bbox(turf.lineString(coords));
     } else if (coords.length === 1) {
@@ -151,7 +157,7 @@ function fillDistanceElevationForPath(path, options) {
     } else {
       path.bounds = undefined;
     }
-    // winston.debug('bounds: %j', path.bounds);
+    // logger.debug('bounds: %j', path.bounds);
   }
 
   // elevation summary
@@ -170,11 +176,11 @@ function fillDistanceElevationForPath(path, options) {
     path.minSpeed = minSpeed;
     path.maxSpeed = maxSpeed;
     if (speedCount > 0 && startTime && endTime) {
-      // winston.debug('Total distance: %d kilometres', totalDistance);
-      // winston.debug('Time %d seconds', (endTime.getTime() - startTime.getTime()) / 1000);
-      // winston.debug('Time %d hours', (endTime.getTime() - startTime.getTime()) / 1000 / 3600);
+      // logger.debug('Total distance: %d kilometres', totalDistance);
+      // logger.debug('Time %d seconds', (endTime.getTime() - startTime.getTime()) / 1000);
+      // logger.debug('Time %d hours', (endTime.getTime() - startTime.getTime()) / 1000 / 3600);
       path.avgSpeed = totalDistance / ((endTime.getTime() - startTime.getTime()) / 1000 / 3600);
-      // winston.debug('Average: %d\n', path.avgSpeed);
+      // logger.debug('Average: %d\n', path.avgSpeed);
     }
     path.startTime = startTime;
     path.endTime = endTime;
@@ -183,7 +189,7 @@ function fillDistanceElevationForPath(path, options) {
 }
 
 function fillDistanceElevationForRoutes(routes, options) {
-  var bounds;
+  var bounds, strBounds, minY;
   routes.forEach(function(v) {
     fillDistanceElevationForPath(v, options);
     if (options && options.calcPoints === true) {
@@ -207,7 +213,27 @@ function fillDistanceElevationForRoutes(routes, options) {
     }
   });
   if (bounds !== undefined) {
-    routes.bounds = bounds;
+    // Version 4.7.3 of turf returned strings - maintaining previous behaviour for this function
+    // 4.7.3 also returned minY and maxY in the wrong order
+    if (bounds.length === 4) {
+      if (Number(bounds[1]) > Number(bounds[3])) {
+        logger.debug('Swapping Y bounds as they are in the wrong order');
+        minY = bounds[3];
+        bounds[3] = bounds[1];
+        bounds[1] = minY;
+      }
+    } else {
+      logger.error('Bounds are invalid2:', bounds);
+    }
+    strBounds = [];
+    bounds.forEach(function(b) {
+      if (_.isNumber(b)) {
+        strBounds.push('' + b);
+      } else {
+        strBounds.push(b);
+      }
+    });
+    routes.bounds = strBounds;
   }
 }
 
@@ -244,7 +270,8 @@ function fillDistanceElevationForTrack(track, options) {
 }
 
 function fillDistanceElevationForTracks(tracks, options) {
-  var bounds;
+  var bounds, strBounds, minY;
+
   tracks.forEach(function(t) {
     fillDistanceElevationForTrack(t, options);
     if (options && options.calcPoints === true) {
@@ -268,7 +295,27 @@ function fillDistanceElevationForTracks(tracks, options) {
     }
   });
   if (bounds !== undefined) {
-    tracks.bounds = bounds;
+    // Version 4.7.3 of turf returned strings - maintaining previous behaviour for this function
+    // 4.7.3 also returned minY and maxY in the wrong order
+    if (bounds.length === 4) {
+      if (Number(bounds[1]) > Number(bounds[3])) {
+        logger.debug('Swapping Y bounds as they are in the wrong order');
+        minY = bounds[3];
+        bounds[3] = bounds[1];
+        bounds[1] = minY;
+      }
+    } else {
+      logger.error('Bounds are invalid:', bounds);
+    }
+    strBounds = [];
+    bounds.forEach(function(b) {
+      if (_.isNumber(b)) {
+        strBounds.push('' + b);
+      } else {
+        strBounds.push(b);
+      }
+    });
+    tracks.bounds = strBounds;
   }
 }
 
@@ -286,7 +333,7 @@ function getTimeSpan(elements) {
       }
     });
   } else {
-    winston.warn('Invalid elements passed to getTimeSpan()');
+    logger.warn('Invalid elements passed to getTimeSpan()');
   }
   return {startTime: s, endTime: e};
 }
@@ -338,7 +385,7 @@ function getBounds(bounds) {
       if (b && Array.isArray(b) && b.length === 4) {
         polys.push(turf.bboxPolygon(b));
       } else {
-        winston.warn('Invalid element passed to getBounds(): %j', bounds);
+        logger.warn('Invalid element passed to getBounds(): %j', bounds);
       }
     });
     if (polys.length > 0) {

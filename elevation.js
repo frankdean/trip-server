@@ -20,7 +20,6 @@
 var _ = require('lodash');
 var fs = require('fs');
 var http = require('http');
-var winston = require('winston');
 
 var config = require('./config.json');
 var gdal = require('gdal');
@@ -28,6 +27,8 @@ var utils = require('./utils');
 
 // TileSet containing coordinates of all tiles on the system
 var tiles;
+
+var logger = require('./logger').createLogger('elevation.js');
 
 module.exports = {
   init:  function() {
@@ -51,34 +52,34 @@ class TileSet {
     if (!dir.endsWith('/')) {
       dir += '/';
     }
-    winston.debug('Searching for tif files in %s', dir);
-    winston.debug("Memory before processing tiles", process.memoryUsage());
+    logger.debug('Searching for tif files in %s', dir);
+    logger.debug("Memory before processing tiles", process.memoryUsage());
     // console.time('read-tiles');
     paths = fs.readdirSync(dir);
     paths.forEach(function(f) {
       if (f.endsWith('.tif')) {
         if (fs.statSync(dir + f).isFile()) {
-          winston.debug('Loading tile: %s', f);
+          logger.debug('Loading tile: %s', f);
           try {
             t = new ElevationTile(dir + f);
             t.close();
-            winston.debug('Adding tile %s to set', t.path);
+            logger.debug('Adding tile %s to set', t.path);
             _this.tiles.push(t);
           } catch (e) {
-            winston.error('Failed to add file "%s" to tile set', dir + f, e);
+            logger.error('Failed to add file "%s" to tile set', dir + f, e);
           }
         }
       }
     });
     // console.timeEnd('read-tiles');
-    winston.debug("Memory after processing tiles", process.memoryUsage());
-    winston.debug('Added %d tiles to set', this.tiles.length);
+    logger.debug("Memory after processing tiles", process.memoryUsage());
+    logger.debug('Added %d tiles to set', this.tiles.length);
   }
 
   tileFor(longitude, latitude) {
     var tile = null;
     this.tiles.forEach(function(t) {
-      // winston.debug('Considering whether tile %s covers lat: %d, lng: %d', t.path, latitude, longitude);
+      // logger.debug('Considering whether tile %s covers lat: %d, lng: %d', t.path, latitude, longitude);
       if (longitude >= t.left && longitude <= t.right && latitude >= t.bottom && latitude <= t.top) {
         tile = t;
       } else {
@@ -86,9 +87,9 @@ class TileSet {
       }
     });
     if (tile === null) {
-      winston.debug('Failed to find tile containing latitude: %d and longitude: %d', latitude, longitude);
+      logger.debug('Failed to find tile containing latitude: %d and longitude: %d', latitude, longitude);
     } else {
-      winston.debug('Tile %s covers lat: %d, lng: %d', tile.path, latitude, longitude);
+      logger.debug('Tile %s covers lat: %d, lng: %d', tile.path, latitude, longitude);
     }
     return tile;
   }
@@ -113,14 +114,14 @@ class ElevationTile {
   }
 
   _openDataSet() {
-    winston.debug('Opening data set for path: "%s"', this.path);
+    logger.debug('Opening data set for path: "%s"', this.path);
     this.dataset = gdal.open(this.path);
-    winston.debug('Data set has %d bands', this.dataset.bands.count());
-    winston.debug('Width: %d', this.dataset.rasterSize.x);
-    winston.debug('Height: %d', this.dataset.rasterSize.y);
-    winston.debug('Geotransform: %j', this.dataset.geoTransform);
+    logger.debug('Data set has %d bands', this.dataset.bands.count());
+    logger.debug('Width: %d', this.dataset.rasterSize.x);
+    logger.debug('Height: %d', this.dataset.rasterSize.y);
+    logger.debug('Geotransform: %j', this.dataset.geoTransform);
     this.dataset.srs.setWellKnownGeogCS('WGS84');
-    winston.debug('srs: %j', this.dataset.srs.toWKT());
+    logger.debug('srs: %j', this.dataset.srs.toWKT());
     this.band = this.dataset.bands.get(1);
     this.ct = new gdal.CoordinateTransformation(this.dataset.srs, new gdal.SpatialReference(this.dataset.getGCPProjection()));
     this.time = new Date().getTime();
@@ -129,7 +130,7 @@ class ElevationTile {
   // Call close to allow memory used to load the tif file to be garbage collected
   close() {
     if (this.dataset != null) {
-      winston.debug('Closing dataset for %s', this.path);
+      logger.debug('Closing dataset for %s', this.path);
       this.dataset.close();
       this.dataset = null;
     }
@@ -139,9 +140,9 @@ class ElevationTile {
     var diff;
     if (this.dataset != null) {
       diff = new Date().getTime() - this.time;
-      winston.debug('Diff of', diff,  'ms for ', this.path);
+      logger.debug('Diff of %d ms for %s', diff, this.path);
       if (config.elevation.tileCacheMs && diff >= config.elevation.tileCacheMs) {
-        winston.debug('Closing tile %s as is %d ms old', this.path, diff);
+        logger.debug('Closing tile %s as is %d ms old', this.path, diff);
         this.close();
       }
     }
@@ -157,16 +158,16 @@ class ElevationTile {
 
   elevation(longitude, latitude) {
     var geo, x, y, retval;
-    winston.debug('Converting %d latitude %d longitude', latitude, longitude);
+    logger.debug('Converting %d latitude %d longitude', latitude, longitude);
     geo = this._coordinateTransformation().transformPoint(longitude, latitude);
-    winston.debug('geo: %j', geo);
+    logger.debug('geo: %j', geo);
     // convert the pixels to coordinates
     // lat = left + geo.x * this.pixelWidth + geo.y * this.xskew;
     // lng = top + geo.x * this.yskew + geo.y * this.lineHeight;
     // convert coordinates to pixels
     x = (geo.x - this.left - geo.y * this.xskew) / this.pixelWidth;
     y = (geo.y - this.top - geo.x * this.yskew) / this.lineHeight;
-    winston.debug('x: %d, y: %d', x, y);
+    logger.debug('x: %d, y: %d', x, y);
     retval = this.band.pixels.get(x, y);
     return retval === NO_DATA ? undefined : retval;
   }
@@ -194,7 +195,7 @@ function fetchRemoteElevations(points, callback) {
   req = http.request(options, function(res) {
     res.setEncoding('utf8');
     // if (res.statusCode !== 200) {
-    //   winston.warn('Response status code %s fetching elevation data: %j', res.statusCode);
+    //   logger.warn('Response status code %s fetching elevation data: %j', res.statusCode);
     //   callback(new Error('Failure fetching elevation data'));
     // } else {
     res.on('data', function(chunk) {
@@ -202,21 +203,21 @@ function fetchRemoteElevations(points, callback) {
         rawData += chunk;
       }
     }).on('end', function() {
-      // winston.debug('Response headers: %j', res.headers);
+      // logger.debug('Response headers: %j', res.headers);
       contentType = res.headers['content-type'];
-      // winston.debug('content-type: "%s"', contentType);
-      // winston.debug('Raw-data: %s', rawData);
+      // logger.debug('content-type: "%s"', contentType);
+      // logger.debug('Raw-data: %s', rawData);
       q = utils.parseJSON(rawData);
       if (q !== undefined) {
         callback(null, q);
       } else {
-        winston.error('Failure parsing elevation data');
+        logger.error('Failure parsing elevation data');
       }
     });
     // }
   });
   req.on('error', function(err) {
-    winston.error('Failure fetching elevation data from remote server:', err);
+    logger.error('Failure fetching elevation data from remote server:', err);
     callback(err);
   });
   req.setHeader('Connection', 'keep-alive');
@@ -248,9 +249,9 @@ function getCorners2(elevationTile) {
 
 function calculateElevations(points, callback) {
   var retval, tile;
-  winston.debug('Filling elevations using internal service');
+  logger.debug('Filling elevations using internal service');
   points.forEach(function(pt) {
-    winston.debug('Transforming point: %j', pt);
+    logger.debug('Transforming point: %j', pt);
     tile = tiles.tileFor(pt.longitude, pt.latitude);
     if (tile !== null) {
       pt.elevation = tile.elevation(pt.longitude, pt.latitude);
@@ -264,7 +265,7 @@ function fillElevations(points, options, callback) {
   if (config.elevation !== undefined && config.elevation.datasetDir !== undefined) {
     fetchElevations = calculateElevations;
   } else if (!config.elevation || !config.elevation.provider) {
-    winston.debug('elevation.datasetDir not configured - skipping reading elevation data');
+    logger.debug('elevation.datasetDir not configured - skipping reading elevation data');
     callback(null, {results: points});
     return;
   }
@@ -280,10 +281,10 @@ function fillElevations(points, options, callback) {
     fetchElevations(queryPoints, function(err, result) {
       if (utils.handleError(err, callback)) {
         if (result && Array.isArray(result.results)) {
-          // winston.debug('Filling elevations from: %j', result);
+          // logger.debug('Filling elevations from: %j', result);
           locations = result.results;
           if (points.length != locations.length) {
-            winston.error("Invalid number of locations received.  Expected %d got %d", points.length, locations.length);
+            logger.error("Invalid number of locations received.  Expected %d got %d", points.length, locations.length);
             callback(new Error('Locations service returned unexpected values'));
           } else {
             for (i = 0; i < points.length; i++) {
@@ -297,16 +298,16 @@ function fillElevations(points, options, callback) {
                   }
                 }
               } else {
-                winston.error("Returned locations do not appear to the be same as those sent to elevation service");
+                logger.error("Returned locations do not appear to the be same as those sent to elevation service");
                 myErr = new Error("Returned locations do not appear to the be same as those sent to elevation service");
                 break;
               }
             }
-            winston.debug("Memory", process.memoryUsage());
+            logger.debug("Memory", process.memoryUsage());
             callback(myErr, points);
           }
         } else {
-          winston.warn('No or invalid results returned from elevation service');
+          logger.warn('No or invalid results returned from elevation service');
           callback(new Error('No or invalid results returned from elevation service'));
         }
       }
@@ -314,9 +315,9 @@ function fillElevations(points, options, callback) {
   } else {
     callback(null, points);
     if (skipIfAnyExist && elevationCount !== 0) {
-      winston.debug('One or more altitudes exist in route, skipping update');
+      logger.debug('One or more altitudes exist in route, skipping update');
     } else {
-      winston.debug('All altitudes exist in route, not updating');
+      logger.debug('All altitudes exist in route, not updating');
     }
   }
 }

@@ -17,8 +17,6 @@
  */
 'use strict';
 
-var winston = require('winston');
-
 var db = require('./db');
 var utils = require('./utils');
 

@@ -17,9 +17,6 @@
  */
 'use strict';
 
-var winston = require('winston');
-winston.level = 'error';
-
 describe('itinerary.js', function() {
   var Itineraries = require('../itineraries.js');
   var db = require('../db.js');

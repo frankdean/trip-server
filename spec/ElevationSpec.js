@@ -17,7 +17,7 @@
  */
 'use strict';
 
-var winston = require('winston');
+var logger = require('../logger').createLogger('ElevationSpec.js');
 
 describe('elevation.js', function() {
   var Elevation = require('../elevation.js').init();
@@ -56,7 +56,7 @@ describe('elevation.js', function() {
       });
 
       it('Should not populate the elevation for a single point', function() {
-        winston.debug('Result: %j', result);
+        logger.debug('Result: %j', result);
         expect(result[0].ele).not.toBeDefined();
       });
     });
@@ -77,7 +77,7 @@ describe('elevation.js', function() {
       });
 
       it('Should populate the elevation for a single point', function() {
-        winston.debug('Result: %j', result);
+        logger.debug('Result: %j', result);
         expect(result[0].ele).toBeDefined();
       });
 
@@ -88,22 +88,22 @@ describe('elevation.js', function() {
 
         // Using Affine GeoTransform published at https://www.gdal.org/gdal_datamodel.html
         x = left + lng * pixelWidth + lat * xskew;
-        winston.debug('  x: %d', x);
+        logger.debug('  x: %d', x);
         y = top + lng * yskew + lat * lineHeight;
-        winston.debug('  y: %d', y);
+        logger.debug('  y: %d', y);
 
         // Using reversed formulae
         lat = left + x * pixelWidth + y * xskew;
         expected = x;
-        winston.debug('lat: %d', lat);
+        logger.debug('lat: %d', lat);
         x = (lat - left - y * xskew) / pixelWidth;
-        winston.debug('  x: %d', x);
+        logger.debug('  x: %d', x);
         expect(x).toBeCloseTo(expected, 5);
         lng = top + x * yskew + y * lineHeight;
         expected = y;
-        winston.debug('lng: %d', lng);
+        logger.debug('lng: %d', lng);
         y = (lng - top - x * yskew) / lineHeight;
-        winston.debug('  y: %d', y);
+        logger.debug('  y: %d', y);
         expect(y).toBeCloseTo(expected, 5);
       });
 
@@ -121,14 +121,14 @@ describe('elevation.js', function() {
 
       it('Should return the same number of locations as provided', function() {
         expect(err).toBeNull();
-        winston.debug('Result: %j', result);
+        logger.debug('Result: %j', result);
         expect(result.length).toEqual(testPoints1.locations.length);
       });
 
       it('Should populate the elevations for each point', function() {
-        winston.debug('Result: %j', result);
+        logger.debug('Result: %j', result);
         result.forEach(function(v) {
-          winston.debug('Value: ', v);
+          logger.debug('Value: ', v);
           expect(v.ele).toBeDefined();
         });
       });
@@ -167,7 +167,7 @@ describe('elevation.js', function() {
     });
 
     it('should populate some, but not all points', function() {
-      winston.debug('Result: %j', result);
+      logger.debug('Result: %j', result);
       expect(p5.ele).toBeDefined();
       expect(p6.ele).not.toBeDefined();
       expect(p7.ele).not.toBeDefined();

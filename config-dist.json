@@ -64,9 +64,9 @@
   },
   "db": {
     "uri": "postgresql://trip:secret@localhost/trip",
-    "poolSize": 25,
-    "poolIdleTimeout": 30000,
-    "reapIntervalMillis": 1000
+    "poolSize": 10,
+    "poolIdleTimeout": 10000,
+    "connectionTimeoutMillis": 0
   },
   "elevation-local-disabled" : {
     "tileCacheMs" : 60000,

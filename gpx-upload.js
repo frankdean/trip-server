@@ -20,11 +20,12 @@
 var fs = require('fs');
 var sax = require('sax');
 var _ = require('lodash');
-var winston = require('winston');
 
 var elevation = require('./elevation').init();
 var db = require('./db');
 var utils = require('./utils');
+
+var logger = require('./logger').createLogger('gpx-upload.js');
 
 module.exports = {
   importFile: importFile,
@@ -50,7 +51,7 @@ module.exports = {
 function parseFile(itineraryId, pathname, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
   var firstError = null;
-  // winston.debug('Importing file %s', pathname);
+  // logger.debug('Importing file %s', pathname);
   var parser = sax.createStream(false, {lowercasetags: true, trim: true}),
       dt,
       waypoints = [],
@@ -86,7 +87,7 @@ function parseFile(itineraryId, pathname, callback) {
         routePoint.lng = tag.attributes.lon;
         route.points.push(routePoint);
       } else {
-        winston.warn('Parse rtept without rte');
+        logger.warn('Parse rtept without rte');
       }
       break;
     case 'trk':
@@ -100,7 +101,7 @@ function parseFile(itineraryId, pathname, callback) {
       if (track) {
         track.segments.push(trackSegment);
       } else {
-        winston.warn('Parse trkseg without trk');
+        logger.warn('Parse trkseg without trk');
       }
       break;
     case 'trkpt':
@@ -110,7 +111,7 @@ function parseFile(itineraryId, pathname, callback) {
         trackPoint.lng = tag.attributes.lon;
         trackSegment.points.push(trackPoint);
       } else {
-        winston.warn('Parse trkpt without trkseg');
+        logger.warn('Parse trkpt without trkseg');
       }
       break;
     }
@@ -154,10 +155,10 @@ function parseFile(itineraryId, pathname, callback) {
               } else {
                 dt = utils.isoDate(lastText);
                 if (dt !== null) {
-                  winston.debug('Converted invalid date of "%s" to "%s"', lastText, dt.toISOString());
+                  logger.debug('Converted invalid date of "%s" to "%s"', lastText, dt.toISOString());
                   waypoint[tagName] = dt.toISOString();
                 } else {
-                  winston.warn('waypoint %j has an invalid date of "%s"', waypoint, lastText);
+                  logger.warn('waypoint %j has an invalid date of "%s"', waypoint, lastText);
                 }
               }
               break;
@@ -189,10 +190,10 @@ function parseFile(itineraryId, pathname, callback) {
             } else {
               dt = utils.isoDate(lastText);
               if (dt !== null) {
-                winston.debug('Converted invalid date of "%s" to "%s"', lastText, dt.toISOString());
+                logger.debug('Converted invalid date of "%s" to "%s"', lastText, dt.toISOString());
                 trackPoint[tagName] = dt.toISOString();
               } else {
-                winston.warn('trackPoint %j has an invalid date of "%s"', trackPoint, lastText);
+                logger.warn('trackPoint %j has an invalid date of "%s"', trackPoint, lastText);
               }
             }
             break;
@@ -250,7 +251,7 @@ function parseFile(itineraryId, pathname, callback) {
     callback(firstError, waypoints, routes, tracks);
   });
   parser.on('error', function(e) {
-    winston.error(e);
+    logger.error(e);
     if (!firstError) {
       firstError = e;
     }
@@ -279,22 +280,22 @@ function parseFile(itineraryId, pathname, callback) {
  */
 function importFile(itineraryId, pathname, deleteFlag, callback) {
   var elevationFillError = null, error = null, elevationFillOptions = {force: false, skipIfAnyExist: true};
-  // winston.debug('importing from %s', pathname);
+  // logger.debug('importing from %s', pathname);
   parseFile(itineraryId, pathname, function(err, waypoints, routes, tracks) {
-    // winston.debug('Imported %d waypoints', waypoints.length);
-    // winston.debug('Imported %d routes', routes.length);
-    // winston.debug('Imported %d tracks', tracks.length);
+    // logger.debug('Imported %d waypoints', waypoints.length);
+    // logger.debug('Imported %d routes', routes.length);
+    // logger.debug('Imported %d tracks', tracks.length);
     if (deleteFlag) {
-      // winston.debug('Deleting %s', pathname);
+      // logger.debug('Deleting %s', pathname);
       fs.unlinkSync(pathname);
     }
     if (err) {
-      winston.warn('Error on parsing GPX import', err);
+      logger.warn('Error on parsing GPX import', err);
     }
     if (utils.handleError(err, callback)) {
       elevation.fillElevationsForRoutes(routes, elevationFillOptions, function(err) {
         if (err) {
-          winston.error('Error filling elevations values for routes', err);
+          logger.error('Error filling elevations values for routes', err);
         }
         elevationFillError = err;
         utils.fillDistanceElevationForRoutes(routes);
@@ -308,7 +309,7 @@ function importFile(itineraryId, pathname, deleteFlag, callback) {
               // If error not set by database imports, report any error during filling elevation values
               error = err ? err : elevationFillError;
               if (error) {
-                winston.error('Error importing GPX file', error);
+                logger.error('Error importing GPX file', error);
               }
               callback(error, {waypointCount: waypoints.length, routeCount: routes.length, trackCount: tracks.length});
             });

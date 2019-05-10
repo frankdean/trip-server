@@ -1,6 +1,6 @@
 {
   "name": "trip-server",
-  "version": "1.0.0",
+  "version": "1.1.0-rc.1",
   "description": "TRIP - Trip Recording and Itinerary Planner RESTful server",
   "author": {
     "name": "Frank Dean",
@@ -17,7 +17,7 @@
     "GPS"
   ],
   "devDependencies": {
-    "jasmine": "^2.8.0",
+    "jasmine": "^3.4.0",
     "jshint": "^2.9.4"
   },
   "scripts": {
@@ -25,27 +25,27 @@
     "lint": "jshint *.js spec/*.js"
   },
   "dependencies": {
-    "@turf/bbox": "^4.7.3",
-    "@turf/bbox-polygon": "^4.7.3",
-    "@turf/bearing": "^4.7.3",
-    "@turf/center": "^4.7.3",
-    "@turf/distance": "^4.7.3",
-    "@turf/helpers": "^4.7.3",
-    "@turf/invariant": "^4.7.3",
+    "@turf/bbox": "^5.1.5",
+    "@turf/bbox-polygon": "^5.1.5",
+    "@turf/bearing": "^5.1.5",
+    "@turf/center": "^5.1.5",
+    "@turf/distance": "^5.1.5",
+    "@turf/helpers": "^5.1.5",
+    "@turf/invariant": "^5.1.5",
     "autoquit": "https://www.fdsd.co.uk/trip-server/download/node-autoquit-0.1.7-rc.2.tar.gz",
-    "bcrypt": "^1.0.3",
+    "bcrypt": "^3.0.6",
     "formidable": "^1.1.1",
     "gdal": "^0.9.8",
-    "jsonwebtoken": "^7.4.1",
+    "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.4",
     "node-static": "^0.7.9",
-    "pg": "~6.2.5",
+    "pg": "^6.2.5",
     "qs": "^6.5.0",
     "sax": "^1.2.2",
-    "socket.io": "^1.7.4",
-    "systemd": "^0.2.6",
+    "socket.io": "^2.2.0",
+    "systemd": "^0.3.1",
     "uuid": "^3.0.1",
-    "winston": "^2.3.1",
-    "xmlbuilder": "^8.2.2"
+    "winston": "^3.2.1",
+    "xmlbuilder": "^12.0.1"
   }
 }

@@ -21,23 +21,31 @@ var pg = require('pg');
 var types = require('pg').types;
 var NUMERIC_OID = 1700;
 
-var winston = require('winston');
-
 var config = require('./config.json');
 
-// Delay after finishing queries with many insert statements before calling
-// done() to release the connection to the pool.
-var myDoneDelay = (config.db && config.db.doneDelayMs) || 1000;
+var logger = require('./logger').createLogger('db.js');
 
-// See node-postgres documentation
-pg.defaults.poolSize = (config.db && config.db.poolSize) || 25;
-pg.defaults.poolIdleTimeout = (config.db && config.db.poolIdleTimeout) || 30000;
-// Seems current node-postgres ignores the reapIntervalMillis - always 1000
-pg.defaults.reapIntervalMillis = (config.db && config.db.reapIntervalMillis) || 1000;
+//// See node-postgres documentation
+// pg.defaults.poolSize = (config.db && config.db.poolSize) || 25;
+// pg.defaults.poolIdleTimeout = (config.db && config.db.poolIdleTimeout) || 30000;
+//// Seems current node-postgres ignores the reapIntervalMillis - always 1000
+// pg.defaults.reapIntervalMillis = (config.db && config.db.reapIntervalMillis) || 1000;
 
-winston.info('pg.defaults.poolSize: %d', pg.defaults.poolSize);
-winston.info('pg.defaults.poolIdleTimeout: %d', pg.defaults.poolIdleTimeout);
-winston.info('pg.defaults.reapIntervalMillis: %d', pg.defaults.reapIntervalMillis);
+var pgConfig = {
+  connectionString: config.db.uri,
+  connectionTimeoutMillis: (config.db.connectionTimeoutMillis) || 0,
+  idleTimeoutMillis: (config.db && config.db.poolIdleTimeout) || 10000,
+  max: (config.db && config.db.poolSize) || 10
+},
+    pool = new pg.Pool(pgConfig);
+
+pool.on('error', function (err, client) {
+  logger.error('[db.js] database pool error event', err);
+});
+
+logger.info('max pool size: %d', pgConfig.max);
+logger.info('idleTimeoutMillis: %d', pgConfig.idleTimeoutMillis);
+logger.info('connectionTimeoutMillis: %d', pgConfig.connectionTimeoutMillis);
 
 module.exports = {
   createLocationShare: createLocationShare,
@@ -139,7 +147,8 @@ module.exports = {
   updateTile: updateTile,
   updateTrackingInfo: updateTrackingInfo,
   getTileCount: getTileCount,
-  unitTests: {convertArrayToSqlArray: convertArrayToSqlArray}
+  unitTests: {convertArrayToSqlArray: convertArrayToSqlArray},
+  shutdown: shutdown
 };
 
 function UserNotFoundError(message) {
@@ -152,7 +161,7 @@ UserNotFoundError.prototype.constructor = UserNotFoundError;
 
 function resetPassword(username, hash, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -200,7 +209,7 @@ function createUserQueryClause(nickname, email, searchType) {
 
 function getUserCount(nickname, email, searchType, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -224,7 +233,7 @@ function getUserCount(nickname, email, searchType, callback) {
 
 function getUser(id, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -249,7 +258,7 @@ function getUser(id, callback) {
 
 function getUsers(offset, limit, nickname, email, searchType, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -267,6 +276,7 @@ function getUsers(offset, limit, nickname, email, searchType, callback) {
       if (limit) {
         sql += ' LIMIT ' + limit;
       }
+      logger.debug('Execute query');
       client.query(sql,
                    criteria.params,
                    function(err, result) {
@@ -284,7 +294,7 @@ function getUsers(offset, limit, nickname, email, searchType, callback) {
 
 function createUser(user, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -302,7 +312,7 @@ function createUser(user, callback) {
 
 function updateUser(user, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -323,7 +333,7 @@ function updateUser(user, callback) {
 
 function deleteUser(userId, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -340,8 +350,9 @@ function deleteUser(userId, callback) {
 
 function getPassword(username, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
+      logger.error('Unable to connect to database. %s', err);
       callback(err);
     } else {
       client.query('SELECT password FROM usertable WHERE email = $1',
@@ -365,7 +376,7 @@ function getPassword(username, callback) {
 
 function findUserByUsername(username, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -390,7 +401,7 @@ function findUserByUsername(username, callback) {
 
 function findUserByUuid(uuid, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -415,7 +426,7 @@ function findUserByUuid(uuid, callback) {
 
 function findUserByNickname(nickname, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -440,7 +451,7 @@ function findUserByNickname(nickname, callback) {
 
 function getNicknameForUsername(username, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -465,7 +476,7 @@ function getNicknameForUsername(username, callback) {
 
 function hasRole(username, role, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -490,7 +501,7 @@ function hasRole(username, role, callback) {
 
 function addRole(userId, role, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -507,7 +518,7 @@ function addRole(userId, role, callback) {
 
 function removeRole(userId, role, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -524,7 +535,7 @@ function removeRole(userId, role, callback) {
 
 function getNicknames(username, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -545,7 +556,7 @@ function getNicknames(username, callback) {
 
 function getPathColors(callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -566,7 +577,7 @@ function getPathColors(callback) {
 
 function getWaypointSymbols(callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -587,7 +598,7 @@ function getWaypointSymbols(callback) {
 
 function getGeoreferenceFormats(callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -608,7 +619,7 @@ function getGeoreferenceFormats(callback) {
 
 function getLocationShareCountByUsername(username, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -628,7 +639,7 @@ function getLocationShareCountByUsername(username, callback) {
 
 function getLocationSharesByUsername(username, offset, limit, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -649,7 +660,7 @@ function getLocationSharesByUsername(username, offset, limit, callback) {
 
 function getTrackingInfo(username, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -674,7 +685,7 @@ function getTrackingInfo(username, callback) {
 
 function updateTrackingInfo(username, newUuid, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -691,7 +702,7 @@ function updateTrackingInfo(username, newUuid, callback) {
 
 function getUserIdByUsername(username, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -730,7 +741,7 @@ function createLocationQueryClauses(userId, from, to, maxHdop, notesOnlyFlag) {
 
 function getLocationCount(userId, from, to, maxHdop, notesOnlyFlag, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -757,7 +768,7 @@ function getLocationCount(userId, from, to, maxHdop, notesOnlyFlag, callback) {
 
 function getLocations(userId, from, to, maxHdop, notesOnlyFlag, order, offset, limit, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -791,7 +802,7 @@ function getLocations(userId, from, to, maxHdop, notesOnlyFlag, order, offset, l
  */
 function getLocationSharingId(userId, nickname, callback) {
   // Validate the passed user has a valid share to the nicknamed user
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -814,7 +825,7 @@ function getLocationSharingId(userId, nickname, callback) {
 
 function getLocationShareDetails(nickname, sharedToId, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -839,7 +850,7 @@ function getLocationShareDetails(nickname, sharedToId, callback) {
 
 function getMostRecentLocationTime(userId, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -864,7 +875,7 @@ function getMostRecentLocationTime(userId, callback) {
 
 function getLocationShareExistsByUsername(username, nickname, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -889,7 +900,7 @@ function getLocationShareExistsByUsername(username, nickname, callback) {
 
 function createLocationShare(sharedById, sharedToId, recentMinutes, maximumMinutes, active, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -906,7 +917,7 @@ function createLocationShare(sharedById, sharedToId, recentMinutes, maximumMinut
 
 function updateLocationShare(sharedById, sharedToId, recentMinutes, maximumMinutes, active, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -954,7 +965,7 @@ function updateLocationShareActiveStates(username, shares, callback) {
     callback(null);
     return;
   }
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -973,7 +984,7 @@ function updateLocationShareActiveStates(username, shares, callback) {
 
 function deleteLocationShares(username, nicknames, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -990,7 +1001,7 @@ function deleteLocationShares(username, nicknames, callback) {
 
 function getItinerariesCountByUsername(username, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -1011,7 +1022,7 @@ function getItinerariesCountByUsername(username, callback) {
 
 function getItinerary(username, id, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -1036,7 +1047,7 @@ function getItinerary(username, id, callback) {
 
 function deleteItinerary(username, id, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -1061,7 +1072,7 @@ function deleteItinerary(username, id, callback) {
 
 function getItinerariesByUsername(username, offset, limit, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -1078,7 +1089,7 @@ function getItinerariesByUsername(username, offset, limit, callback) {
 
 function updateItinerary(userId, itinerary, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -1104,7 +1115,7 @@ function updateItinerary(userId, itinerary, callback) {
 
 function createItinerary(userId, itinerary, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -1129,7 +1140,7 @@ function createItinerary(userId, itinerary, callback) {
 
 function confirmItineraryOwnership(username, itineraryId, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -1154,7 +1165,7 @@ function confirmItineraryOwnership(username, itineraryId, callback) {
 
 function confirmItinerarySharedAccess(username, itineraryId, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -1180,7 +1191,7 @@ function confirmItinerarySharedAccess(username, itineraryId, callback) {
 
 function getItinerarySharesCountByUsername(username, itineraryId, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -1195,7 +1206,7 @@ function getItinerarySharesCountByUsername(username, itineraryId, callback) {
                        if (result && result.rowCount > 0) {
                          callback(null, result.rows[0].count);
                        } else {
-                         winston.warn('Error fetching itinerary share count', result);
+                         logger.warn('Error fetching itinerary share count', result);
                          callback(new Error('Error fetching itinerary share count'));
                        }
                      }
@@ -1206,7 +1217,7 @@ function getItinerarySharesCountByUsername(username, itineraryId, callback) {
 
 function getItinerarySharesByUsername(username, itineraryId, offset, limit, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -1221,7 +1232,7 @@ function getItinerarySharesByUsername(username, itineraryId, offset, limit, call
                        if (result && result.rows) {
                          callback(null, result.rows);
                        } else {
-                         winston.warn('Error fetching itinerary shares', result);
+                         logger.warn('Error fetching itinerary shares', result);
                          callback(new Error('Error fetching itinerary shares'));
                        }
                      }
@@ -1232,7 +1243,7 @@ function getItinerarySharesByUsername(username, itineraryId, offset, limit, call
 
 function getItineraryShare(itineraryId, nickname, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -1258,7 +1269,7 @@ function getItineraryShare(itineraryId, nickname, callback) {
 function getCountSharedItinerariesForUser(username, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
   var itineraries = [], id, it;
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -1273,7 +1284,7 @@ function getCountSharedItinerariesForUser(username, callback) {
                        if (result && result.rowCount > 0) {
                          callback(null, result.rows[0].count);
                        } else {
-                         winston.warn('Error fetching shared itineraries count', result);
+                         logger.warn('Error fetching shared itineraries count', result);
                          callback(new Error('Error fetching shared itineraries count'));
                        }
                      }
@@ -1285,7 +1296,7 @@ function getCountSharedItinerariesForUser(username, callback) {
 function getSharedItinerariesForUser(username, offset, limit, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
   var itineraries = [], id, it;
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -1310,7 +1321,7 @@ function getSharedItinerariesForUser(username, offset, limit, callback) {
 
 function getSharedItinerariesNicknamesForUser(username, itineraryIds, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -1335,7 +1346,7 @@ function getSharedItinerariesNicknamesForUser(username, itineraryIds, callback) 
 
 function createItineraryShare(itineraryId, nickname, active, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -1352,7 +1363,7 @@ function createItineraryShare(itineraryId, nickname, active, callback) {
 
 function updateItineraryShare(itineraryId, sharedToId, active, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -1374,7 +1385,7 @@ function updateItineraryShareActiveStates(itineraryId, shares, callback) {
     callback(null);
     return;
   }
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -1393,7 +1404,7 @@ function updateItineraryShareActiveStates(itineraryId, shares, callback) {
 
 function deleteItineraryShares(itineraryId, nicknames, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -1410,7 +1421,7 @@ function deleteItineraryShares(itineraryId, nicknames, callback) {
 
 function updateItineraryWaypoint(itineraryId, waypointId, w, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -1445,7 +1456,7 @@ function updateItineraryWaypoint(itineraryId, waypointId, w, callback) {
 
 function moveItineraryWaypoint(itineraryId, waypointId, w, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -1472,7 +1483,7 @@ function moveItineraryWaypoint(itineraryId, waypointId, w, callback) {
 
 function deleteItineraryWaypoint(itineraryId, waypointId, w, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -1498,7 +1509,7 @@ function deleteItineraryWaypoint(itineraryId, waypointId, w, callback) {
 
 function createItineraryWaypoint(itineraryId, w, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -1536,7 +1547,7 @@ function createItineraryWaypoint(itineraryId, w, callback) {
 
 function getItineraryWaypointCount(itineraryId, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -1561,7 +1572,7 @@ function getItineraryWaypointCount(itineraryId, callback) {
 
 function getItineraryWaypoint(itineraryId, waypointId, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -1590,7 +1601,7 @@ function getItineraryWaypoint(itineraryId, waypointId, callback) {
 
 function getItineraryWaypoints(itineraryId, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -1615,7 +1626,7 @@ function getItineraryWaypoints(itineraryId, callback) {
 
 function getSpecifiedItineraryWaypoints(itineraryId, waypointIds, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -1641,7 +1652,7 @@ function getSpecifiedItineraryWaypoints(itineraryId, waypointIds, callback) {
 function getItineraryRoutes(itineraryId, routeIds, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
   var routes = [], rid, rte, rtept;
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -1693,7 +1704,7 @@ function getItineraryRoutes(itineraryId, routeIds, callback) {
 
 function getItineraryRoutePointsCount(itineraryId, routeId, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -1720,7 +1731,7 @@ function getItineraryRoutePointsCount(itineraryId, routeId, callback) {
 
 function getItineraryRoutePoints(itineraryId, routeId, offset, limit, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -1750,7 +1761,7 @@ function getItineraryRoutePoints(itineraryId, routeId, offset, limit, callback) 
 function getItineraryTracks(itineraryId, trackIds, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
   var tracks = [], tid, sid, trk, trkseg, trkpt;
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -1760,7 +1771,7 @@ function getItineraryTracks(itineraryId, trackIds, callback) {
                      // release the client back to the pool
                      done();
                      if (err) {
-                       winston.error('Error getting tracks', err);
+                       logger.error('Error getting tracks', err);
                        callback(err);
                      } else {
                        if (result && result.rowCount > 0) {
@@ -1810,7 +1821,7 @@ function getItineraryTracks(itineraryId, trackIds, callback) {
 
 function getItineraryTrackSegment(itineraryId, segmentId, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -1835,7 +1846,7 @@ function getItineraryTrackSegment(itineraryId, segmentId, callback) {
 
 function getItineraryTrackSegmentCount(trackId, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -1861,7 +1872,7 @@ function getItineraryTrackSegmentCount(trackId, callback) {
 function getItineraryTrackSegments(itineraryId, trackId, offset, limit, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
   var track, segments = [];
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -1893,7 +1904,7 @@ function getItineraryTrackSegments(itineraryId, trackId, offset, limit, callback
 
 function getItineraryTrackSegmentPointCount(segmentId, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -1919,7 +1930,7 @@ function getItineraryTrackSegmentPointCount(segmentId, callback) {
 function getItineraryTrackSegmentPoints(itineraryId, segmentId, offset, limit, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
   var track, segments = [];
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -1951,7 +1962,7 @@ function getItineraryTrackSegmentPoints(itineraryId, segmentId, offset, limit, c
 
 function deleteItineraryTrackSegments(itineraryId, segments, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -1968,7 +1979,7 @@ function deleteItineraryTrackSegments(itineraryId, segments, callback) {
 
 function replaceItineraryTrackSegments(itineraryId, trackId, segments, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -1976,7 +1987,7 @@ function replaceItineraryTrackSegments(itineraryId, trackId, segments, callback)
                    [itineraryId, trackId],
                    function(err, result) {
                      if (err) {
-                       winston.error('Failure deleting itinerary track segments', err);
+                       logger.error('Failure deleting itinerary track segments', err);
                        callback(err);
                      } else {
                        localCreateItineraryTrackSegments(client, trackId, segments, function() {
@@ -1991,7 +2002,7 @@ function replaceItineraryTrackSegments(itineraryId, trackId, segments, callback)
 
 function deleteItineraryTrackSegmentPoints(itineraryId, points, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -2008,7 +2019,7 @@ function deleteItineraryTrackSegmentPoints(itineraryId, points, callback) {
 
 function getItineraryRouteNames(itineraryId, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -2033,7 +2044,7 @@ function getItineraryRouteNames(itineraryId, callback) {
 
 function getItineraryRouteName(itineraryId, routeId, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -2058,7 +2069,7 @@ function getItineraryRouteName(itineraryId, routeId, callback) {
 
 function updateItineraryRouteName(itineraryId, routeId, name, color, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -2079,7 +2090,7 @@ function updateItineraryRouteName(itineraryId, routeId, name, color, callback) {
 
 function getItineraryTrackNames(itineraryId, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -2104,7 +2115,7 @@ function getItineraryTrackNames(itineraryId, callback) {
 
 function getItineraryTrackName(itineraryId, trackId, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -2129,7 +2140,7 @@ function getItineraryTrackName(itineraryId, trackId, callback) {
 
 function updateItineraryTrackName(itineraryId, trackId, name, color, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -2163,7 +2174,7 @@ function localUpdateItineraryTrackSegmentDistanceElevation(client, trackId, segm
                            segment.highest
                           ]}, function(err, result) {
                              if (err) {
-                               winston.error('Failure updatting itinerary track segment', err);
+                               logger.error('Failure updatting itinerary track segment', err);
                              }
                              if (--counter === 0) {
                                callback(err);
@@ -2174,7 +2185,7 @@ function localUpdateItineraryTrackSegmentDistanceElevation(client, trackId, segm
 
 function updateItineraryTrackDistanceElevation(itineraryId, trackId, track, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -2209,7 +2220,7 @@ function createItineraryWaypoints(itineraryId, waypoints, callback) {
     callback(null);
     return;
   }
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -2218,7 +2229,7 @@ function createItineraryWaypoints(itineraryId, waypoints, callback) {
                       text: 'INSERT INTO itinerary_waypoint (itinerary_id, name, position, altitude, time, comment, description, symbol, color, type, avg_samples) VALUES ($1, $2, POINT($3, $4), $5, $6, $7, $8, $9, $10, $11, $12)',
                       values: [itineraryId, w.name, w.lng, w.lat, w.ele, w.time, w.cmt, w.desc, w.sym, w.color, w.type, w.samples]}, function(err, result) {
                         if (err) {
-                          winston.error('Failure inserting itinerary_waypoint', err);
+                          logger.error('Failure inserting itinerary_waypoint', err);
                         }
                         if (--waypointCounter === 0) {
                           done();
@@ -2246,7 +2257,7 @@ function localCreateItineraryRoutePoints(client, routeId, points, callback) {
                            rp.sym ? rp.sym : rp.symbol
                           ]}, function(err, result) {
                              if (err) {
-                               winston.error('Failure inserting itinerary route point', err);
+                               logger.error('Failure inserting itinerary route point', err);
                              }
                              if (--pointCounter === 0) {
                                callback();
@@ -2257,7 +2268,7 @@ function localCreateItineraryRoutePoints(client, routeId, points, callback) {
 
 function createItineraryRoute(itineraryId, route, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -2273,7 +2284,7 @@ function createItineraryRoute(itineraryId, route, callback) {
                    ],
                    function(err, result) {
                      if (err) {
-                       winston.error('Failure inserting single itinerary_route', err);
+                       logger.error('Failure inserting single itinerary_route', err);
                        done();
                        callback(err);
                      } else {
@@ -2294,7 +2305,7 @@ function createItineraryRoutes(itineraryId, routes, callback) {
     callback(null);
     return;
   }
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -2304,7 +2315,7 @@ function createItineraryRoutes(itineraryId, routes, callback) {
                       text: 'INSERT INTO itinerary_route (itinerary_id, name, color, distance, ascent, descent, lowest, highest) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id',
                       values: [itineraryId, r.name, r.color, r.distance, r.ascent, r.descent, r.lowest, r.highest]}, function(err, result) {
                         if (err) {
-                          winston.error('Failure inserting itinerary_route', err);
+                          logger.error('Failure inserting itinerary_route', err);
                         } else {
                           var routeResult = result.rows[0];
                           localCreateItineraryRoutePoints(client, routeResult.id, r.points, function() {
@@ -2322,7 +2333,7 @@ function createItineraryRoutes(itineraryId, routes, callback) {
 
 function updateItineraryDistanceElevationData(itineraryId, routeId, route, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -2332,7 +2343,7 @@ function updateItineraryDistanceElevationData(itineraryId, routeId, route, callb
                      // release the client back to the pool
                      done();
                      if (err) {
-                       winston.error('Failure updating route distance and elevation data', err);
+                       logger.error('Failure updating route distance and elevation data', err);
                        callback(err);
                      } else {
                        callback(err, result.rowCount === 1);
@@ -2344,7 +2355,7 @@ function updateItineraryDistanceElevationData(itineraryId, routeId, route, callb
 
 function updateItineraryRoutePoints(itineraryId, routeId, points, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -2352,7 +2363,7 @@ function updateItineraryRoutePoints(itineraryId, routeId, points, callback) {
                    [itineraryId, routeId],
                    function(err, result) {
                      if (err) {
-                       winston.error('Failure removing existing itinerary_route_points', err);
+                       logger.error('Failure removing existing itinerary_route_points', err);
                        done();
                        callback(null);
                      } else {
@@ -2368,7 +2379,7 @@ function updateItineraryRoutePoints(itineraryId, routeId, points, callback) {
 
 function deleteItineraryRoutePoints(itineraryId, points, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -2398,7 +2409,7 @@ function localCreateItineraryTrackPoints(client, segmentId, points, callback) {
                              tp.hdop,
                              (tp.ele ? tp.ele : tp.altitude) ]}, function(err, result) {
                                if (err) {
-                                 winston.error('Failure inserting itinerary track point', err);
+                                 logger.error('Failure inserting itinerary track point', err);
                                }
                                if (--pointCounter === 0) {
                                  callback();
@@ -2424,7 +2435,7 @@ function localCreateItineraryTrackSegments(client, trackId, segments, callback) 
                              ts.highest
                             ]}, function(err, result) {
                       if (err) {
-                        winston.error('Failure inserting itinerary track segment', err);
+                        logger.error('Failure inserting itinerary track segment', err);
                       }
                       var segmentResult = result.rows[0];
                       localCreateItineraryTrackPoints(client, segmentResult.id, ts.points, function() {
@@ -2443,7 +2454,7 @@ function createItineraryTracks(itineraryId, tracks, callback) {
     callback(null);
     return;
   }
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -2453,7 +2464,7 @@ function createItineraryTracks(itineraryId, tracks, callback) {
                       text: 'INSERT INTO itinerary_track (itinerary_id, name, color, distance, ascent, descent, lowest, highest) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id',
                       values: [itineraryId, t.name, t.color, t.distance, t.ascent, t.descent, t.lowest, t.highest]}, function(err, result) {
                         if (err) {
-                          winston.error('Failure inserting itinerary_track', err);
+                          logger.error('Failure inserting itinerary_track', err);
                         }
                         var trackResult = result.rows[0];
                         localCreateItineraryTrackSegments(client, trackResult.id, t.segments, function() {
@@ -2470,7 +2481,7 @@ function createItineraryTracks(itineraryId, tracks, callback) {
 
 function deleteItineraryWaypoint(itineraryId, waypointId, w, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -2492,7 +2503,7 @@ function deleteItineraryWaypoint(itineraryId, waypointId, w, callback) {
 
 function deleteItineraryWaypoints(itineraryId, waypointIds, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -2509,7 +2520,7 @@ function deleteItineraryWaypoints(itineraryId, waypointIds, callback) {
 
 function deleteItineraryRoute(itineraryId, routeId, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -2519,7 +2530,7 @@ function deleteItineraryRoute(itineraryId, routeId, callback) {
                      // release the client back to the pool
                      done();
                      if (!err && result.rowCount === 0) {
-                       winston.warn('Failed to delete itinerary route for itinerary id %s and route id %s');
+                       logger.warn('Failed to delete itinerary route for itinerary id %s and route id %s');
                      } else {
                        callback(err);
                      }
@@ -2530,7 +2541,7 @@ function deleteItineraryRoute(itineraryId, routeId, callback) {
 
 function deleteItineraryRoutes(itineraryId, routeIds, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -2547,7 +2558,7 @@ function deleteItineraryRoutes(itineraryId, routeIds, callback) {
 
 function deleteItineraryTracks(itineraryId, trackIds, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -2578,7 +2589,7 @@ function deleteItineraryTracks(itineraryId, trackIds, callback) {
 function tileExists(id, x, y, z, maxAge, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
   var sql;
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -2621,7 +2632,7 @@ function tileExists(id, x, y, z, maxAge, callback) {
 function fetchTile(id, x, y, z, maxAge, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
   var sql;
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -2650,7 +2661,7 @@ function fetchTile(id, x, y, z, maxAge, callback) {
 
 function incrementTileCounter(callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -2662,7 +2673,7 @@ function incrementTileCounter(callback) {
                      if (result && result.rows) {
                        callback(err, result.rows[0]);
                      } else {
-                       winston.error('Error incrementing tile counter', err);
+                       logger.error('Error incrementing tile counter', err);
                        callback(err);
                      }
                    });
@@ -2672,7 +2683,7 @@ function incrementTileCounter(callback) {
 
 function saveTileCount(count, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -2689,7 +2700,7 @@ function saveTileCount(count, callback) {
 
 function saveTile(id, x, y, z, expires, tileBuffer, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -2706,7 +2717,7 @@ function saveTile(id, x, y, z, expires, tileBuffer, callback) {
 
 function updateTile(id, x, y, z, expires, tileBuffer, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -2723,7 +2734,7 @@ function updateTile(id, x, y, z, expires, tileBuffer, callback) {
 
 function deleteTile(id, x, y, z, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -2740,7 +2751,7 @@ function deleteTile(id, x, y, z, callback) {
 
 function logPoint(userId, q, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -2758,7 +2769,7 @@ function logPoint(userId, q, callback) {
 
 function getTileCount(callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  pg.connect(config.db.uri, function(err, client, done) {
+  pool.connect(function(err, client, done) {
     if (err) {
       callback(err);
     } else {
@@ -2778,5 +2789,13 @@ function getTileCount(callback) {
                      }
                    });
     }
+  });
+}
+
+function shutdown(callback) {
+  callback = typeof callback === 'function' ? callback : function() {};
+  pool.end().then(function() {
+    logger.debug('[db.js] stopped pool');
+    callback();
   });
 }

@@ -21,10 +21,11 @@ var http = require('http');
 var util = require('util');
 
 var _ = require('lodash');
-var winston = require('winston');
 
 var db = require('./db');
 var config = require('./config.json');
+
+var logger = require('./logger').createLogger('tiles.js');
 
 module.exports = {
   fetchTile: fetchTile,
@@ -37,15 +38,15 @@ function transliterateTileUrl(url, x, y, z) {
 
 function fetchRemoteTile(id, x, y, z, callback) {
   var tile, req, expires, expiresHeader, options, buffer, image = '';
-  // winston.debug('Fetching remote tile', x, y, z);
-  // winston.debug('tiles.js incrementing tile counter');
+  // logger.debug('Fetching remote tile x=%d y=%d z=%d', x, y, z);
+  // logger.debug('tiles.js incrementing tile counter');
   db.incrementTileCounter(function(err, tileCount) {
-    // winston.debug('tiles.js tile count:', JSON.stringify(tileCount));
+    // logger.debug('tiles.js tile count:', JSON.stringify(tileCount));
     if (tileCount && tileCount.nextval && tileCount.nextval % config.reporting.metrics.tile.count.frequency === 0) {
-      // winston.debug('Saving tile count');
+      // logger.debug('Saving tile count');
       db.saveTileCount(tileCount.nextval, function(err, result) {
         if (err) {
-          winston.error('Error saving latest tile count. %s', err);
+          logger.error('Error saving latest tile count. %s', err);
         }
       });
     }
@@ -63,9 +64,9 @@ function fetchRemoteTile(id, x, y, z, callback) {
   };
   options.path = transliterateTileUrl(config.tile.providers[id].options.path, x, y, z);
   req = http.request(options, function(res) {
-    // winston.debug('Response status code %d for tile x=%d y=%d z=%d', res.statusCode, x, y, z);
+    // logger.debug('Response status code %d for tile x=%d y=%d z=%d', res.statusCode, x, y, z);
     if (res.statusCode !== 200) {
-      winston.warn('Fetching remote tile', id, x, y, z, 'failed', res.statusCode);
+      logger.verbose('Fetching remote tile id: %s, x=%d y=%d z=%d failed: %d', id, x, y, z, res.statusCode);
       callback(new Error(util.format('Failure fetching remote tile x=%d y=%d z=%d', x, y, z)));
     } else {
       res.setEncoding('binary');
@@ -77,13 +78,13 @@ function fetchRemoteTile(id, x, y, z, callback) {
         if (expiresHeader !== undefined) {
           expires = new Date(expiresHeader);
         } else {
-          winston.warn('expires header was not set for tile', x, y, z);
+          logger.warn('expires header was not set for tile x=%d y=%d z=%d', x, y, z);
         }
         if (expires === undefined || isNaN(expires.getTime())) {
           // Set expiry for one week
-          winston.warn('expires header was invalid for tile', x, y, z, expiresHeader);
+          logger.warn('expires header was invalid for tile x=%d y=%d z=%d, %s', x, y, z, expiresHeader);
           expires = new Date(Date.now() + 592200000);
-          // winston.debug('Expires set to', expires);
+          // logger.debug('Expires set to', expires);
         }
         db.tileExists(id, x, y, z, null, function(err, exists) {
           if (err) {
@@ -94,18 +95,18 @@ function fetchRemoteTile(id, x, y, z, callback) {
               image: buffer
             };
             if (exists) {
-              // winston.debug('Updating tile', x, y, z);
+              // logger.debug('Updating tile x=%d y=%d z=%d', x, y, z);
               db.updateTile(id, x, y, z, expires, buffer, function(err) {
                 if (err) {
-                  winston.error('ERROR updating tile', x, y, z, 'error:', err);
+                  logger.error('ERROR updating tile x=%d y=%d z=%d error: %j', x, y, z, err);
                 }
                 callback(err, tile);
               });
             } else {
-              // winston.debug('Saving tile', x, y, z);
+              // logger.debug('Saving tile x=%d y=%d z=%d', x, y, z);
               db.saveTile(id, x, y, z, expires, buffer, function(err) {
                 if (err) {
-                  winston.error('ERROR saving tile', x, y, z, 'error:', err);
+                  logger.error('ERROR saving tile x=%d y=%d z=%d error: %j', x, y, z, err);
                 }
                 callback(err, tile);
               });
@@ -140,27 +141,27 @@ function fetchTile(id, x, y, z, callback) {
         callback(err);
       } else {
         if (exists) {
-          // winston.debug('Fetching existing tile, id:%d, x:%d, y:%d, z:%d', id, x, y, z);
+          // logger.debug('Fetching existing tile, id:%d, x:%d, y:%d, z:%d', id, x, y, z);
           db.fetchTile(id, x, y, z, config.tile.cache.maxAge, function(err, tile) {
             if (err || tile === undefined || tile.image === undefined) {
-              winston.warn('Error retrieving tile, id:%d, x:%d, y:%d, z:%d', id, x, y, z, err);
+              logger.warn('Error retrieving tile, id:%d, x:%d, y:%d, z:%d', id, x, y, z, err);
               fetchRemoteTile(id, x, y, z, callback);
             } else {
               callback(null, tile);
             }
           });
         } else {
-          // winston.debug('Fetching non-existent or expired tile from remote site: id:%d, x:%d, y:%d, z:%d', id, x, y, z);
+          // logger.debug('Fetching non-existent or expired tile from remote site: id:%d, x:%d, y:%d, z:%d', id, x, y, z);
           fetchRemoteTile(id, x, y, z, function(err, buffer) {
             if (err || !buffer) {
-              winston.warn('Failed to fetch remote tile: id:%d, x:%d, y:%d, z:%d', id, x, y, z);
+              logger.warn('Failed to fetch remote tile: id:%d, x:%d, y:%d, z:%d', id, x, y, z);
               // Fall back to attempting to fetch a stale tile
               db.fetchTile(id, x, y, z, null, function(err, tile) {
                 if (err || tile === undefined || tile.image === undefined) {
-                  winston.warn('Error retrieving local tile: id:%d, x:%d, y:%d, z:%d', id, x, y, z, err);
+                  logger.warn('Error retrieving local tile: id:%d, x:%d, y:%d, z:%d', id, x, y, z, err);
                   callback(err);
                 } else {
-                  // winston.debug('Fetched stale tile from cache: id: %d, x:%d, y:%d, z:%d', id, x, y, z);
+                  // logger.debug('Fetched stale tile from cache: id: %d, x:%d, y:%d, z:%d', id, x, y, z);
                   callback(null, tile);
                 }
               });

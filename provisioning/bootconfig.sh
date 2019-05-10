@@ -8,9 +8,9 @@
 # Uncomment the following to debug the script
 #set -x
 
-TRIP_WEB_CLIENT_VERSION='v1.0.0'
+TRIP_WEB_CLIENT_VERSION='v1.1.0-rc.1'
 TRIP_WEB_CLIENT_RELEASE="trip-web-client-release-${TRIP_WEB_CLIENT_VERSION}.tar.gz"
-TRIP_WEB_CLIENT_SHA256="3e491482ffeddf11b4ed223431c831f16f5bf42a5443f05d2ebf3b3e0c4016af  ${TRIP_WEB_CLIENT_RELEASE}"
+TRIP_WEB_CLIENT_SHA256="5a9ffa79ed45d0837acb2db23df54b08c09c33a0a81f5eabd5108a5125b1c95f  ${TRIP_WEB_CLIENT_RELEASE}"
 PG_VERSION=9.6
 
 su - postgres -c 'createuser -drs vagrant' 2>/dev/null
@@ -92,7 +92,7 @@ if [ ! -e /var/www/trip/index.html ]; then
 	cd /var/www/trip
 	ln -s /vagrant/provisioning/nginx/index.html /var/www/trip/index.html
 fi
-if [ ! -e /var/www/trip/app/bower_components ]; then
+if [ ! -e /var/www/trip/app/node_modules ]; then
 	if [ -f /vagrant-trip-web-client/package.json ]; then
 		echo "Configuring web client to use shared folder under /vagrant-trip-web-client/"
 		cd /var/www/trip
