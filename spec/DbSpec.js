@@ -29,12 +29,49 @@ function zdescribe(title, func) {
 describe('db.js', function() {
   var Db = require('../db.js');
   // var fs = require('fs');
+  var tripUserId = 29;
 
   var err, result;
   var nicknames = ['Fred', 'Tom', 'Albert'];
 
   it('should convert an array to a SQL array', function() {
     expect(Db.unitTests.convertArrayToSqlArray(nicknames)).toEqual('{"Fred","Tom","Albert"}');
+  });
+
+  describe('GIS distance within', function() {
+
+    beforeEach(function(done) {
+      Db.getItinerariesByDistanceWithin(tripUserId, 2.30258, 48.85308, 900.1, 0, 10,
+                                        function(_err_, _result_) {
+                                          err = _err_;
+                                          result = _result_;
+                                          done();
+                                        });
+    });
+
+    it('should fetch itineraries and shared itineraries within a specified distance of a point', function() {
+      expect(err).toBeFalsy();
+      expect(result.length).toBeGreaterThan(1);
+    });
+
+  });
+
+  describe('GIS distance within count', function() {
+
+    beforeEach(function(done) {
+      Db.getItinerariesByDistanceWithinCount(tripUserId, 2.30258, 48.85308, 900,
+                                        function(_err_, _result_) {
+                                          err = _err_;
+                                          result = _result_;
+                                          done();
+                                        });
+    });
+
+    it('should fetch a count of itineraries and shared itineraries within a specified distance of a point', function() {
+      expect(err).toBeFalsy();
+      expect(Number(result)).toBeGreaterThan(1);
+    });
+
   });
 
   describe('Tracking info UUID', function() {

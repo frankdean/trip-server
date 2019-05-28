@@ -2,6 +2,7 @@
   "esversion": 6,
   "globalstrict": true,
   "globals": {
+    "console": false,
     "Intl": false,
     "Buffer": false,
     "jasmine": false,

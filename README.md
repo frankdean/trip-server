@@ -52,6 +52,8 @@ The following features are provided:
 
 * [PostgreSQL][] database server - (Known to run on version 9.4 and 9.6)
 
+* [PostGIS][] PostGIS spatial extension to PostgreSQL (2.5.x)
+
 
 ## Quick Start Using [Vagrant][]
 
@@ -196,6 +198,16 @@ but it should run on any system supported by [Node.js][].
 The basic installation consists of downloading and configuring the
 `trip-server` application, the `trip-web-client` application, and configuring
 with the [PostgreSQL][] database server.
+
+On a Debian 9 (Stretch) system, install the following packages:
+
+		$ sudo apt-get install postgresql postgresql-contrib postgis
+
+The following package will be installed automatically, unless you have set
+`APT::Install-Recommends` to false in apt preferences.  If they aren't
+automatically installed:
+
+		$ sudo apt-get install postgresql-9.6-postgis-2.3 postgresql-9.6-postgis-2.3-scripts
 
 If the application is exposed to the Internet, ideally it should also be
 configured to run behind an [Apache web server][Apache] using HTTPS.
@@ -819,9 +831,43 @@ a release of the web client.
 
 This section describes any environmental changes, such as database changes or
 configuration changes that need to be made since the last release, when
-upgrading to the next release.
+upgrading to the this release.
 
-n/a
+This release introduces using [PostGIS][] providing a full spatial database.
+On a Debian system, install PostGIS with:
+
+		$ sudo apt-get install postgresql-9.6-postgis-2.3 postgresql-9.6-postgis-2.3-scripts
+
+
+Backup the existing database.  Then execute the following `psql` commands to
+upgrade the database to the new format:
+
+	CREATE EXTENSION postgis;
+
+	ALTER TABLE itinerary_waypoint ADD COLUMN geog GEOGRAPHY(POINT,4326);
+	CREATE INDEX itinerary_waypoint_geog_idx ON itinerary_waypoint USING GIST(geog);
+	UPDATE itinerary_waypoint SET geog = ST_SetSRID(ST_Point(position[0], position[1]),4326);
+	ALTER TABLE itinerary_waypoint ALTER COLUMN geog SET NOT NULL;
+	ALTER TABLE itinerary_waypoint DROP COLUMN position;
+
+	ALTER TABLE itinerary_route_point ADD COLUMN geog GEOGRAPHY(POINT, 4326);
+	CREATE INDEX itineary_route_point_geog_idx ON itinerary_route_point USING GIST(geog);
+	UPDATE itinerary_route_point SET geog = ST_SetSRID(ST_Point(position[0], position[1]),4326);
+	ALTER TABLE itinerary_route_point ALTER COLUMN geog SET NOT NULL;
+	ALTER TABLE itinerary_route_point DROP COLUMN position;
+
+	ALTER TABLE itinerary_track_point ADD COLUMN geog GEOGRAPHY(POINT, 4326);
+	CREATE INDEX itineary_track_point_geog_idx ON itinerary_track_point USING GIST(geog);
+	UPDATE itinerary_track_point SET geog = ST_SetSRID(ST_Point(position[0], position[1]),4326);
+	ALTER TABLE itinerary_track_point ALTER COLUMN geog SET NOT NULL;
+	ALTER TABLE itinerary_track_point DROP COLUMN position;
+
+	ALTER TABLE location ADD COLUMN geog GEOGRAPHY(POINT, 4326);
+	CREATE INDEX location_geog_idx ON location USING GIST(geog);
+	UPDATE location SET geog = ST_SetSRID(ST_Point(location[0], location[1]),4326);
+	ALTER TABLE location ALTER COLUMN geog SET NOT NULL;
+	ALTER TABLE location DROP COLUMN location;
+
 
 [trip-web-client]: https://www.fdsd.co.uk/trip-web-client-docs/
 [AngularJS]: https://angularjs.org
@@ -834,6 +880,7 @@ n/a
 [Node.js]: https://nodejs.org/ "A JavaScript runtime built on Chrome's V8 JavaScript engine"
 [OpenStreetMap]: http://www.openstreetmap.org/ "OpenStreetMap"
 [PostgreSQL]: https://www.postgresql.org "A powerful, open source object-relational database system"
+[PostGIS]: https://postgis.net "Spatial and Geographic objects for PostgreSQL"
 [RaspberryPi]: https://www.raspberrypi.org
 [gpx]: http://www.topografix.com/gpx.asp "The GPX Exchange Format"
 [semver]: http://semver.org

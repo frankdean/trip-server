@@ -278,7 +278,7 @@ function doLogPoint(q, callback) {
       q.note = undefined;
     }
     q.lng = q.lng !== undefined ? q.lng : q.lon;
-    if (_.inRange(q.lat, -90, 90) && _.inRange(q.lng, -180, 180)) {
+    if (Number(q.lat) >= -90 && Number(q.lat) <= 90 && Number(q.lng) >= -180 && Number(q.lng) <= 180) {
       if (q.hdop !== undefined && !_.inRange(q.hdop, 99999.9)) {
         logger.debug('Received invalid hdop for location %j', q);
         q.hdop = undefined;
@@ -295,11 +295,11 @@ function doLogPoint(q, callback) {
         logger.debug('Received invalid bearing for location %j', q);
         q.bearing = undefined;
       }
-      if (q.sat !== undefined && (!_.isInteger(Number(q.sat)) || !_.inRange(q.sat, 32767))) {
+      if (q.sat !== undefined && (!_.isInteger(Number(q.sat)) || !_.inRange(q.sat, 32768))) {
         logger.debug('Received invalid satellite count for location %j', q);
         q.sat = undefined;
       }
-      if (q.batt !== undefined && !_.inRange(q.batt, 999.9)) {
+      if (q.batt !== undefined && !_.inRange(q.batt, 1000)) {
         logger.debug('Received invalid battery value for location %j', q);
         q.batt = undefined;
       }

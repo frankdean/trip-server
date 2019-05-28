@@ -33,6 +33,7 @@ module.exports = {
   deleteItinerary: deleteItinerary,
   getItinerary: getItinerary,
   getItineraries: getItineraries,
+  getItinerariesWithinDistance: getItinerariesWithinDistance,
   saveItinerary: saveItinerary,
   getItineraryShares: getItineraryShares,
   getSharedItinerariesForUser: getSharedItinerariesForUser,
@@ -150,6 +151,27 @@ function getItineraries(username, offset, pageSize, callback) {
     }
     db.getItinerariesByUsername(username, offset, pageSize, function(err, result) {
       callback(err, {count: count, payload: result});
+    });
+  });
+}
+
+function getItinerariesWithinDistance(username, longitude, latitude, distance, offset, pageSize, callback) {
+  callback = typeof callback === 'function' ? callback : function() {};
+  console.time("searchItinerariesByDistance");
+  db.findUserByUsername(username, function(err, userId) {
+    if (err) {
+      callback(err);
+      return;
+    }
+    db.getItinerariesByDistanceWithinCount(userId, longitude, latitude, distance, function(err, count) {
+      if (err) {
+        callback(err);
+        return;
+      }
+      db.getItinerariesByDistanceWithin(userId, longitude, latitude, distance, offset, pageSize, function(err, result) {
+        console.timeEnd("searchItinerariesByDistance");
+        callback(err, {count: count, payload: result});
+      });
     });
   });
 }

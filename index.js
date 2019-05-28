@@ -48,6 +48,7 @@ var logger = require('./logger').createLogger('index.js');
 myApp.fileServer = new(nstatic.Server)('./', {cache: 3600});
 // Set to x to indent JSON with x spaces.  Zero: no pretty print.
 myApp.pretty = config.app.json.indent.level;
+myApp.maxItinerarySearchRadius = (config.app.maxItinerarySearchRadius) || 250000;
 
 function BadRequestError(message) {
   this.name = 'BadRequestError';
@@ -289,6 +290,35 @@ myApp.handleGetItineraries = function(req, res, token) {
         _.isInteger(Number(q.page_size)) && _.inRange(q.page_size, 1, 1000)) {
 
       itineraries.getItineraries(token.sub, q.offset, q.page_size, function(err, result) {
+        myApp.respondWithData(err, res, result);
+      });
+    } else {
+      myApp.handleError(new BadRequestError('Parameters failed validation'), res);
+    }
+  });
+};
+
+myApp.handleGetItinerariesWithinDistance = function(req, res, token) {
+  req.on('data', function() {
+  }).on('end', function() {
+    var q = url.parse(req.url, true).query;
+    if (q.lon !== undefined) {
+      q.lng = q.lon;
+    }
+    if (q.longitude !== undefined) {
+      q.lng = q.longitude;
+    }
+    if (q.latitude !== undefined) {
+      q.lat = q.latitude;
+    }
+    logger.debug('Max search radius is: %d metres', myApp.maxItinerarySearchRadius);
+    if (_.isInteger(Number(q.offset)) && _.inRange(q.offset, Number.MAX_SAFE_INTEGER) &&
+        _.isInteger(Number(q.page_size)) && _.inRange(q.page_size, 1, 1000) &&
+        Number(q.lat) >= -90 && Number(q.lat) <= 90 &&
+        Number(q.lng) >= -180 && Number(q.lng) <= 180 &&
+        Number(q.distance) >= 0 && Number(q.distance) <= myApp.maxItinerarySearchRadius) {
+
+      itineraries.getItinerariesWithinDistance(token.sub, q.lng, q.lat, q.distance, q.offset, q.page_size, function(err, result) {
         myApp.respondWithData(err, res, result);
       });
     } else {
@@ -1517,6 +1547,8 @@ myApp.handleFullyAuthenticatedRequests = function(req, res, token) {
     myApp.handleGetTrackingInfo(req, res, token);
   } else if (req.method === 'PUT' && /\/tracking_uuid\/?(\?.*)?$/.test(req.url)) {
     myApp.handleUpdateTrackingInfo(req, res, token);
+  } else if (req.method === 'GET' && /\/itineraries\/?\?.*distance.*$/.test(req.url)) {
+    myApp.handleGetItinerariesWithinDistance(req, res, token);
   } else if (req.method === 'GET' && /\/itineraries\/?(\?.*)?$/.test(req.url)) {
     myApp.handleGetItineraries(req, res, token);
   } else if (req.method === 'GET' && /\/itinerary\/?(?:[0-9]+)?(?:\?.*)?$/.test(req.url)) {
@@ -1703,12 +1735,16 @@ myApp.server = http.createServer(function(req, res) {
     }
   } else {
     // Must be authorized for everything else
+    // logger.debug('Headers: %j', req.headers);
     token = req.headers.authorization;
+    // logger.debug('Token: %j', token);
     if (token && token.startsWith('Bearer ')) {
       token = token.slice(7, token.length);
     }
     xsrfToken = req.headers['x-trip-xsrf-token'];
     cookies = myApp.parseCookies(req.headers.cookie);
+    // logger.debug('xsrfToken: %j', xsrfToken);
+    // logger.debug('Cookies: %j', cookies);
     if (token == null || xsrfToken !== cookies['TRIP-XSRF-TOKEN']) {
       logger.debug('Access token missing from request or cookie does not match XSRF token');
       myApp.handleError(new login.UnauthorizedError('Access token  missing'), res);

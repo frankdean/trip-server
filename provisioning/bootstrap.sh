@@ -6,7 +6,7 @@
 apt-get update
 #apt-get upgrade --yes
 apt-get install apt-transport-https
-apt-get install --yes g++ git nginx postgresql postgresql-contrib apg screen
+apt-get install --yes g++ git nginx postgresql postgresql-contrib postgis apg screen
 
 curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
 echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list

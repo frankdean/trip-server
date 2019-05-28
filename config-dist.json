@@ -17,7 +17,8 @@
     },
     "resourceToken": {
       "expiresIn": 86400
-    }
+    },
+    "maxItinerarySearchRadius": 250000
   },
   "jwt": {
     "signingKey": "secret",

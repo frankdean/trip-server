@@ -240,10 +240,10 @@ function deleteUser(id, callback) {
 function getUsers(offset, limit, nickname, email, searchType, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
   searchType = searchType !== 'partial' ? 'exact' : 'partial';
-  if (_.isEmpty(nickname) || !_.inRange(nickname.length, 1, 120)) {
+  if (_.isEmpty(nickname) || !_.inRange(nickname.length, 1, 121)) {
     nickname = undefined;
   }
-  if (_.isEmpty(email) || !_.inRange(email.length, 1, 120)) {
+  if (_.isEmpty(email) || !_.inRange(email.length, 1, 121)) {
     email = undefined;
   }
   db.getUserCount(nickname, email, searchType, function(err, count) {

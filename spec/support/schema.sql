@@ -2,12 +2,19 @@
 -- PostgreSQL database dump
 --
 
+-- Dumped from database version 9.6.13
+-- Dumped by pg_dump version 9.6.13
+
 SET statement_timeout = 0;
 SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
 SET check_function_bodies = false;
+SET xmloption = content;
 SET client_min_messages = warning;
+SET row_security = off;
 
 --
 -- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: -
@@ -23,17 +30,29 @@ CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
 COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
 
 
-SET search_path = public, pg_catalog;
+--
+-- Name: postgis; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS postgis WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION postgis; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION postgis IS 'PostGIS geometry, geography, and raster spatial types and functions';
+
 
 SET default_tablespace = '';
 
 SET default_with_oids = false;
 
 --
--- Name: georef_format; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+-- Name: georef_format; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE georef_format (
+CREATE TABLE public.georef_format (
     key text NOT NULL,
     value text NOT NULL,
     ord integer NOT NULL
@@ -41,10 +60,10 @@ CREATE TABLE georef_format (
 
 
 --
--- Name: itinerary; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+-- Name: itinerary; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE itinerary (
+CREATE TABLE public.itinerary (
     id integer NOT NULL,
     title text NOT NULL,
     description text,
@@ -56,10 +75,10 @@ CREATE TABLE itinerary (
 
 
 --
--- Name: itinerary_route; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+-- Name: itinerary_route; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE itinerary_route (
+CREATE TABLE public.itinerary_route (
     id integer NOT NULL,
     itinerary_id integer NOT NULL,
     name text,
@@ -73,18 +92,18 @@ CREATE TABLE itinerary_route (
 
 
 --
--- Name: itinerary_route_point; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+-- Name: itinerary_route_point; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE itinerary_route_point (
+CREATE TABLE public.itinerary_route_point (
     id integer NOT NULL,
     itinerary_route_id integer NOT NULL,
-    "position" point NOT NULL,
     name text,
     comment text,
     description text,
     symbol text,
-    altitude numeric(11,5)
+    altitude numeric(11,5),
+    geog public.geography(Point,4326) NOT NULL
 );
 
 
@@ -92,7 +111,7 @@ CREATE TABLE itinerary_route_point (
 -- Name: itinerary_route_point_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE itinerary_route_point_seq
+CREATE SEQUENCE public.itinerary_route_point_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -104,14 +123,14 @@ CREATE SEQUENCE itinerary_route_point_seq
 -- Name: itinerary_route_point_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
-ALTER SEQUENCE itinerary_route_point_seq OWNED BY itinerary_route_point.id;
+ALTER SEQUENCE public.itinerary_route_point_seq OWNED BY public.itinerary_route_point.id;
 
 
 --
 -- Name: itinerary_route_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE itinerary_route_seq
+CREATE SEQUENCE public.itinerary_route_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -123,14 +142,14 @@ CREATE SEQUENCE itinerary_route_seq
 -- Name: itinerary_route_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
-ALTER SEQUENCE itinerary_route_seq OWNED BY itinerary_route.id;
+ALTER SEQUENCE public.itinerary_route_seq OWNED BY public.itinerary_route.id;
 
 
 --
 -- Name: itinerary_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE itinerary_seq
+CREATE SEQUENCE public.itinerary_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -142,14 +161,14 @@ CREATE SEQUENCE itinerary_seq
 -- Name: itinerary_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
-ALTER SEQUENCE itinerary_seq OWNED BY itinerary.id;
+ALTER SEQUENCE public.itinerary_seq OWNED BY public.itinerary.id;
 
 
 --
--- Name: itinerary_sharing; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+-- Name: itinerary_sharing; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE itinerary_sharing (
+CREATE TABLE public.itinerary_sharing (
     itinerary_id integer NOT NULL,
     shared_to_id integer NOT NULL,
     active boolean
@@ -157,10 +176,10 @@ CREATE TABLE itinerary_sharing (
 
 
 --
--- Name: itinerary_track; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+-- Name: itinerary_track; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE itinerary_track (
+CREATE TABLE public.itinerary_track (
     id integer NOT NULL,
     itinerary_id integer NOT NULL,
     name text,
@@ -174,16 +193,16 @@ CREATE TABLE itinerary_track (
 
 
 --
--- Name: itinerary_track_point; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+-- Name: itinerary_track_point; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE itinerary_track_point (
+CREATE TABLE public.itinerary_track_point (
     id integer NOT NULL,
     itinerary_track_segment_id integer NOT NULL,
-    "position" point NOT NULL,
     "time" timestamp with time zone,
     hdop numeric(6,1),
-    altitude numeric(11,5)
+    altitude numeric(11,5),
+    geog public.geography(Point,4326) NOT NULL
 );
 
 
@@ -191,7 +210,7 @@ CREATE TABLE itinerary_track_point (
 -- Name: itinerary_track_point_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE itinerary_track_point_seq
+CREATE SEQUENCE public.itinerary_track_point_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -203,14 +222,14 @@ CREATE SEQUENCE itinerary_track_point_seq
 -- Name: itinerary_track_point_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
-ALTER SEQUENCE itinerary_track_point_seq OWNED BY itinerary_track_point.id;
+ALTER SEQUENCE public.itinerary_track_point_seq OWNED BY public.itinerary_track_point.id;
 
 
 --
--- Name: itinerary_track_segment; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+-- Name: itinerary_track_segment; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE itinerary_track_segment (
+CREATE TABLE public.itinerary_track_segment (
     id integer NOT NULL,
     itinerary_track_id integer NOT NULL,
     distance numeric(12,2),
@@ -225,7 +244,7 @@ CREATE TABLE itinerary_track_segment (
 -- Name: itinerary_track_segment_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE itinerary_track_segment_seq
+CREATE SEQUENCE public.itinerary_track_segment_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -237,14 +256,14 @@ CREATE SEQUENCE itinerary_track_segment_seq
 -- Name: itinerary_track_segment_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
-ALTER SEQUENCE itinerary_track_segment_seq OWNED BY itinerary_track_segment.id;
+ALTER SEQUENCE public.itinerary_track_segment_seq OWNED BY public.itinerary_track_segment.id;
 
 
 --
 -- Name: itinerary_track_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE itinerary_track_seq
+CREATE SEQUENCE public.itinerary_track_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -256,18 +275,17 @@ CREATE SEQUENCE itinerary_track_seq
 -- Name: itinerary_track_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
-ALTER SEQUENCE itinerary_track_seq OWNED BY itinerary_track.id;
+ALTER SEQUENCE public.itinerary_track_seq OWNED BY public.itinerary_track.id;
 
 
 --
--- Name: itinerary_waypoint; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+-- Name: itinerary_waypoint; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE itinerary_waypoint (
+CREATE TABLE public.itinerary_waypoint (
     id integer NOT NULL,
     itinerary_id integer NOT NULL,
     name text,
-    "position" point NOT NULL,
     "time" timestamp with time zone,
     comment text,
     symbol text,
@@ -275,7 +293,8 @@ CREATE TABLE itinerary_waypoint (
     description text,
     color text,
     type text,
-    avg_samples integer
+    avg_samples integer,
+    geog public.geography(Point,4326) NOT NULL
 );
 
 
@@ -283,7 +302,7 @@ CREATE TABLE itinerary_waypoint (
 -- Name: itinerary_waypoint_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE itinerary_waypoint_seq
+CREATE SEQUENCE public.itinerary_waypoint_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -295,14 +314,14 @@ CREATE SEQUENCE itinerary_waypoint_seq
 -- Name: itinerary_waypoint_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
-ALTER SEQUENCE itinerary_waypoint_seq OWNED BY itinerary_waypoint.id;
+ALTER SEQUENCE public.itinerary_waypoint_seq OWNED BY public.itinerary_waypoint.id;
 
 
 --
 -- Name: location_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE location_seq
+CREATE SEQUENCE public.location_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -311,13 +330,12 @@ CREATE SEQUENCE location_seq
 
 
 --
--- Name: location; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+-- Name: location; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE location (
-    id integer DEFAULT nextval('location_seq'::regclass) NOT NULL,
+CREATE TABLE public.location (
+    id integer DEFAULT nextval('public.location_seq'::regclass) NOT NULL,
     user_id integer NOT NULL,
-    location point NOT NULL,
     "time" timestamp with time zone DEFAULT now() NOT NULL,
     hdop numeric(6,1),
     altitude numeric(11,5),
@@ -326,15 +344,16 @@ CREATE TABLE location (
     sat smallint,
     provider text,
     battery numeric(4,1),
-    note text
+    note text,
+    geog public.geography(Point,4326) NOT NULL
 );
 
 
 --
--- Name: location_sharing; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+-- Name: location_sharing; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE location_sharing (
+CREATE TABLE public.location_sharing (
     shared_by_id integer NOT NULL,
     shared_to_id integer NOT NULL,
     recent_minutes integer,
@@ -344,10 +363,10 @@ CREATE TABLE location_sharing (
 
 
 --
--- Name: path_color; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+-- Name: path_color; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE path_color (
+CREATE TABLE public.path_color (
     key text NOT NULL,
     value text NOT NULL,
     html_code text
@@ -355,10 +374,10 @@ CREATE TABLE path_color (
 
 
 --
--- Name: role; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+-- Name: role; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE role (
+CREATE TABLE public.role (
     id integer NOT NULL,
     name text NOT NULL
 );
@@ -368,7 +387,7 @@ CREATE TABLE role (
 -- Name: role_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE role_seq
+CREATE SEQUENCE public.role_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -380,14 +399,14 @@ CREATE SEQUENCE role_seq
 -- Name: role_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
-ALTER SEQUENCE role_seq OWNED BY role.id;
+ALTER SEQUENCE public.role_seq OWNED BY public.role.id;
 
 
 --
--- Name: tile; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+-- Name: tile; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE tile (
+CREATE TABLE public.tile (
     server_id integer DEFAULT 0 NOT NULL,
     x integer NOT NULL,
     y integer NOT NULL,
@@ -402,7 +421,7 @@ CREATE TABLE tile (
 -- Name: tile_download_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE tile_download_seq
+CREATE SEQUENCE public.tile_download_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -411,20 +430,20 @@ CREATE SEQUENCE tile_download_seq
 
 
 --
--- Name: tile_metric; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+-- Name: tile_metric; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE tile_metric (
+CREATE TABLE public.tile_metric (
     "time" timestamp with time zone DEFAULT now() NOT NULL,
     count integer NOT NULL
 );
 
 
 --
--- Name: user_role; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+-- Name: user_role; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE user_role (
+CREATE TABLE public.user_role (
     user_id integer NOT NULL,
     role_id integer NOT NULL
 );
@@ -434,7 +453,7 @@ CREATE TABLE user_role (
 -- Name: usertable_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE usertable_seq
+CREATE SEQUENCE public.usertable_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -443,11 +462,11 @@ CREATE SEQUENCE usertable_seq
 
 
 --
--- Name: usertable; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+-- Name: usertable; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE usertable (
-    id integer DEFAULT nextval('usertable_seq'::regclass) NOT NULL,
+CREATE TABLE public.usertable (
+    id integer DEFAULT nextval('public.usertable_seq'::regclass) NOT NULL,
     firstname text NOT NULL,
     lastname text NOT NULL,
     email text NOT NULL,
@@ -458,366 +477,394 @@ CREATE TABLE usertable (
 
 
 --
--- Name: waypoint_symbol; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+-- Name: waypoint_symbol; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE waypoint_symbol (
+CREATE TABLE public.waypoint_symbol (
     key text NOT NULL,
     value text NOT NULL
 );
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: itinerary id; Type: DEFAULT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY itinerary ALTER COLUMN id SET DEFAULT nextval('itinerary_seq'::regclass);
-
-
---
--- Name: id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY itinerary_route ALTER COLUMN id SET DEFAULT nextval('itinerary_route_seq'::regclass);
+ALTER TABLE ONLY public.itinerary ALTER COLUMN id SET DEFAULT nextval('public.itinerary_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: itinerary_route id; Type: DEFAULT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY itinerary_route_point ALTER COLUMN id SET DEFAULT nextval('itinerary_route_point_seq'::regclass);
-
-
---
--- Name: id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY itinerary_track ALTER COLUMN id SET DEFAULT nextval('itinerary_track_seq'::regclass);
+ALTER TABLE ONLY public.itinerary_route ALTER COLUMN id SET DEFAULT nextval('public.itinerary_route_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: itinerary_route_point id; Type: DEFAULT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY itinerary_track_point ALTER COLUMN id SET DEFAULT nextval('itinerary_track_point_seq'::regclass);
-
-
---
--- Name: id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY itinerary_track_segment ALTER COLUMN id SET DEFAULT nextval('itinerary_track_segment_seq'::regclass);
+ALTER TABLE ONLY public.itinerary_route_point ALTER COLUMN id SET DEFAULT nextval('public.itinerary_route_point_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: itinerary_track id; Type: DEFAULT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY itinerary_waypoint ALTER COLUMN id SET DEFAULT nextval('itinerary_waypoint_seq'::regclass);
-
-
---
--- Name: id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY role ALTER COLUMN id SET DEFAULT nextval('role_seq'::regclass);
+ALTER TABLE ONLY public.itinerary_track ALTER COLUMN id SET DEFAULT nextval('public.itinerary_track_seq'::regclass);
 
 
 --
--- Name: georef_format_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+-- Name: itinerary_track_point id; Type: DEFAULT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY georef_format
+ALTER TABLE ONLY public.itinerary_track_point ALTER COLUMN id SET DEFAULT nextval('public.itinerary_track_point_seq'::regclass);
+
+
+--
+-- Name: itinerary_track_segment id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.itinerary_track_segment ALTER COLUMN id SET DEFAULT nextval('public.itinerary_track_segment_seq'::regclass);
+
+
+--
+-- Name: itinerary_waypoint id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.itinerary_waypoint ALTER COLUMN id SET DEFAULT nextval('public.itinerary_waypoint_seq'::regclass);
+
+
+--
+-- Name: role id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.role ALTER COLUMN id SET DEFAULT nextval('public.role_seq'::regclass);
+
+
+--
+-- Name: georef_format georef_format_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.georef_format
     ADD CONSTRAINT georef_format_pkey PRIMARY KEY (key);
 
 
 --
--- Name: georef_format_value_key; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+-- Name: georef_format georef_format_value_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY georef_format
+ALTER TABLE ONLY public.georef_format
     ADD CONSTRAINT georef_format_value_key UNIQUE (value);
 
 
 --
--- Name: itinerary_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+-- Name: itinerary itinerary_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY itinerary
+ALTER TABLE ONLY public.itinerary
     ADD CONSTRAINT itinerary_pkey PRIMARY KEY (id);
 
 
 --
--- Name: itinerary_route_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+-- Name: itinerary_route itinerary_route_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY itinerary_route
+ALTER TABLE ONLY public.itinerary_route
     ADD CONSTRAINT itinerary_route_pkey PRIMARY KEY (id);
 
 
 --
--- Name: itinerary_route_point_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+-- Name: itinerary_route_point itinerary_route_point_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY itinerary_route_point
+ALTER TABLE ONLY public.itinerary_route_point
     ADD CONSTRAINT itinerary_route_point_pkey PRIMARY KEY (id);
 
 
 --
--- Name: itinerary_sharing_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+-- Name: itinerary_sharing itinerary_sharing_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY itinerary_sharing
+ALTER TABLE ONLY public.itinerary_sharing
     ADD CONSTRAINT itinerary_sharing_pkey PRIMARY KEY (itinerary_id, shared_to_id);
 
 
 --
--- Name: itinerary_track_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+-- Name: itinerary_track itinerary_track_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY itinerary_track
+ALTER TABLE ONLY public.itinerary_track
     ADD CONSTRAINT itinerary_track_pkey PRIMARY KEY (id);
 
 
 --
--- Name: itinerary_track_point_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+-- Name: itinerary_track_point itinerary_track_point_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY itinerary_track_point
+ALTER TABLE ONLY public.itinerary_track_point
     ADD CONSTRAINT itinerary_track_point_pkey PRIMARY KEY (id);
 
 
 --
--- Name: itinerary_track_segment_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+-- Name: itinerary_track_segment itinerary_track_segment_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY itinerary_track_segment
+ALTER TABLE ONLY public.itinerary_track_segment
     ADD CONSTRAINT itinerary_track_segment_pkey PRIMARY KEY (id);
 
 
 --
--- Name: itinerary_waypoint_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+-- Name: itinerary_waypoint itinerary_waypoint_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY itinerary_waypoint
+ALTER TABLE ONLY public.itinerary_waypoint
     ADD CONSTRAINT itinerary_waypoint_pkey PRIMARY KEY (id);
 
 
 --
--- Name: location_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+-- Name: location location_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY location
+ALTER TABLE ONLY public.location
     ADD CONSTRAINT location_pkey PRIMARY KEY (id);
 
 
 --
--- Name: location_sharing_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+-- Name: location_sharing location_sharing_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY location_sharing
+ALTER TABLE ONLY public.location_sharing
     ADD CONSTRAINT location_sharing_pkey PRIMARY KEY (shared_by_id, shared_to_id);
 
 
 --
--- Name: role_name_key; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+-- Name: role role_name_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY role
+ALTER TABLE ONLY public.role
     ADD CONSTRAINT role_name_key UNIQUE (name);
 
 
 --
--- Name: role_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+-- Name: role role_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY role
+ALTER TABLE ONLY public.role
     ADD CONSTRAINT role_pkey PRIMARY KEY (id);
 
 
 --
--- Name: tile_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+-- Name: tile tile_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY tile
+ALTER TABLE ONLY public.tile
     ADD CONSTRAINT tile_pkey PRIMARY KEY (server_id, x, y, z);
 
 
 --
--- Name: track_color_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+-- Name: path_color track_color_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY path_color
+ALTER TABLE ONLY public.path_color
     ADD CONSTRAINT track_color_pkey PRIMARY KEY (key);
 
 
 --
--- Name: track_color_value_key; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+-- Name: path_color track_color_value_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY path_color
+ALTER TABLE ONLY public.path_color
     ADD CONSTRAINT track_color_value_key UNIQUE (value);
 
 
 --
--- Name: user_role_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+-- Name: user_role user_role_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY user_role
+ALTER TABLE ONLY public.user_role
     ADD CONSTRAINT user_role_pkey PRIMARY KEY (user_id, role_id);
 
 
 --
--- Name: usertable_email_key; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+-- Name: usertable usertable_email_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY usertable
+ALTER TABLE ONLY public.usertable
     ADD CONSTRAINT usertable_email_key UNIQUE (email);
 
 
 --
--- Name: usertable_nickname_key; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+-- Name: usertable usertable_nickname_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY usertable
+ALTER TABLE ONLY public.usertable
     ADD CONSTRAINT usertable_nickname_key UNIQUE (nickname);
 
 
 --
--- Name: usertable_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+-- Name: usertable usertable_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY usertable
+ALTER TABLE ONLY public.usertable
     ADD CONSTRAINT usertable_pkey PRIMARY KEY (id);
 
 
 --
--- Name: usertable_uuid_key; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+-- Name: usertable usertable_uuid_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY usertable
+ALTER TABLE ONLY public.usertable
     ADD CONSTRAINT usertable_uuid_key UNIQUE (uuid);
 
 
 --
--- Name: waypoint_symbol_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+-- Name: waypoint_symbol waypoint_symbol_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY waypoint_symbol
+ALTER TABLE ONLY public.waypoint_symbol
     ADD CONSTRAINT waypoint_symbol_pkey PRIMARY KEY (key);
 
 
 --
--- Name: waypoint_symbol_value_key; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+-- Name: waypoint_symbol waypoint_symbol_value_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY waypoint_symbol
+ALTER TABLE ONLY public.waypoint_symbol
     ADD CONSTRAINT waypoint_symbol_value_key UNIQUE (value);
 
 
 --
--- Name: idx_time_inverse; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+-- Name: idx_time_inverse; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX idx_time_inverse ON location USING btree (id, "time" DESC);
+CREATE INDEX idx_time_inverse ON public.location USING btree (id, "time" DESC);
 
-ALTER TABLE location CLUSTER ON idx_time_inverse;
-
-
---
--- Name: itinerary_route_itinerary_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY itinerary_route
-    ADD CONSTRAINT itinerary_route_itinerary_id_fkey FOREIGN KEY (itinerary_id) REFERENCES itinerary(id) ON DELETE CASCADE;
+ALTER TABLE public.location CLUSTER ON idx_time_inverse;
 
 
 --
--- Name: itinerary_route_point_itinerary_route_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: itineary_route_point_geog_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY itinerary_route_point
-    ADD CONSTRAINT itinerary_route_point_itinerary_route_id_fkey FOREIGN KEY (itinerary_route_id) REFERENCES itinerary_route(id) ON DELETE CASCADE;
-
-
---
--- Name: itinerary_sharing_itinerary_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY itinerary_sharing
-    ADD CONSTRAINT itinerary_sharing_itinerary_id_fkey FOREIGN KEY (itinerary_id) REFERENCES itinerary(id) ON DELETE CASCADE;
+CREATE INDEX itineary_route_point_geog_idx ON public.itinerary_route_point USING gist (geog);
 
 
 --
--- Name: itinerary_sharing_shared_to_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: itineary_track_point_geog_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY itinerary_sharing
-    ADD CONSTRAINT itinerary_sharing_shared_to_id_fkey FOREIGN KEY (shared_to_id) REFERENCES usertable(id) ON DELETE CASCADE;
-
-
---
--- Name: itinerary_track_itinerary_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY itinerary_track
-    ADD CONSTRAINT itinerary_track_itinerary_id_fkey FOREIGN KEY (itinerary_id) REFERENCES itinerary(id) ON DELETE CASCADE;
+CREATE INDEX itineary_track_point_geog_idx ON public.itinerary_track_point USING gist (geog);
 
 
 --
--- Name: itinerary_track_point_itinerary_track_segment_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: itinerary_waypoint_geog_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY itinerary_track_point
-    ADD CONSTRAINT itinerary_track_point_itinerary_track_segment_id_fkey FOREIGN KEY (itinerary_track_segment_id) REFERENCES itinerary_track_segment(id) ON DELETE CASCADE;
-
-
---
--- Name: itinerary_track_segment_itinerary_track_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY itinerary_track_segment
-    ADD CONSTRAINT itinerary_track_segment_itinerary_track_id_fkey FOREIGN KEY (itinerary_track_id) REFERENCES itinerary_track(id) ON DELETE CASCADE;
+CREATE INDEX itinerary_waypoint_geog_idx ON public.itinerary_waypoint USING gist (geog);
 
 
 --
--- Name: itinerary_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: location_geog_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY itinerary
-    ADD CONSTRAINT itinerary_user_id_fkey FOREIGN KEY (user_id) REFERENCES usertable(id);
-
-
---
--- Name: itinerary_waypoint_itinerary_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY itinerary_waypoint
-    ADD CONSTRAINT itinerary_waypoint_itinerary_id_fkey FOREIGN KEY (itinerary_id) REFERENCES itinerary(id) ON DELETE CASCADE;
+CREATE INDEX location_geog_idx ON public.location USING gist (geog);
 
 
 --
--- Name: location_sharing_shared_by_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: itinerary_route itinerary_route_itinerary_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY location_sharing
-    ADD CONSTRAINT location_sharing_shared_by_id_fkey FOREIGN KEY (shared_by_id) REFERENCES usertable(id) ON DELETE CASCADE;
-
-
---
--- Name: location_sharing_shared_to_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY location_sharing
-    ADD CONSTRAINT location_sharing_shared_to_id_fkey FOREIGN KEY (shared_to_id) REFERENCES usertable(id) ON DELETE CASCADE;
+ALTER TABLE ONLY public.itinerary_route
+    ADD CONSTRAINT itinerary_route_itinerary_id_fkey FOREIGN KEY (itinerary_id) REFERENCES public.itinerary(id) ON DELETE CASCADE;
 
 
 --
--- Name: location_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: itinerary_route_point itinerary_route_point_itinerary_route_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY location
-    ADD CONSTRAINT location_user_id_fkey FOREIGN KEY (user_id) REFERENCES usertable(id);
+ALTER TABLE ONLY public.itinerary_route_point
+    ADD CONSTRAINT itinerary_route_point_itinerary_route_id_fkey FOREIGN KEY (itinerary_route_id) REFERENCES public.itinerary_route(id) ON DELETE CASCADE;
+
+
+--
+-- Name: itinerary_sharing itinerary_sharing_itinerary_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.itinerary_sharing
+    ADD CONSTRAINT itinerary_sharing_itinerary_id_fkey FOREIGN KEY (itinerary_id) REFERENCES public.itinerary(id) ON DELETE CASCADE;
+
+
+--
+-- Name: itinerary_sharing itinerary_sharing_shared_to_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.itinerary_sharing
+    ADD CONSTRAINT itinerary_sharing_shared_to_id_fkey FOREIGN KEY (shared_to_id) REFERENCES public.usertable(id) ON DELETE CASCADE;
+
+
+--
+-- Name: itinerary_track itinerary_track_itinerary_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.itinerary_track
+    ADD CONSTRAINT itinerary_track_itinerary_id_fkey FOREIGN KEY (itinerary_id) REFERENCES public.itinerary(id) ON DELETE CASCADE;
+
+
+--
+-- Name: itinerary_track_point itinerary_track_point_itinerary_track_segment_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.itinerary_track_point
+    ADD CONSTRAINT itinerary_track_point_itinerary_track_segment_id_fkey FOREIGN KEY (itinerary_track_segment_id) REFERENCES public.itinerary_track_segment(id) ON DELETE CASCADE;
+
+
+--
+-- Name: itinerary_track_segment itinerary_track_segment_itinerary_track_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.itinerary_track_segment
+    ADD CONSTRAINT itinerary_track_segment_itinerary_track_id_fkey FOREIGN KEY (itinerary_track_id) REFERENCES public.itinerary_track(id) ON DELETE CASCADE;
+
+
+--
+-- Name: itinerary itinerary_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.itinerary
+    ADD CONSTRAINT itinerary_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.usertable(id);
+
+
+--
+-- Name: itinerary_waypoint itinerary_waypoint_itinerary_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.itinerary_waypoint
+    ADD CONSTRAINT itinerary_waypoint_itinerary_id_fkey FOREIGN KEY (itinerary_id) REFERENCES public.itinerary(id) ON DELETE CASCADE;
+
+
+--
+-- Name: location_sharing location_sharing_shared_by_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.location_sharing
+    ADD CONSTRAINT location_sharing_shared_by_id_fkey FOREIGN KEY (shared_by_id) REFERENCES public.usertable(id) ON DELETE CASCADE;
+
+
+--
+-- Name: location_sharing location_sharing_shared_to_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.location_sharing
+    ADD CONSTRAINT location_sharing_shared_to_id_fkey FOREIGN KEY (shared_to_id) REFERENCES public.usertable(id) ON DELETE CASCADE;
+
+
+--
+-- Name: location location_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.location
+    ADD CONSTRAINT location_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.usertable(id);
 
 
 --
