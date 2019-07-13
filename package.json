@@ -1,6 +1,6 @@
 {
   "name": "trip-server",
-  "version": "1.1.0",
+  "version": "1.1.1-rc.1",
   "description": "TRIP - Trip Recording and Itinerary Planner RESTful server",
   "author": {
     "name": "Frank Dean",
@@ -37,7 +37,7 @@
     "formidable": "^1.1.1",
     "gdal": "^0.9.8",
     "jsonwebtoken": "^8.5.1",
-    "lodash": "^4.17.4",
+    "lodash": "~>4.17.14",
     "node-static": "^0.7.9",
     "pg": "^6.2.5",
     "qs": "^6.5.0",
