@@ -47,6 +47,14 @@ function fetchRemoteTile(id, x, y, z, callback) {
       db.saveTileCount(tileCount.nextval, function(err, result) {
         if (err) {
           logger.error('Error saving latest tile count. %s', err);
+        } else {
+          db.pruneTileCache(config.tile.cache.maxAge, function(err, result) {
+            if (err) {
+              logger.error('Error pruning tile cache %s', err);
+            } else {
+              logger.debug('Pruned %j tiles', result);
+            }
+          });
         }
       });
     }
@@ -73,7 +81,7 @@ function fetchRemoteTile(id, x, y, z, callback) {
       res.on('data', function(chunk) {
         image += chunk;
       }).on('end', function() {
-        buffer = new Buffer(image, 'binary');
+        buffer = Buffer.from(image, 'binary');
         expiresHeader = res.headers.expires;
         if (expiresHeader !== undefined) {
           expires = new Date(expiresHeader);
@@ -132,6 +140,10 @@ function fetchRemoteTile(id, x, y, z, callback) {
  */
 function fetchTile(id, x, y, z, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
+  if (!(_.isInteger(config.tile.cache.maxAge) && _.inRange(config.tile.cache.maxAge, 0, Number.MAX_SAFE_INTEGER))) {
+    logger.error('config.tile.cache.maxAge in config.json must be an integer and less than %d', Number.MAX_SAFE_INTEGER);
+    config.tile.cache.maxAge = 0;
+  }
   if (_.isInteger(Number(id)) && _.inRange(id, config.tile.providers.length) &&
       _.isInteger(Number(x)) && _.inRange(x, Number.MAX_SAFE_INTEGER) &&
       _.isInteger(Number(y)) && _.inRange(y, Number.MAX_SAFE_INTEGER) &&

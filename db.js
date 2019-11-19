@@ -17,6 +17,7 @@
  */
 'use strict';
 
+var _ = require('lodash');
 var pg = require('pg');
 var types = require('pg').types;
 var NUMERIC_OID = 1700;
@@ -89,6 +90,7 @@ module.exports = {
   saveTile: saveTile,
   incrementTileCounter: incrementTileCounter,
   saveTileCount: saveTileCount,
+  pruneTileCache: pruneTileCache,
   tileExists: tileExists,
   updateLocationShare: updateLocationShare,
   updateLocationShareActiveStates: updateLocationShareActiveStates,
@@ -2790,6 +2792,30 @@ function saveTileCount(count, callback) {
                      // release the client back to the pool
                      done();
                      callback(err, result);
+                   });
+    }
+  });
+}
+
+function pruneTileCache(maxAgeDays, callback) {
+  var maxDays, intervalClause;
+  callback = typeof callback === 'function' ? callback : function() {};
+  maxDays = _.isInteger(maxAgeDays) && _.inRange(maxAgeDays, 0, Number.MAX_SAFE_INTEGER) ? maxAgeDays : 0;
+  pool.connect(function(err, client, done) {
+    if (err) {
+      callback(err);
+    } else {
+      client.query('DELETE FROM tile WHERE expires < now() AND updated < now()::timestamp::date - $1 * INTERVAL \'1 DAY\';',
+                   [maxAgeDays],
+                   function(err, result) {
+                     // release the client back to the pool
+                     done();
+                     if (err) {
+                       callback(err);
+                     } else {
+                       callback(err, result.rowCount);
+                     }
+
                    });
     }
   });

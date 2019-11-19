@@ -13,10 +13,10 @@ echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/source
 apt-get update
 apt-get install --yes yarn+ cmdtest- nodejs-
 
-NODE_VERSION="v8.16.0"
+NODE_VERSION="v10.17.0"
 NODE_FILENAME="node-${NODE_VERSION}-linux-x64"
 NODE_TAR_FILENAME="${NODE_FILENAME}.tar.xz"
-NODE_SHA256="e538ffaaf2f808c084e70f1a1d2ff5559cff892cfd56e0bb67d00b0a95fc3a7a  ${NODE_TAR_FILENAME}"
+NODE_SHA256="2b49cd296f969ef0ffb7922719ffa6542bedb89d6c959a47c023d11ce222f5d6  ${NODE_TAR_FILENAME}"
 NODE_EXTRACT_DIR="${NODE_FILENAME}"
 NODE_DOWNLOAD_URL="https://nodejs.org/dist/${NODE_VERSION}/${NODE_TAR_FILENAME}"
 

@@ -8,10 +8,10 @@
 # Uncomment the following to debug the script
 #set -x
 
-TRIP_WEB_CLIENT_VERSION='v1.1.0'
+TRIP_WEB_CLIENT_VERSION='v1.1.2'
 TRIP_WEB_CLIENT_RELEASE="trip-web-client-release-${TRIP_WEB_CLIENT_VERSION}.tar.gz"
-TRIP_WEB_CLIENT_SHA256="081eeb720f197c17a5b81e229afc7a3e200d642d850db0fab891265ad88a3c67  ${TRIP_WEB_CLIENT_RELEASE}"
-PG_VERSION=9.6
+TRIP_WEB_CLIENT_SHA256="259eb5ac85a3cb4ae0e791761e882590a1ba18a6ecb03b1f463838eaae9a1ba0  ${TRIP_WEB_CLIENT_RELEASE}"
+PG_VERSION=11
 
 su - postgres -c 'createuser -drs vagrant' 2>/dev/null
 su - vagrant -c 'cd /vagrant && yarn install'
