@@ -395,12 +395,16 @@ function deleteItineraryRoutePoints(username, itineraryId, routeId, points, call
   db.confirmItineraryOwnership(username, itineraryId, function(err, result) {
     if (utils.handleError(err, callback)) {
       if (result) {
-        db.getItineraryRoutePoints(itineraryId, routeId, null, null, function(err, result) {
-          var route =  {points: result};
-          utils.fillDistanceElevationForPath(route);
-          db.updateItineraryDistanceElevationData(itineraryId, routeId, route, function(err) {
-            db.deleteItineraryRoutePoints(itineraryId, points, callback);
-          });
+        db.deleteItineraryRoutePoints(itineraryId, points, function(err) {
+          if (utils.handleError(err, callback)) {
+            db.getItineraryRoutePoints(itineraryId, routeId, null, null, function(err, result) {
+              if (utils.handleError(err, callback)) {
+                var route =  {points: result};
+                utils.fillDistanceElevationForPath(route);
+                db.updateItineraryDistanceElevationData(itineraryId, routeId, route, callback);
+              }
+            });
+          }
         });
       } else {
         callback(new Error('Access denied'));
