@@ -1,3 +1,4 @@
+// vim: set ts=2 sts=-1 sw=2 et ft=javascript norl:
 /**
  * @license TRIP - Trip Recording and Itinerary Planning application.
  * (c) 2016-2018 Frank Dean <frank@fdsd.co.uk>
@@ -319,6 +320,94 @@ myApp.handleGetItinerariesWithinDistance = function(req, res, token) {
         Number(q.distance) >= 0 && Number(q.distance) <= myApp.maxItinerarySearchRadius) {
 
       itineraries.getItinerariesWithinDistance(token.sub, q.lng, q.lat, q.distance, q.offset, q.page_size, function(err, result) {
+        myApp.respondWithData(err, res, result);
+      });
+    } else {
+      myApp.handleError(new BadRequestError('Parameters failed validation'), res);
+    }
+  });
+};
+
+myApp.handleGetItineraryRoutesWithinDistance = function(req, res, token) {
+  logger.debug('----------------------------------------');
+  var match, id, q;
+  req.on('data', function() {
+  }).on('end', function() {
+    match = /\/itinerary\/(\d+)\/routes\/?\?.*distance.*$/.exec(req.url);
+    id = match ? match[1] : undefined;
+    q = url.parse(req.url, true).query;
+    if (q.lon !== undefined) {
+      q.lng = q.lon;
+    }
+    if (q.longitude !== undefined) {
+      q.lng = q.longitude;
+    }
+    if (q.latitude !== undefined) {
+      q.lat = q.latitude;
+    }
+    if (Number(q.lat) >= -90 && Number(q.lat) <= 90 &&
+        Number(q.lng) >= -180 && Number(q.lng) <= 180 &&
+        Number(q.distance) >= 0 && Number(q.distance) <= myApp.maxItinerarySearchRadius) {
+
+      itineraries.getItineraryRoutesWithinDistance(token.sub, id, q.lng, q.lat, q.distance, function(err, result) {
+        myApp.respondWithData(err, res, result);
+      });
+    } else {
+      myApp.handleError(new BadRequestError('Parameters failed validation'), res);
+    }
+  });
+};
+
+myApp.handleGetItineraryWaypointsWithinDistance = function(req, res, token) {
+  var match, id, q;
+  req.on('data', function() {
+  }).on('end', function() {
+    match = /\/itinerary\/(\d+)\/waypoints\/?\?.*distance.*$/.exec(req.url);
+    id = match ? match[1] : undefined;
+    q = url.parse(req.url, true).query;
+    if (q.lon !== undefined) {
+      q.lng = q.lon;
+    }
+    if (q.longitude !== undefined) {
+      q.lng = q.longitude;
+    }
+    if (q.latitude !== undefined) {
+      q.lat = q.latitude;
+    }
+    if (Number(q.lat) >= -90 && Number(q.lat) <= 90 &&
+        Number(q.lng) >= -180 && Number(q.lng) <= 180 &&
+        Number(q.distance) >= 0 && Number(q.distance) <= myApp.maxItinerarySearchRadius) {
+
+      itineraries.getItineraryWaypointsWithinDistance(token.sub, id, q.lng, q.lat, q.distance, function(err, result) {
+        myApp.respondWithData(err, res, result);
+      });
+    } else {
+      myApp.handleError(new BadRequestError('Parameters failed validation'), res);
+    }
+  });
+};
+
+myApp.handleGetItineraryTracksWithinDistance = function(req, res, token) {
+  var match, id, q;
+  req.on('data', function() {
+  }).on('end', function() {
+    match = /\/itinerary\/(\d+)\/tracks\/?\?.*distance.*$/.exec(req.url);
+    id = match ? match[1] : undefined;
+    q = url.parse(req.url, true).query;
+    if (q.lon !== undefined) {
+      q.lng = q.lon;
+    }
+    if (q.longitude !== undefined) {
+      q.lng = q.longitude;
+    }
+    if (q.latitude !== undefined) {
+      q.lat = q.latitude;
+    }
+    if (Number(q.lat) >= -90 && Number(q.lat) <= 90 &&
+        Number(q.lng) >= -180 && Number(q.lng) <= 180 &&
+        Number(q.distance) >= 0 && Number(q.distance) <= myApp.maxItinerarySearchRadius) {
+
+      itineraries.getItineraryTracksWithinDistance(token.sub, id, q.lng, q.lat, q.distance, function(err, result) {
         myApp.respondWithData(err, res, result);
       });
     } else {
@@ -1549,6 +1638,12 @@ myApp.handleFullyAuthenticatedRequests = function(req, res, token) {
     myApp.handleUpdateTrackingInfo(req, res, token);
   } else if (req.method === 'GET' && /\/itineraries\/?\?.*distance.*$/.test(req.url)) {
     myApp.handleGetItinerariesWithinDistance(req, res, token);
+  } else if (req.method === 'GET' && /\/itinerary\/(\d+)\/routes\/?\?.*distance.*$/.test(req.url)) {
+    myApp.handleGetItineraryRoutesWithinDistance(req, res, token);
+  } else if (req.method === 'GET' && /\/itinerary\/(\d+)\/waypoints\/?\?.*distance.*$/.test(req.url)) {
+    myApp.handleGetItineraryWaypointsWithinDistance(req, res, token);
+  } else if (req.method === 'GET' && /\/itinerary\/(\d+)\/tracks\/?\?.*distance.*$/.test(req.url)) {
+    myApp.handleGetItineraryTracksWithinDistance(req, res, token);
   } else if (req.method === 'GET' && /\/itineraries\/?(\?.*)?$/.test(req.url)) {
     myApp.handleGetItineraries(req, res, token);
   } else if (req.method === 'GET' && /\/itinerary\/?(?:[0-9]+)?(?:\?.*)?$/.test(req.url)) {

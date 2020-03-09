@@ -503,6 +503,102 @@ describe('utils.js', function() {
       expect(Utils.isEmail(undefined)).toEqual(false);
     });
 
-   });
+  });
+
+  describe ('Scarfs equivalence', function() {
+    var result;
+
+    it('should calculate based on distance and ascent', function() {
+      result = Utils.scarfsEquivalence(6.32, 238, 4);
+      expect(result).toEqual({hours: 2, minutes: 3});
+    });
+
+    it('should calculate with larger values distance and ascent', function() {
+      result = Utils.scarfsEquivalence(733146.32, 34835238.378, 4);
+      expect(result).toEqual({hours: 252260, minutes: 21});
+    });
+
+    it('should calculate with large values for distance, ascent and speed', function() {
+      // Average distances to Alpha Centauri and the Sun, at the speed of light
+      result = Utils.scarfsEquivalence(40149186000000, 149468000, 299792.458 * 3600);
+      expect(result).toEqual({hours: 37200, minutes: 55});
+    });
+
+    it('should return zero if distance and ascent are 0', function() {
+      result = Utils.scarfsEquivalence(0, 0, 4);
+      expect(result).toEqual({hours: 0, minutes: 0});
+    });
+
+    it('should return zero if distance is null', function() {
+      result = Utils.scarfsEquivalence(null, 4, 4);
+      expect(result).toEqual({hours: 0, minutes: 0});
+    });
+
+    it('should calculate if distance is undefined', function() {
+      result = Utils.scarfsEquivalence(undefined, 1159, 4);
+      expect(result).toEqual({hours: 2, minutes: 18});
+    });
+
+    it('should return undefined if distance and ascent are undefined', function() {
+      result = Utils.scarfsEquivalence(undefined, undefined, 4);
+      expect(result).toEqual({hours: undefined, minutes: undefined});
+    });
+
+    it('should return infinity if all parameters are undefined', function() {
+      result = Utils.scarfsEquivalence();
+      expect(result).toEqual({hours: Infinity, minutes: Infinity});
+    });
+
+    it('should return infinity if speed is zero', function() {
+      result = Utils.scarfsEquivalence(2, 3, 0);
+      expect(result).toEqual({hours: Infinity, minutes: Infinity});
+    });
+
+    it('should return infinity if speed is null', function() {
+      result = Utils.scarfsEquivalence(2, 3, null);
+      expect(result).toEqual({hours: Infinity, minutes: Infinity});
+    });
+
+    it('should return zero if speed is infinite', function() {
+      result = Utils.scarfsEquivalence(2, 3, Infinity);
+      expect(result).toEqual({hours: 0, minutes: 0});
+    });
+
+    it('should return infinity if distance is infinite', function() {
+      result = Utils.scarfsEquivalence(Infinity, 3, 5);
+      expect(result).toEqual({hours: Infinity, minutes: Infinity});
+    });
+
+    it('should return infinity if ascent is infinite', function() {
+      result = Utils.scarfsEquivalence(15, Infinity, 5);
+      expect(result).toEqual({hours: Infinity, minutes: Infinity});
+    });
+
+    it('should return infinity if distance and ascent are infinite', function() {
+      result = Utils.scarfsEquivalence(Infinity, Infinity, 5);
+      expect(result).toEqual({hours: Infinity, minutes: Infinity});
+    });
+
+    it('should return infinity if speed is undefined', function() {
+      result = Utils.scarfsEquivalence(2, 3, undefined);
+      expect(result).toEqual({hours: Infinity, minutes: Infinity});
+    });
+
+    it('should calculate if ascent is 0', function() {
+      result = Utils.scarfsEquivalence(6.32, 0, 4);
+      expect(result).toEqual({hours: 1, minutes: 35});
+    });
+
+    it('should calculate if ascent is undefined', function() {
+      result = Utils.scarfsEquivalence(6.32, undefined, 4);
+      expect(result).toEqual({hours: 1, minutes: 35});
+    });
+
+    it('should calculate if ascent is null', function() {
+      result = Utils.scarfsEquivalence(6.32, null, 4);
+      expect(result).toEqual({hours: 1, minutes: 35});
+    });
+
+  });
 
 });

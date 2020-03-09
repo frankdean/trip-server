@@ -1,3 +1,4 @@
+// vim: set ts=2 sts=-1 sw=2 et ft=javascript norl:
 /**
  * @license TRIP - Trip Recording and Itinerary Planning application.
  * (c) 2016-2018 Frank Dean <frank@fdsd.co.uk>
@@ -29,11 +30,17 @@ var validNickname = /^[!-\.0->@-~]+$/;
 
 var logger = require('./logger').createLogger('itineries.js');
 
+// TODO This should be a per user configurable default
+var flatSpeed = (config.app.averageFlatSpeedKph) || 4;
+
 module.exports = {
   deleteItinerary: deleteItinerary,
   getItinerary: getItinerary,
   getItineraries: getItineraries,
   getItinerariesWithinDistance: getItinerariesWithinDistance,
+  getItineraryRoutesWithinDistance: getItineraryRoutesWithinDistance,
+  getItineraryWaypointsWithinDistance: getItineraryWaypointsWithinDistance,
+  getItineraryTracksWithinDistance: getItineraryTracksWithinDistance,
   saveItinerary: saveItinerary,
   getItineraryShares: getItineraryShares,
   getSharedItinerariesForUser: getSharedItinerariesForUser,
@@ -157,12 +164,12 @@ function getItineraries(username, offset, pageSize, callback) {
 
 function getItinerariesWithinDistance(username, longitude, latitude, distance, offset, pageSize, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
-  console.time("searchItinerariesByDistance");
   db.findUserByUsername(username, function(err, userId) {
     if (err) {
       callback(err);
       return;
     }
+    console.time("searchItinerariesByDistance");
     db.getItinerariesByDistanceWithinCount(userId, longitude, latitude, distance, function(err, count) {
       if (err) {
         callback(err);
@@ -172,6 +179,59 @@ function getItinerariesWithinDistance(username, longitude, latitude, distance, o
         console.timeEnd("searchItinerariesByDistance");
         callback(err, {count: count, payload: result});
       });
+    });
+  });
+}
+
+function getItineraryRoutesWithinDistance(username, itineraryId, longitude, latitude, distance, callback) {
+  var t;
+  callback = typeof callback === 'function' ? callback : function() {};
+  db.findUserByUsername(username, function(err, userId) {
+    if (err) {
+      callback(err);
+      return;
+    }
+    console.time("searchItineraryRoutesByDistance");
+    db.getItineraryRoutesByDistanceWithin(userId, itineraryId, longitude, latitude, distance, function(err, result) {
+      console.timeEnd("searchItineraryRoutesByDistance");
+      if (utils.handleError(err, callback)) {
+        result.forEach(function(v) {
+          t = utils.scarfsEquivalence(v.distance, v.ascent, flatSpeed);
+          v.hours = t.hours;
+          v.minutes = t.minutes;
+        });
+        callback(err, result);
+      }
+    });
+  });
+}
+
+function getItineraryWaypointsWithinDistance(username, itineraryId, longitude, latitude, distance, callback) {
+  callback = typeof callback === 'function' ? callback : function() {};
+  db.findUserByUsername(username, function(err, userId) {
+    if (err) {
+      callback(err);
+      return;
+    }
+    console.time("searchItineraryWaypointsByDistance");
+    db.getItineraryWaypointsByDistanceWithin(userId, itineraryId, longitude, latitude, distance, function(err, result) {
+      console.timeEnd("searchItineraryWaypointsByDistance");
+      callback(err, result);
+    });
+  });
+}
+
+function getItineraryTracksWithinDistance(username, itineraryId, longitude, latitude, distance, callback) {
+  callback = typeof callback === 'function' ? callback : function() {};
+  db.findUserByUsername(username, function(err, userId) {
+    if (err) {
+      callback(err);
+      return;
+    }
+    console.time("searchItineraryTracksByDistance");
+    db.getItineraryTracksByDistanceWithin(userId, itineraryId, longitude, latitude, distance, function(err, result) {
+      console.timeEnd("searchItineraryTracksByDistance");
+      callback(err, result);
     });
   });
 }
@@ -421,12 +481,10 @@ function getItineraryRouteNames(username, itineraryId, callback) {
         db.getItineraryRouteNames(itineraryId, function(err, result) {
           if (utils.handleError(err, callback)) {
             result.forEach(function(v) {
-              if (v.distance != null && v.ascent != null) {
-                // Calculation using Scarf's Equivalence based on flat speed of 4 km/h
-                t = (Number(v.distance) + Number(v.ascent) * 0.00792) / 4;
-                v.hours = Math.floor(t);
-                v.minutes = Math.round((t - v.hours) * 60);
-              }
+              // Calculation using Scarf's Equivalence based on flat speed of 4 km/h
+              t = utils.scarfsEquivalence(v.distance, v.ascent, flatSpeed);
+              v.hours = t.hours;
+              v.minutes = t.minutes;
             });
             callback(err, result);
           }

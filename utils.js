@@ -49,7 +49,8 @@ module.exports = {
   parseJSON: parseJSON,
   isJSON: isJSON,
   isISO8601: isISO8601,
-  isEmail: isEmail
+  isEmail: isEmail,
+  scarfsEquivalence: scarfsEquivalence
 };
 
 function handleError(err, callback) {
@@ -487,4 +488,34 @@ function isEmail(string) {
     return /^[!-?A-~]+@[!-?A-~]+\.[!-?A-~]{2,}$/.test(string);
   }
   return false;
+}
+
+function scarfsEquivalence(distance, ascent, flatSpeedKph) {
+  var retval, t, hours, minutes;
+  if (flatSpeedKph != null) {
+    if (ascent != null) {
+      // Calculation using Scarf's Equivalence based on flat speed
+      if (distance != null) {
+        t = (Number(distance) + Number(ascent) * 0.00792) / flatSpeedKph;
+      } else {
+        t = Number(ascent) * 0.00792 / flatSpeedKph;
+      }
+    } else {
+      if (distance != null) {
+        t = Number(distance) / flatSpeedKph;
+      }
+    }
+  } else {
+    t = Infinity;
+  }
+  if (t !== Infinity) {
+    if (t !== undefined) {
+      hours = Math.floor(t);
+      minutes = Math.round((t - hours) * 60);
+    }
+  } else {
+    hours = Infinity;
+    minutes = Infinity;
+  }
+  return {hours: hours, minutes: minutes};
 }

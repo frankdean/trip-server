@@ -1,3 +1,4 @@
+// vim: set ts=2 sts=-1 sw=2 et ft=javascript norl:
 /**
  * @license TRIP - Trip Recording and Itinerary Planning application.
  * (c) 2016, 2017 Frank Dean <frank@fdsd.co.uk>
@@ -55,6 +56,9 @@ module.exports = {
   deleteUser: deleteUser,
   getItinerariesByDistanceWithinCount: getItinerariesByDistanceWithinCount,
   getItinerariesByDistanceWithin: getItinerariesByDistanceWithin,
+  getItineraryRoutesByDistanceWithin: getItineraryRoutesByDistanceWithin,
+  getItineraryWaypointsByDistanceWithin: getItineraryWaypointsByDistanceWithin,
+  getItineraryTracksByDistanceWithin: getItineraryTracksByDistanceWithin,
   deleteItinerary: deleteItinerary,
   deleteLocationShares: deleteLocationShares,
   deleteTile: deleteTile,
@@ -1153,7 +1157,6 @@ function getItinerariesByDistanceWithinCount(useremail, longitude, latitude, dis
                      if (err) {
                        callback(err);
                      } else {
-                       logger.debug('Result: %j', result);
                        if (result && result.rowCount > 0) {
                          callback(null, result.rows[0].count);
                        } else {
@@ -1182,6 +1185,130 @@ function getItinerariesByDistanceWithin(useremail, longitude, latitude, distance
 
       client.query(queryBody + ' ORDER BY start DESC, finish DESC, title, id DESC OFFSET $5 LIMIT $6',
                    [useremail, longitude, latitude, distance, offset, limit],
+                   function(err, result) {
+                     // release the client back to the pool
+                     done();
+                     if (err) {
+                       callback(err);
+                     } else {
+                       callback(err, result.rows);
+                     }
+                   });
+    }
+  });
+}
+
+function getItineraryRoutesByDistanceWithin(userId, itineraryId, longitude, latitude, distance, callback) {
+  callback = typeof callback === 'function' ? callback : function() {};
+  var query, queryBody;
+  pool.connect(function(err, client, done) {
+    if (err) {
+      callback(err);
+    } else {
+      query = 'SELECT * FROM ( ' +
+        'SELECT DISTINCT(ir.id), ir.name, ir.distance, ir.ascent, ir.descent, ir.lowest, ir.highest, ir.color ' +
+        'FROM itinerary i ' +
+        'JOIN itinerary_route ir ON ir.itinerary_id=i.id ' +
+        'JOIN itinerary_route_point irp ON irp.itinerary_route_id=ir.id ' +
+        'WHERE i.id=$2 AND i.archived != true AND i.user_id=$1 ' +
+        'AND ST_DWithin(irp.geog, ST_MakePoint($3,$4), $5) ' +
+        'UNION ' +
+        'SELECT DISTINCT(ir.id), ir.name, ir.distance, ir.ascent, ir.descent, ir.lowest, ir.highest, ir.color ' +
+        'FROM itinerary_sharing ish ' +
+        'JOIN itinerary i ON i.id=ish.itinerary_id ' +
+        'JOIN itinerary_route ir ON ir.itinerary_id=i.id ' +
+        'JOIN itinerary_route_point irp ON irp.itinerary_route_id=ir.id ' +
+        'WHERE ish.itinerary_id=$2 AND i.archived != true AND shared_to_id=$1 ' +
+        'AND ST_DWithin(irp.geog, ST_MakePoint($3,$4), $5) ' +
+        ') as q ' +
+        'ORDER BY name, id ';
+
+      client.query(query,
+                   [userId, itineraryId, longitude, latitude, distance],
+                   function(err, result) {
+                     // release the client back to the pool
+                     done();
+                     if (err) {
+                       callback(err);
+                     } else {
+                       callback(err, result.rows);
+                     }
+                   });
+    }
+  });
+}
+
+function getItineraryWaypointsByDistanceWithin(userId, itineraryId, longitude, latitude, distance, callback) {
+  callback = typeof callback === 'function' ? callback : function() {};
+  var query, queryBody;
+  pool.connect(function(err, client, done) {
+    if (err) {
+      callback(err);
+    } else {
+      query = 'SELECT * FROM ( ' +
+        'SELECT DISTINCT(iw.id), iw.name, ST_X(geog::geometry) as lng, ST_Y(geog::geometry) as lat, time, comment, symbol, altitude, type, ws.value AS symbol_text FROM itinerary i ' +
+        'JOIN itinerary_waypoint iw ON iw.itinerary_id=i.id ' +
+        'LEFT JOIN waypoint_symbol ws ON iw.symbol=ws.key ' +
+        'WHERE i.id=$2 AND i.archived != true AND i.user_id=$1 ' +
+        'AND ST_DWithin(iw.geog, ST_MakePoint($3,$4), $5) ' +
+        'UNION ' +
+        'SELECT DISTINCT(iw.id), iw.name, ST_X(geog::geometry) as lng, ST_Y(geog::geometry) as lat, time, comment, symbol, altitude, type, ws.value AS symbol_text FROM itinerary i2 ' +
+        'JOIN itinerary_sharing s ON i2.id=s.itinerary_id ' +
+        'JOIN usertable u2 ON s.shared_to_id=u2.id ' +
+        'JOIN itinerary_waypoint iw ON i2.id=iw.itinerary_id ' +
+        'LEFT JOIN waypoint_symbol ws ON iw.symbol=ws.key ' +
+        'JOIN usertable u3 ON u3.id=i2.user_id ' +
+        'WHERE i2.id=$2 AND i2.archived != true AND s.active=true AND u2.id=$1 ' +
+        'AND ST_DWithin(iw.geog, ST_MakePoint($3,$4), $5) ' +
+        ') AS q ORDER BY name, id';
+      client.query(query,
+                   [userId, itineraryId, longitude, latitude, distance],
+                   function(err, result) {
+                     // release the client back to the pool
+                     done();
+                     if (err) {
+                       logger.error(err);
+                       callback(err);
+                     } else {
+                       logger.debug('Result: %j', result.rows);
+                       callback(err, result.rows);
+                     }
+                   });
+    }
+  });
+}
+
+function getItineraryTracksByDistanceWithin(userId, itineraryId, longitude, latitude, distance, callback) {
+  var query, queryBody;
+  callback = typeof callback === 'function' ? callback : function() {};
+  pool.connect(function(err, client, done) {
+    if (err) {
+      callback(err);
+    } else {
+      query = 'SELECT * FROM ( ' +
+        'SELECT DISTINCT(it.id), it.name, it.color, it.distance, it.ascent, it.descent, it.lowest, it.highest ' +
+        'FROM itinerary i ' +
+        'JOIN itinerary_track it ON it.itinerary_id=i.id ' +
+        'JOIN itinerary_track_segment its ON its.itinerary_track_id=it.id ' +
+        'JOIN itinerary_track_point itp ON itp.itinerary_track_segment_id=its.id ' +
+        'WHERE i.id=$2 AND i.archived != true AND i.user_id=$1 ' +
+        'AND ST_DWithin(itp.geog, ST_MakePoint($3,$4), $5) ' +
+        'UNION ' +
+        'SELECT DISTINCT(it.id), it.name, it.color, it.distance, it.ascent, it.descent, it.lowest, it.highest ' +
+        'FROM itinerary i2 ' +
+        'JOIN itinerary_sharing s ON i2.id=s.itinerary_id ' +
+        'JOIN usertable u2 ON s.shared_to_id=u2.id ' +
+        'JOIN itinerary_track it ON i2.id=it.itinerary_id ' +
+        'JOIN itinerary_track_segment its ON it.id=its.itinerary_track_id ' +
+        'JOIN itinerary_track_point itp ON its.id=itp.itinerary_track_segment_id ' +
+        'JOIN usertable u3 ON u3.id=i2.user_id ' +
+        'WHERE i2.id=$2 AND i2.archived != true AND s.active=true AND u2.id=$1 ' +
+        'AND ST_DWithin(itp.geog, ST_MakePoint($3,$4), $5) ' +
+        ') AS q ' +
+        'ORDER BY name, id ';
+      logger.debug('SQL: %s', query);
+      client.query(query,
+                   [userId, itineraryId, longitude, latitude, distance],
                    function(err, result) {
                      // release the client back to the pool
                      done();

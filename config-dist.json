@@ -18,7 +18,8 @@
     "resourceToken": {
       "expiresIn": 86400
     },
-    "maxItinerarySearchRadius": 250000
+    "maxItinerarySearchRadius": 50000,
+    "averageFlatSpeedKph": 4
   },
   "jwt": {
     "signingKey": "secret",
