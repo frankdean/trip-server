@@ -54,6 +54,40 @@ The following features are provided:
 
 * [PostGIS][] PostGIS spatial extension to PostgreSQL (2.5.x)
 
+## Quick Start
+
+You can quickly get the full application up and running either using
+[Docker][] or [Vagrant][] virtualisation systems.  [Docker][] is probably the
+simplest and easiest method to use.  Using both are described in following
+sections.
+
+## Quick Start Using [Docker][]
+
+1.  Follow the
+    [instructions for installing a Docker environment](https://www.docker.com/get-started).
+
+2.  Clone this repository with [git][].
+
+3.  Run the following command in the route of the cloned repository:
+
+	$ docker-compose up -d
+
+4.  Navigate to <http://localhost:8080/app> with a web-browser.  The
+    application runs with a small amount of test data.
+
+5.  To find some test credentials, clone the `trip-web-client` source code
+
+	$ git clone git://www.fdsd.co.uk/trip-web-client.git
+
+6.  Credentials for some test users are stored in
+    `./trip-web-client/test/environment.js`
+
+7.  Click `Help` in the Trip Web Client menu for the online user
+    documentation.
+
+The [Docker][] container can be stopped with:
+
+	$ docker-compose down
 
 ## Quick Start Using [Vagrant][]
 
@@ -477,15 +511,15 @@ created earlier:
 As a Unix user who is also a postgresql superuser:
 
 		$ cd ./spec/support
-		$ psql trip <trip_role.sql
-		$ psql trip <schema.sql
-		$ psql trip <permissions.sql
+		$ psql trip <10_trip_role.sql
+		$ psql trip <20_schema.sql
+		$ psql trip <30_permissions.sql
 
 Optionally, populate the database with data that can be used to perform
 end-to-end tests.  Do not insert the test data into a production database as
 it contains default application admin user credentials.
 
-		$ psql trip <test-data.sql
+		$ psql trip <90_test-data.sql
 
 
 #### Lookup Tables
@@ -518,8 +552,8 @@ E.g. a format string of `%d°%M′%S″%c` would result in a lat/long value of
 `1.5,-2.5` being displayed as `1°30′00″N 2°30′00″W`
 
 Scripts to create default values for these lookup tables are in the
-`./spec/support` folder, named `waypoint_symbols.sql`, `track_colors.sql` and
-`georef_formats.sql` respectively.  The default waypoint symbols and track
+`./spec/support` folder, named `60_waypoint_symbols.sql`, `40_path_colors.sql` and
+`50_georef_formats.sql` respectively.  The default waypoint symbols and track
 colours are generally appropriate for Garmin devices.  If fact, the colours
 are the only ones allowed by the
 [Garmin Extensions XSD](http://www8.garmin.com/xmlschemas/GpxExtensionsv3.xsd).
@@ -798,7 +832,7 @@ Backup just the data, keeping the invariably large `tile` table separate:
 
 Backup schema, data and privileges, including commands to recreate tables, excluding the tile data:
 
-		$ pg_dump --clean --no-owner --exclude-table-data=tile trip > test-schema-data.sql
+		$ pg_dump --clean --if-exists --no-owner --exclude-table-data=tile trip > test-schema-data.sql
 
 The above backup is suitable for every-day backup.  If you intend to restore
 from the backup as part of your development and test cycle, remove the tile
@@ -873,6 +907,8 @@ upgrade the database to the new format:
 [AngularJS]: https://angularjs.org
 [Apache]: http://httpd.apache.org
 [Debian]: https://www.debian.org "a free operating system (OS) for your computer"
+[docker]: https://www.docker.com "Securely build and share any application, anywhere"
+[Git]: http://git-scm.com/ "a free and open source distributed version control system designed to handle everything from small to very large projects with speed and efficiency"
 [GPSLogger]: http://code.mendhak.com/gpslogger/ "A battery efficient GPS logging application"
 [Linux]: https://www.kernel.org/
 [Markdown]: http://daringfireball.net/projects/markdown/ "A text-to-HTML conversion tool for web writers"

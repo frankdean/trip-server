@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 11.7
--- Dumped by pg_dump version 11.7
+-- Dumped from database version 11.7 (Debian 11.7-2.pgdg90+1)
+-- Dumped by pg_dump version 11.7 (Debian 11.7-2.pgdg90+1)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -16,109 +16,109 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
-ALTER TABLE ONLY public.location DROP CONSTRAINT location_user_id_fkey;
-ALTER TABLE ONLY public.location_sharing DROP CONSTRAINT location_sharing_shared_to_id_fkey;
-ALTER TABLE ONLY public.location_sharing DROP CONSTRAINT location_sharing_shared_by_id_fkey;
-ALTER TABLE ONLY public.itinerary_waypoint DROP CONSTRAINT itinerary_waypoint_itinerary_id_fkey;
-ALTER TABLE ONLY public.itinerary DROP CONSTRAINT itinerary_user_id_fkey;
-ALTER TABLE ONLY public.itinerary_track_segment DROP CONSTRAINT itinerary_track_segment_itinerary_track_id_fkey;
-ALTER TABLE ONLY public.itinerary_track_point DROP CONSTRAINT itinerary_track_point_itinerary_track_segment_id_fkey;
-ALTER TABLE ONLY public.itinerary_track DROP CONSTRAINT itinerary_track_itinerary_id_fkey;
-ALTER TABLE ONLY public.itinerary_sharing DROP CONSTRAINT itinerary_sharing_shared_to_id_fkey;
-ALTER TABLE ONLY public.itinerary_sharing DROP CONSTRAINT itinerary_sharing_itinerary_id_fkey;
-ALTER TABLE ONLY public.itinerary_route_point DROP CONSTRAINT itinerary_route_point_itinerary_route_id_fkey;
-ALTER TABLE ONLY public.itinerary_route DROP CONSTRAINT itinerary_route_itinerary_id_fkey;
-DROP INDEX public.location_geog_idx;
-DROP INDEX public.itinerary_waypoint_geog_idx;
-DROP INDEX public.itineary_track_point_geog_idx;
-DROP INDEX public.itineary_route_point_geog_idx;
-DROP INDEX public.idx_time_inverse;
-ALTER TABLE ONLY public.waypoint_symbol DROP CONSTRAINT waypoint_symbol_value_key;
-ALTER TABLE ONLY public.waypoint_symbol DROP CONSTRAINT waypoint_symbol_pkey;
-ALTER TABLE ONLY public.usertable DROP CONSTRAINT usertable_uuid_key;
-ALTER TABLE ONLY public.usertable DROP CONSTRAINT usertable_pkey;
-ALTER TABLE ONLY public.usertable DROP CONSTRAINT usertable_nickname_key;
-ALTER TABLE ONLY public.usertable DROP CONSTRAINT usertable_email_key;
-ALTER TABLE ONLY public.user_role DROP CONSTRAINT user_role_pkey;
-ALTER TABLE ONLY public.path_color DROP CONSTRAINT track_color_value_key;
-ALTER TABLE ONLY public.path_color DROP CONSTRAINT track_color_pkey;
-ALTER TABLE ONLY public.tile DROP CONSTRAINT tile_pkey;
-ALTER TABLE ONLY public.role DROP CONSTRAINT role_pkey;
-ALTER TABLE ONLY public.role DROP CONSTRAINT role_name_key;
-ALTER TABLE ONLY public.location_sharing DROP CONSTRAINT location_sharing_pkey;
-ALTER TABLE ONLY public.location DROP CONSTRAINT location_pkey;
-ALTER TABLE ONLY public.itinerary_waypoint DROP CONSTRAINT itinerary_waypoint_pkey;
-ALTER TABLE ONLY public.itinerary_track_segment DROP CONSTRAINT itinerary_track_segment_pkey;
-ALTER TABLE ONLY public.itinerary_track_point DROP CONSTRAINT itinerary_track_point_pkey;
-ALTER TABLE ONLY public.itinerary_track DROP CONSTRAINT itinerary_track_pkey;
-ALTER TABLE ONLY public.itinerary_sharing DROP CONSTRAINT itinerary_sharing_pkey;
-ALTER TABLE ONLY public.itinerary_route_point DROP CONSTRAINT itinerary_route_point_pkey;
-ALTER TABLE ONLY public.itinerary_route DROP CONSTRAINT itinerary_route_pkey;
-ALTER TABLE ONLY public.itinerary DROP CONSTRAINT itinerary_pkey;
-ALTER TABLE ONLY public.georef_format DROP CONSTRAINT georef_format_value_key;
-ALTER TABLE ONLY public.georef_format DROP CONSTRAINT georef_format_pkey;
-ALTER TABLE public.role ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE public.itinerary_waypoint ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE public.itinerary_track_segment ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE public.itinerary_track_point ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE public.itinerary_track ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE public.itinerary_route_point ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE public.itinerary_route ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE public.itinerary ALTER COLUMN id DROP DEFAULT;
-DROP TABLE public.waypoint_symbol;
-DROP TABLE public.usertable;
-DROP SEQUENCE public.usertable_seq;
-DROP TABLE public.user_role;
-DROP TABLE public.tile_metric;
-DROP SEQUENCE public.tile_download_seq;
-DROP TABLE public.tile;
-DROP SEQUENCE public.role_seq;
-DROP TABLE public.role;
-DROP TABLE public.path_color;
-DROP TABLE public.location_sharing;
-DROP TABLE public.location;
-DROP SEQUENCE public.location_seq;
-DROP SEQUENCE public.itinerary_waypoint_seq;
-DROP TABLE public.itinerary_waypoint;
-DROP SEQUENCE public.itinerary_track_seq;
-DROP SEQUENCE public.itinerary_track_segment_seq;
-DROP TABLE public.itinerary_track_segment;
-DROP SEQUENCE public.itinerary_track_point_seq;
-DROP TABLE public.itinerary_track_point;
-DROP TABLE public.itinerary_track;
-DROP TABLE public.itinerary_sharing;
-DROP SEQUENCE public.itinerary_seq;
-DROP SEQUENCE public.itinerary_route_seq;
-DROP SEQUENCE public.itinerary_route_point_seq;
-DROP TABLE public.itinerary_route_point;
-DROP TABLE public.itinerary_route;
-DROP TABLE public.itinerary;
-DROP TABLE public.georef_format;
-DROP EXTENSION postgis;
-DROP EXTENSION plpgsql;
+ALTER TABLE IF EXISTS ONLY public.location DROP CONSTRAINT IF EXISTS location_user_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.location_sharing DROP CONSTRAINT IF EXISTS location_sharing_shared_to_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.location_sharing DROP CONSTRAINT IF EXISTS location_sharing_shared_by_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.itinerary_waypoint DROP CONSTRAINT IF EXISTS itinerary_waypoint_itinerary_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.itinerary DROP CONSTRAINT IF EXISTS itinerary_user_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.itinerary_track_segment DROP CONSTRAINT IF EXISTS itinerary_track_segment_itinerary_track_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.itinerary_track_point DROP CONSTRAINT IF EXISTS itinerary_track_point_itinerary_track_segment_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.itinerary_track DROP CONSTRAINT IF EXISTS itinerary_track_itinerary_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.itinerary_sharing DROP CONSTRAINT IF EXISTS itinerary_sharing_shared_to_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.itinerary_sharing DROP CONSTRAINT IF EXISTS itinerary_sharing_itinerary_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.itinerary_route_point DROP CONSTRAINT IF EXISTS itinerary_route_point_itinerary_route_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.itinerary_route DROP CONSTRAINT IF EXISTS itinerary_route_itinerary_id_fkey;
+DROP INDEX IF EXISTS public.location_geog_idx;
+DROP INDEX IF EXISTS public.itinerary_waypoint_geog_idx;
+DROP INDEX IF EXISTS public.itineary_track_point_geog_idx;
+DROP INDEX IF EXISTS public.itineary_route_point_geog_idx;
+DROP INDEX IF EXISTS public.idx_time_inverse;
+ALTER TABLE IF EXISTS ONLY public.waypoint_symbol DROP CONSTRAINT IF EXISTS waypoint_symbol_value_key;
+ALTER TABLE IF EXISTS ONLY public.waypoint_symbol DROP CONSTRAINT IF EXISTS waypoint_symbol_pkey;
+ALTER TABLE IF EXISTS ONLY public.usertable DROP CONSTRAINT IF EXISTS usertable_uuid_key;
+ALTER TABLE IF EXISTS ONLY public.usertable DROP CONSTRAINT IF EXISTS usertable_pkey;
+ALTER TABLE IF EXISTS ONLY public.usertable DROP CONSTRAINT IF EXISTS usertable_nickname_key;
+ALTER TABLE IF EXISTS ONLY public.usertable DROP CONSTRAINT IF EXISTS usertable_email_key;
+ALTER TABLE IF EXISTS ONLY public.user_role DROP CONSTRAINT IF EXISTS user_role_pkey;
+ALTER TABLE IF EXISTS ONLY public.path_color DROP CONSTRAINT IF EXISTS track_color_value_key;
+ALTER TABLE IF EXISTS ONLY public.path_color DROP CONSTRAINT IF EXISTS track_color_pkey;
+ALTER TABLE IF EXISTS ONLY public.tile DROP CONSTRAINT IF EXISTS tile_pkey;
+ALTER TABLE IF EXISTS ONLY public.role DROP CONSTRAINT IF EXISTS role_pkey;
+ALTER TABLE IF EXISTS ONLY public.role DROP CONSTRAINT IF EXISTS role_name_key;
+ALTER TABLE IF EXISTS ONLY public.location_sharing DROP CONSTRAINT IF EXISTS location_sharing_pkey;
+ALTER TABLE IF EXISTS ONLY public.location DROP CONSTRAINT IF EXISTS location_pkey;
+ALTER TABLE IF EXISTS ONLY public.itinerary_waypoint DROP CONSTRAINT IF EXISTS itinerary_waypoint_pkey;
+ALTER TABLE IF EXISTS ONLY public.itinerary_track_segment DROP CONSTRAINT IF EXISTS itinerary_track_segment_pkey;
+ALTER TABLE IF EXISTS ONLY public.itinerary_track_point DROP CONSTRAINT IF EXISTS itinerary_track_point_pkey;
+ALTER TABLE IF EXISTS ONLY public.itinerary_track DROP CONSTRAINT IF EXISTS itinerary_track_pkey;
+ALTER TABLE IF EXISTS ONLY public.itinerary_sharing DROP CONSTRAINT IF EXISTS itinerary_sharing_pkey;
+ALTER TABLE IF EXISTS ONLY public.itinerary_route_point DROP CONSTRAINT IF EXISTS itinerary_route_point_pkey;
+ALTER TABLE IF EXISTS ONLY public.itinerary_route DROP CONSTRAINT IF EXISTS itinerary_route_pkey;
+ALTER TABLE IF EXISTS ONLY public.itinerary DROP CONSTRAINT IF EXISTS itinerary_pkey;
+ALTER TABLE IF EXISTS ONLY public.georef_format DROP CONSTRAINT IF EXISTS georef_format_value_key;
+ALTER TABLE IF EXISTS ONLY public.georef_format DROP CONSTRAINT IF EXISTS georef_format_pkey;
+ALTER TABLE IF EXISTS public.role ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.itinerary_waypoint ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.itinerary_track_segment ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.itinerary_track_point ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.itinerary_track ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.itinerary_route_point ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.itinerary_route ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.itinerary ALTER COLUMN id DROP DEFAULT;
+DROP TABLE IF EXISTS public.waypoint_symbol;
+DROP TABLE IF EXISTS public.usertable;
+DROP SEQUENCE IF EXISTS public.usertable_seq;
+DROP TABLE IF EXISTS public.user_role;
+DROP TABLE IF EXISTS public.tile_metric;
+DROP SEQUENCE IF EXISTS public.tile_download_seq;
+DROP TABLE IF EXISTS public.tile;
+DROP SEQUENCE IF EXISTS public.role_seq;
+DROP TABLE IF EXISTS public.role;
+DROP TABLE IF EXISTS public.path_color;
+DROP TABLE IF EXISTS public.location_sharing;
+DROP TABLE IF EXISTS public.location;
+DROP SEQUENCE IF EXISTS public.location_seq;
+DROP SEQUENCE IF EXISTS public.itinerary_waypoint_seq;
+DROP TABLE IF EXISTS public.itinerary_waypoint;
+DROP SEQUENCE IF EXISTS public.itinerary_track_seq;
+DROP SEQUENCE IF EXISTS public.itinerary_track_segment_seq;
+DROP TABLE IF EXISTS public.itinerary_track_segment;
+DROP SEQUENCE IF EXISTS public.itinerary_track_point_seq;
+DROP TABLE IF EXISTS public.itinerary_track_point;
+DROP TABLE IF EXISTS public.itinerary_track;
+DROP TABLE IF EXISTS public.itinerary_sharing;
+DROP SEQUENCE IF EXISTS public.itinerary_seq;
+DROP SEQUENCE IF EXISTS public.itinerary_route_seq;
+DROP SEQUENCE IF EXISTS public.itinerary_route_point_seq;
+DROP TABLE IF EXISTS public.itinerary_route_point;
+DROP TABLE IF EXISTS public.itinerary_route;
+DROP TABLE IF EXISTS public.itinerary;
+DROP TABLE IF EXISTS public.georef_format;
+DROP EXTENSION IF EXISTS postgis;
+DROP EXTENSION IF EXISTS plpgsql;
 --
--- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: -
+-- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: 
 --
 
 CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
 
 
 --
--- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: -
+-- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: 
 --
 
 COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
 
 
 --
--- Name: postgis; Type: EXTENSION; Schema: -; Owner: -
+-- Name: postgis; Type: EXTENSION; Schema: -; Owner: 
 --
 
 CREATE EXTENSION IF NOT EXISTS postgis WITH SCHEMA public;
 
 
 --
--- Name: EXTENSION postgis; Type: COMMENT; Schema: -; Owner: -
+-- Name: EXTENSION postgis; Type: COMMENT; Schema: -; Owner: 
 --
 
 COMMENT ON EXTENSION postgis IS 'PostGIS geometry, geography, and raster spatial types and functions';
@@ -129,7 +129,7 @@ SET default_tablespace = '';
 SET default_with_oids = false;
 
 --
--- Name: georef_format; Type: TABLE; Schema: public; Owner: -
+-- Name: georef_format; Type: TABLE; Schema: public; Owner: trip
 --
 
 CREATE TABLE public.georef_format (
@@ -139,8 +139,10 @@ CREATE TABLE public.georef_format (
 );
 
 
+ALTER TABLE public.georef_format OWNER TO trip;
+
 --
--- Name: itinerary; Type: TABLE; Schema: public; Owner: -
+-- Name: itinerary; Type: TABLE; Schema: public; Owner: trip
 --
 
 CREATE TABLE public.itinerary (
@@ -154,8 +156,10 @@ CREATE TABLE public.itinerary (
 );
 
 
+ALTER TABLE public.itinerary OWNER TO trip;
+
 --
--- Name: itinerary_route; Type: TABLE; Schema: public; Owner: -
+-- Name: itinerary_route; Type: TABLE; Schema: public; Owner: trip
 --
 
 CREATE TABLE public.itinerary_route (
@@ -171,8 +175,10 @@ CREATE TABLE public.itinerary_route (
 );
 
 
+ALTER TABLE public.itinerary_route OWNER TO trip;
+
 --
--- Name: itinerary_route_point; Type: TABLE; Schema: public; Owner: -
+-- Name: itinerary_route_point; Type: TABLE; Schema: public; Owner: trip
 --
 
 CREATE TABLE public.itinerary_route_point (
@@ -187,8 +193,10 @@ CREATE TABLE public.itinerary_route_point (
 );
 
 
+ALTER TABLE public.itinerary_route_point OWNER TO trip;
+
 --
--- Name: itinerary_route_point_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: itinerary_route_point_seq; Type: SEQUENCE; Schema: public; Owner: trip
 --
 
 CREATE SEQUENCE public.itinerary_route_point_seq
@@ -199,15 +207,17 @@ CREATE SEQUENCE public.itinerary_route_point_seq
     CACHE 1;
 
 
+ALTER TABLE public.itinerary_route_point_seq OWNER TO trip;
+
 --
--- Name: itinerary_route_point_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: itinerary_route_point_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: trip
 --
 
 ALTER SEQUENCE public.itinerary_route_point_seq OWNED BY public.itinerary_route_point.id;
 
 
 --
--- Name: itinerary_route_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: itinerary_route_seq; Type: SEQUENCE; Schema: public; Owner: trip
 --
 
 CREATE SEQUENCE public.itinerary_route_seq
@@ -218,15 +228,17 @@ CREATE SEQUENCE public.itinerary_route_seq
     CACHE 1;
 
 
+ALTER TABLE public.itinerary_route_seq OWNER TO trip;
+
 --
--- Name: itinerary_route_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: itinerary_route_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: trip
 --
 
 ALTER SEQUENCE public.itinerary_route_seq OWNED BY public.itinerary_route.id;
 
 
 --
--- Name: itinerary_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: itinerary_seq; Type: SEQUENCE; Schema: public; Owner: trip
 --
 
 CREATE SEQUENCE public.itinerary_seq
@@ -237,15 +249,17 @@ CREATE SEQUENCE public.itinerary_seq
     CACHE 1;
 
 
+ALTER TABLE public.itinerary_seq OWNER TO trip;
+
 --
--- Name: itinerary_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: itinerary_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: trip
 --
 
 ALTER SEQUENCE public.itinerary_seq OWNED BY public.itinerary.id;
 
 
 --
--- Name: itinerary_sharing; Type: TABLE; Schema: public; Owner: -
+-- Name: itinerary_sharing; Type: TABLE; Schema: public; Owner: trip
 --
 
 CREATE TABLE public.itinerary_sharing (
@@ -255,8 +269,10 @@ CREATE TABLE public.itinerary_sharing (
 );
 
 
+ALTER TABLE public.itinerary_sharing OWNER TO trip;
+
 --
--- Name: itinerary_track; Type: TABLE; Schema: public; Owner: -
+-- Name: itinerary_track; Type: TABLE; Schema: public; Owner: trip
 --
 
 CREATE TABLE public.itinerary_track (
@@ -272,8 +288,10 @@ CREATE TABLE public.itinerary_track (
 );
 
 
+ALTER TABLE public.itinerary_track OWNER TO trip;
+
 --
--- Name: itinerary_track_point; Type: TABLE; Schema: public; Owner: -
+-- Name: itinerary_track_point; Type: TABLE; Schema: public; Owner: trip
 --
 
 CREATE TABLE public.itinerary_track_point (
@@ -286,8 +304,10 @@ CREATE TABLE public.itinerary_track_point (
 );
 
 
+ALTER TABLE public.itinerary_track_point OWNER TO trip;
+
 --
--- Name: itinerary_track_point_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: itinerary_track_point_seq; Type: SEQUENCE; Schema: public; Owner: trip
 --
 
 CREATE SEQUENCE public.itinerary_track_point_seq
@@ -298,15 +318,17 @@ CREATE SEQUENCE public.itinerary_track_point_seq
     CACHE 1;
 
 
+ALTER TABLE public.itinerary_track_point_seq OWNER TO trip;
+
 --
--- Name: itinerary_track_point_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: itinerary_track_point_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: trip
 --
 
 ALTER SEQUENCE public.itinerary_track_point_seq OWNED BY public.itinerary_track_point.id;
 
 
 --
--- Name: itinerary_track_segment; Type: TABLE; Schema: public; Owner: -
+-- Name: itinerary_track_segment; Type: TABLE; Schema: public; Owner: trip
 --
 
 CREATE TABLE public.itinerary_track_segment (
@@ -320,8 +342,10 @@ CREATE TABLE public.itinerary_track_segment (
 );
 
 
+ALTER TABLE public.itinerary_track_segment OWNER TO trip;
+
 --
--- Name: itinerary_track_segment_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: itinerary_track_segment_seq; Type: SEQUENCE; Schema: public; Owner: trip
 --
 
 CREATE SEQUENCE public.itinerary_track_segment_seq
@@ -332,15 +356,17 @@ CREATE SEQUENCE public.itinerary_track_segment_seq
     CACHE 1;
 
 
+ALTER TABLE public.itinerary_track_segment_seq OWNER TO trip;
+
 --
--- Name: itinerary_track_segment_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: itinerary_track_segment_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: trip
 --
 
 ALTER SEQUENCE public.itinerary_track_segment_seq OWNED BY public.itinerary_track_segment.id;
 
 
 --
--- Name: itinerary_track_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: itinerary_track_seq; Type: SEQUENCE; Schema: public; Owner: trip
 --
 
 CREATE SEQUENCE public.itinerary_track_seq
@@ -351,15 +377,17 @@ CREATE SEQUENCE public.itinerary_track_seq
     CACHE 1;
 
 
+ALTER TABLE public.itinerary_track_seq OWNER TO trip;
+
 --
--- Name: itinerary_track_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: itinerary_track_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: trip
 --
 
 ALTER SEQUENCE public.itinerary_track_seq OWNED BY public.itinerary_track.id;
 
 
 --
--- Name: itinerary_waypoint; Type: TABLE; Schema: public; Owner: -
+-- Name: itinerary_waypoint; Type: TABLE; Schema: public; Owner: trip
 --
 
 CREATE TABLE public.itinerary_waypoint (
@@ -378,8 +406,10 @@ CREATE TABLE public.itinerary_waypoint (
 );
 
 
+ALTER TABLE public.itinerary_waypoint OWNER TO trip;
+
 --
--- Name: itinerary_waypoint_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: itinerary_waypoint_seq; Type: SEQUENCE; Schema: public; Owner: trip
 --
 
 CREATE SEQUENCE public.itinerary_waypoint_seq
@@ -390,15 +420,17 @@ CREATE SEQUENCE public.itinerary_waypoint_seq
     CACHE 1;
 
 
+ALTER TABLE public.itinerary_waypoint_seq OWNER TO trip;
+
 --
--- Name: itinerary_waypoint_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: itinerary_waypoint_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: trip
 --
 
 ALTER SEQUENCE public.itinerary_waypoint_seq OWNED BY public.itinerary_waypoint.id;
 
 
 --
--- Name: location_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: location_seq; Type: SEQUENCE; Schema: public; Owner: trip
 --
 
 CREATE SEQUENCE public.location_seq
@@ -409,8 +441,10 @@ CREATE SEQUENCE public.location_seq
     CACHE 1;
 
 
+ALTER TABLE public.location_seq OWNER TO trip;
+
 --
--- Name: location; Type: TABLE; Schema: public; Owner: -
+-- Name: location; Type: TABLE; Schema: public; Owner: trip
 --
 
 CREATE TABLE public.location (
@@ -429,8 +463,10 @@ CREATE TABLE public.location (
 );
 
 
+ALTER TABLE public.location OWNER TO trip;
+
 --
--- Name: location_sharing; Type: TABLE; Schema: public; Owner: -
+-- Name: location_sharing; Type: TABLE; Schema: public; Owner: trip
 --
 
 CREATE TABLE public.location_sharing (
@@ -442,8 +478,10 @@ CREATE TABLE public.location_sharing (
 );
 
 
+ALTER TABLE public.location_sharing OWNER TO trip;
+
 --
--- Name: path_color; Type: TABLE; Schema: public; Owner: -
+-- Name: path_color; Type: TABLE; Schema: public; Owner: trip
 --
 
 CREATE TABLE public.path_color (
@@ -453,8 +491,10 @@ CREATE TABLE public.path_color (
 );
 
 
+ALTER TABLE public.path_color OWNER TO trip;
+
 --
--- Name: role; Type: TABLE; Schema: public; Owner: -
+-- Name: role; Type: TABLE; Schema: public; Owner: trip
 --
 
 CREATE TABLE public.role (
@@ -463,8 +503,10 @@ CREATE TABLE public.role (
 );
 
 
+ALTER TABLE public.role OWNER TO trip;
+
 --
--- Name: role_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: role_seq; Type: SEQUENCE; Schema: public; Owner: trip
 --
 
 CREATE SEQUENCE public.role_seq
@@ -475,15 +517,17 @@ CREATE SEQUENCE public.role_seq
     CACHE 1;
 
 
+ALTER TABLE public.role_seq OWNER TO trip;
+
 --
--- Name: role_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: role_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: trip
 --
 
 ALTER SEQUENCE public.role_seq OWNED BY public.role.id;
 
 
 --
--- Name: tile; Type: TABLE; Schema: public; Owner: -
+-- Name: tile; Type: TABLE; Schema: public; Owner: trip
 --
 
 CREATE TABLE public.tile (
@@ -497,8 +541,10 @@ CREATE TABLE public.tile (
 );
 
 
+ALTER TABLE public.tile OWNER TO trip;
+
 --
--- Name: tile_download_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: tile_download_seq; Type: SEQUENCE; Schema: public; Owner: trip
 --
 
 CREATE SEQUENCE public.tile_download_seq
@@ -509,8 +555,10 @@ CREATE SEQUENCE public.tile_download_seq
     CACHE 1;
 
 
+ALTER TABLE public.tile_download_seq OWNER TO trip;
+
 --
--- Name: tile_metric; Type: TABLE; Schema: public; Owner: -
+-- Name: tile_metric; Type: TABLE; Schema: public; Owner: trip
 --
 
 CREATE TABLE public.tile_metric (
@@ -519,8 +567,10 @@ CREATE TABLE public.tile_metric (
 );
 
 
+ALTER TABLE public.tile_metric OWNER TO trip;
+
 --
--- Name: user_role; Type: TABLE; Schema: public; Owner: -
+-- Name: user_role; Type: TABLE; Schema: public; Owner: trip
 --
 
 CREATE TABLE public.user_role (
@@ -529,8 +579,10 @@ CREATE TABLE public.user_role (
 );
 
 
+ALTER TABLE public.user_role OWNER TO trip;
+
 --
--- Name: usertable_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: usertable_seq; Type: SEQUENCE; Schema: public; Owner: trip
 --
 
 CREATE SEQUENCE public.usertable_seq
@@ -541,8 +593,10 @@ CREATE SEQUENCE public.usertable_seq
     CACHE 1;
 
 
+ALTER TABLE public.usertable_seq OWNER TO trip;
+
 --
--- Name: usertable; Type: TABLE; Schema: public; Owner: -
+-- Name: usertable; Type: TABLE; Schema: public; Owner: trip
 --
 
 CREATE TABLE public.usertable (
@@ -556,8 +610,10 @@ CREATE TABLE public.usertable (
 );
 
 
+ALTER TABLE public.usertable OWNER TO trip;
+
 --
--- Name: waypoint_symbol; Type: TABLE; Schema: public; Owner: -
+-- Name: waypoint_symbol; Type: TABLE; Schema: public; Owner: trip
 --
 
 CREATE TABLE public.waypoint_symbol (
@@ -566,64 +622,66 @@ CREATE TABLE public.waypoint_symbol (
 );
 
 
+ALTER TABLE public.waypoint_symbol OWNER TO trip;
+
 --
--- Name: itinerary id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: itinerary id; Type: DEFAULT; Schema: public; Owner: trip
 --
 
 ALTER TABLE ONLY public.itinerary ALTER COLUMN id SET DEFAULT nextval('public.itinerary_seq'::regclass);
 
 
 --
--- Name: itinerary_route id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: itinerary_route id; Type: DEFAULT; Schema: public; Owner: trip
 --
 
 ALTER TABLE ONLY public.itinerary_route ALTER COLUMN id SET DEFAULT nextval('public.itinerary_route_seq'::regclass);
 
 
 --
--- Name: itinerary_route_point id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: itinerary_route_point id; Type: DEFAULT; Schema: public; Owner: trip
 --
 
 ALTER TABLE ONLY public.itinerary_route_point ALTER COLUMN id SET DEFAULT nextval('public.itinerary_route_point_seq'::regclass);
 
 
 --
--- Name: itinerary_track id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: itinerary_track id; Type: DEFAULT; Schema: public; Owner: trip
 --
 
 ALTER TABLE ONLY public.itinerary_track ALTER COLUMN id SET DEFAULT nextval('public.itinerary_track_seq'::regclass);
 
 
 --
--- Name: itinerary_track_point id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: itinerary_track_point id; Type: DEFAULT; Schema: public; Owner: trip
 --
 
 ALTER TABLE ONLY public.itinerary_track_point ALTER COLUMN id SET DEFAULT nextval('public.itinerary_track_point_seq'::regclass);
 
 
 --
--- Name: itinerary_track_segment id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: itinerary_track_segment id; Type: DEFAULT; Schema: public; Owner: trip
 --
 
 ALTER TABLE ONLY public.itinerary_track_segment ALTER COLUMN id SET DEFAULT nextval('public.itinerary_track_segment_seq'::regclass);
 
 
 --
--- Name: itinerary_waypoint id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: itinerary_waypoint id; Type: DEFAULT; Schema: public; Owner: trip
 --
 
 ALTER TABLE ONLY public.itinerary_waypoint ALTER COLUMN id SET DEFAULT nextval('public.itinerary_waypoint_seq'::regclass);
 
 
 --
--- Name: role id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: role id; Type: DEFAULT; Schema: public; Owner: trip
 --
 
 ALTER TABLE ONLY public.role ALTER COLUMN id SET DEFAULT nextval('public.role_seq'::regclass);
 
 
 --
--- Data for Name: georef_format; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: georef_format; Type: TABLE DATA; Schema: public; Owner: trip
 --
 
 COPY public.georef_format (key, value, ord) FROM stdin;
@@ -657,14 +715,14 @@ ITM	Irish Transverse Mercator	25
 
 
 --
--- Data for Name: itinerary; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: itinerary; Type: TABLE DATA; Schema: public; Owner: trip
 --
 
 COPY public.itinerary (id, title, description, user_id, archived, start, finish) FROM stdin;
 929	Itinerary for tests - DO NOT DELETE	# Test modified Itinerary\n\n## Lorem ipsum modified too\n\nSo this is my nice little *itinerary description*.\n\n - *Action one*\n - Action two\n\n    Code **indented**\n\n---\n\n\n    <script>alert('xss'); </script>\n\n> Block quote\n\nend\n	29	f	2015-11-22 00:00:00+00	\N
 1744	Test itinerary - DO NOT DELETE	## Note\n\nUsed to add waypoints to.  The waypoints can be deleted.\n	29	f	2016-10-31 00:00:00+00	\N
-982	Owned by admin	Test	1	f	2016-10-30 00:00:00+01	\N
-983	Owned by orange	test	791	f	2016-10-30 00:00:00+01	\N
+982	Owned by admin	Test	1	f	2016-10-29 23:00:00+00	\N
+983	Owned by orange	test	791	f	2016-10-29 23:00:00+00	\N
 2419	Eiffel Tower	\N	29	f	\N	\N
 2425	Test Itinerary - DO NOT DELETE	Tests for editing tracks	29	f	\N	\N
 2333	Test itinerary 2333 - DO NOT DELETE	# Test modified Itinerary\n\n## Lorem ipsum modified too\n	29	f	\N	\N
@@ -684,7 +742,7 @@ COPY public.itinerary (id, title, description, user_id, archived, start, finish)
 
 
 --
--- Data for Name: itinerary_route; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: itinerary_route; Type: TABLE DATA; Schema: public; Owner: trip
 --
 
 COPY public.itinerary_route (id, itinerary_id, name, distance, ascent, descent, lowest, highest, color) FROM stdin;
@@ -734,7 +792,7 @@ COPY public.itinerary_route (id, itinerary_id, name, distance, ascent, descent, 
 
 
 --
--- Data for Name: itinerary_route_point; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: itinerary_route_point; Type: TABLE DATA; Schema: public; Owner: trip
 --
 
 COPY public.itinerary_route_point (id, itinerary_route_id, name, comment, description, symbol, altitude, geog) FROM stdin;
@@ -1542,7 +1600,7 @@ COPY public.itinerary_route_point (id, itinerary_route_id, name, comment, descri
 
 
 --
--- Data for Name: itinerary_sharing; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: itinerary_sharing; Type: TABLE DATA; Schema: public; Owner: trip
 --
 
 COPY public.itinerary_sharing (itinerary_id, shared_to_id, active) FROM stdin;
@@ -1555,7 +1613,7 @@ COPY public.itinerary_sharing (itinerary_id, shared_to_id, active) FROM stdin;
 
 
 --
--- Data for Name: itinerary_track; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: itinerary_track; Type: TABLE DATA; Schema: public; Owner: trip
 --
 
 COPY public.itinerary_track (id, itinerary_id, name, color, distance, ascent, descent, lowest, highest) FROM stdin;
@@ -1617,86 +1675,86 @@ COPY public.itinerary_track (id, itinerary_id, name, color, distance, ascent, de
 
 
 --
--- Data for Name: itinerary_track_point; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: itinerary_track_point; Type: TABLE DATA; Schema: public; Owner: trip
 --
 
 COPY public.itinerary_track_point (id, itinerary_track_segment_id, "time", hdop, altitude, geog) FROM stdin;
-1323736	5756	1970-01-01 01:00:01+01	140.0	100.00000	0101000020E6100000C40802E0EF1C50C08EA5F6BFAF7E3240
-1323737	5756	1970-01-01 01:00:02+01	\N	100.00000	0101000020E610000060AAFCDFCF5F5AC0729905A072B44640
-1323738	5756	1970-01-01 01:00:03+01	\N	100.00000	0101000020E61000002BB100E0B7B660C0BEDBDD7F3B930AC0
-1323739	5756	1970-01-01 01:00:04+01	\N	100.00000	0101000020E610000060AAFCDFCFAE56C03447567E192CE3BF
-1323740	5756	1970-01-01 01:00:05+01	\N	100.00000	0101000020E6100000BA5529A0FD2E1BC08E26300001391040
-1323741	5756	1970-01-01 01:00:06+01	\N	100.00000	0101000020E61000003510262081D62A4089E2E17F232C22C0
-1323742	5757	1970-01-01 01:00:07+01	\N	100.00000	0101000020E6100000F1DCF77F40D0314021E7FD7F1CAC40C0
-1323743	5757	1970-01-01 01:00:08+01	\N	100.00000	0101000020E6100000F1DCF77F40133A409E710AC0796641C0
-1323744	5757	1970-01-01 01:00:09+01	\N	100.00000	0101000020E610000040AB064060224640C936F43F8EF139C0
-1323745	5757	1970-01-01 01:00:10+01	\N	100.00000	0101000020E610000040AB0640E08F4940B78928601A982740
-1323746	5757	1970-01-01 01:00:11+01	\N	100.00000	0101000020E61000007E6FD39FFD5017C05A9402A0C40E4240
-1323747	5757	1970-01-01 01:00:12+01	\N	100.00000	0101000020E6100000DABFFC5FBFE33BC0F71D058091504340
-1323748	5757	1970-01-01 01:00:13+01	\N	100.00000	0101000020E6100000196B03A09F994EC0B78928601A982740
-1323749	5758	1970-01-01 01:00:01+01	140.0	100.00000	0101000020E6100000881104C0DF394BC08EA5F6BFAF7E3140
-1323750	5758	1970-01-01 01:00:02+01	\N	100.00000	0101000020E610000060AAFCDFCFDF52C0729905A072344540
-1323937	5771	1970-01-01 01:00:01+01	140.0	100.00000	0101000020E6100000C40802E0EF1C50C08EA5F6BFAF7E3240
-1323938	5771	1970-01-01 01:00:02+01	\N	100.00000	0101000020E610000060AAFCDFCF5F5AC0729905A072B44640
-1323939	5771	1970-01-01 01:00:03+01	\N	100.00000	0101000020E61000002BB100E0B7B660C0BEDBDD7F3B930AC0
-1323940	5771	1970-01-01 01:00:04+01	\N	100.00000	0101000020E610000060AAFCDFCFAE56C03447567E192CE3BF
-1323941	5771	1970-01-01 01:00:05+01	\N	100.00000	0101000020E6100000BA5529A0FD2E1BC08E26300001391040
-1323942	5771	1970-01-01 01:00:06+01	\N	100.00000	0101000020E61000003510262081D62A4089E2E17F232C22C0
-1323943	5772	1970-01-01 01:00:07+01	\N	100.00000	0101000020E6100000F1DCF77F40D0314021E7FD7F1CAC40C0
-1323944	5772	1970-01-01 01:00:08+01	\N	100.00000	0101000020E6100000F1DCF77F40133A409E710AC0796641C0
-1323945	5772	1970-01-01 01:00:09+01	\N	100.00000	0101000020E610000040AB064060224640C936F43F8EF139C0
-1323946	5772	1970-01-01 01:00:10+01	\N	100.00000	0101000020E610000040AB0640E08F4940B78928601A982740
-1323947	5772	1970-01-01 01:00:11+01	\N	100.00000	0101000020E61000007E6FD39FFD5017C05A9402A0C40E4240
-1323948	5772	1970-01-01 01:00:12+01	\N	100.00000	0101000020E6100000DABFFC5FBFE33BC0F71D058091504340
-1323949	5772	1970-01-01 01:00:13+01	\N	100.00000	0101000020E6100000196B03A09F994EC0B78928601A982740
-1323950	5773	1970-01-01 01:00:01+01	140.0	100.00000	0101000020E6100000881104C0DF394BC08EA5F6BFAF7E3140
-1323951	5773	1970-01-01 01:00:02+01	\N	100.00000	0101000020E610000060AAFCDFCFDF52C0729905A072344540
-1323998	5777	1970-01-01 01:00:01+01	14.8	349.80000	0101000020E6100000984727E0114010C0B2DAFCBF6A474940
-1323999	5777	1970-01-01 01:00:02+01	38.3	161.70000	0101000020E61000000585E6DFD34110C04BDB09406D494940
-1324000	5777	1970-01-01 01:00:03+01	33.1	296.50000	0101000020E610000013FFE2DF883210C0B19B0060484B4940
-1324001	5777	1970-01-01 01:00:04+01	98.9	215.90000	0101000020E6100000DFAD2460111B10C0E389FFBFDA4B4940
-1324002	5777	1970-01-01 01:00:05+01	102.7	312.60000	0101000020E610000058C5C0DFD40410C09ABD01A0694C4940
-1324003	5777	1970-01-01 01:00:06+01	30.8	61.80000	0101000020E6100000199571DFACD90FC04C410AE05E4C4940
-1324004	5777	1970-01-01 01:00:07+01	14.7	274.10000	0101000020E61000004BF4A6E0F8AB0FC0BFEEF81FAE4B4940
-1324005	5777	1970-01-01 01:00:08+01	90.2	283.90000	0101000020E6100000984727E011840FC0EF76F7DFCE4A4940
-1324006	5777	1970-01-01 01:00:09+01	83.4	80.90000	0101000020E610000062A2DEDFE2490FC04B71FA1F054A4940
-1324007	5777	1970-01-01 01:00:10+01	52.0	387.30000	0101000020E6100000BBD594E0E4290FC0411107E0D1484940
-1324008	5777	1970-01-01 01:00:11+01	46.4	376.40000	0101000020E61000007314BDDFAAEB0EC0C015FD5FFD4A4940
-1324009	5777	1970-01-01 01:00:12+01	56.4	436.50000	0101000020E61000000585E6DFD3D10EC075FBF6BFED4C4940
-1324010	5777	1970-01-01 01:00:13+01	67.6	358.20000	0101000020E6100000217B7BDF11D00EC0115EF55FEB4F4940
-1324011	5777	1970-01-01 01:00:14+01	57.9	59.60000	0101000020E6100000F0CE90E0FCE40EC0F8DAF99FF8524940
-1324012	5777	1970-01-01 01:00:15+01	11.0	55.40000	0101000020E6100000217F61E056E50EC0024E08801E594940
-1324013	5777	1970-01-01 01:00:16+01	87.4	279.20000	0101000020E6100000780799E0AB080FC02EFBF9DFDF5B4940
-1324014	5777	1970-01-01 01:00:17+01	86.5	353.30000	0101000020E61000007CF82AE03B2D0FC01F42018088604940
-1324015	5777	1970-01-01 01:00:18+01	39.2	223.50000	0101000020E6100000D620ABDF756B0FC020FFF59F6F5B4940
-1324016	5777	1970-01-01 01:00:19+01	26.2	424.90000	0101000020E6100000EF7C79E0E7800FC0EB6F09C03F554940
-1324017	5777	1970-01-01 01:00:20+01	92.1	139.00000	0101000020E6100000EA2F68DFE4B00FC031C7FA1FC3524940
-1324018	5777	1970-01-01 01:00:21+01	19.1	54.10000	0101000020E6100000B787B5DF770710C0B8F0F6FFF54F4940
-1324019	5777	1970-01-01 01:00:22+01	95.3	216.60000	0101000020E6100000FBA6FADF5B3210C01B1000A033514940
-1324020	5777	1970-01-01 01:00:23+01	66.1	143.10000	0101000020E6100000B68BC45FEE2E10C005EFF5FFBB4E4940
-1324021	5778	1970-01-01 01:00:01+01	14.8	349.80000	0101000020E6100000984727E0114010C0B2DAFCBF6A474940
-1324022	5778	1970-01-01 01:00:02+01	38.3	161.70000	0101000020E61000000585E6DFD34110C04BDB09406D494940
-1324023	5778	1970-01-01 01:00:03+01	33.1	296.50000	0101000020E610000013FFE2DF883210C0B19B0060484B4940
-1324024	5778	1970-01-01 01:00:04+01	98.9	215.90000	0101000020E6100000DFAD2460111B10C0E389FFBFDA4B4940
-1324025	5778	1970-01-01 01:00:05+01	102.7	312.60000	0101000020E610000058C5C0DFD40410C09ABD01A0694C4940
-1324026	5778	1970-01-01 01:00:06+01	30.8	61.80000	0101000020E6100000199571DFACD90FC04C410AE05E4C4940
-1324027	5778	1970-01-01 01:00:07+01	14.7	274.10000	0101000020E61000004BF4A6E0F8AB0FC0BFEEF81FAE4B4940
-1324028	5778	1970-01-01 01:00:08+01	90.2	283.90000	0101000020E6100000984727E011840FC0EF76F7DFCE4A4940
-1324029	5778	1970-01-01 01:00:09+01	83.4	80.90000	0101000020E610000062A2DEDFE2490FC04B71FA1F054A4940
-1324030	5778	1970-01-01 01:00:10+01	52.0	387.30000	0101000020E6100000BBD594E0E4290FC0411107E0D1484940
-1324031	5778	1970-01-01 01:00:11+01	46.4	376.40000	0101000020E61000007314BDDFAAEB0EC0C015FD5FFD4A4940
-1324032	5778	1970-01-01 01:00:12+01	56.4	436.50000	0101000020E61000000585E6DFD3D10EC075FBF6BFED4C4940
-1324033	5778	1970-01-01 01:00:13+01	67.6	358.20000	0101000020E6100000217B7BDF11D00EC0115EF55FEB4F4940
-1324034	5778	1970-01-01 01:00:14+01	57.9	59.60000	0101000020E6100000F0CE90E0FCE40EC0F8DAF99FF8524940
-1324035	5778	1970-01-01 01:00:15+01	11.0	55.40000	0101000020E6100000217F61E056E50EC0024E08801E594940
-1324036	5778	1970-01-01 01:00:16+01	87.4	279.20000	0101000020E6100000780799E0AB080FC02EFBF9DFDF5B4940
-1324037	5778	1970-01-01 01:00:17+01	86.5	353.30000	0101000020E61000007CF82AE03B2D0FC01F42018088604940
-1324038	5778	1970-01-01 01:00:18+01	39.2	223.50000	0101000020E6100000D620ABDF756B0FC020FFF59F6F5B4940
-1324039	5778	1970-01-01 01:00:19+01	26.2	424.90000	0101000020E6100000EF7C79E0E7800FC0EB6F09C03F554940
-1324040	5778	1970-01-01 01:00:20+01	92.1	139.00000	0101000020E6100000EA2F68DFE4B00FC031C7FA1FC3524940
-1324041	5778	1970-01-01 01:00:21+01	19.1	54.10000	0101000020E6100000B787B5DF770710C0B8F0F6FFF54F4940
-1324042	5778	1970-01-01 01:00:22+01	95.3	216.60000	0101000020E6100000FBA6FADF5B3210C01B1000A033514940
-1324043	5778	1970-01-01 01:00:23+01	66.1	143.10000	0101000020E6100000B68BC45FEE2E10C005EFF5FFBB4E4940
+1323736	5756	1970-01-01 00:00:01+00	140.0	100.00000	0101000020E6100000C40802E0EF1C50C08EA5F6BFAF7E3240
+1323737	5756	1970-01-01 00:00:02+00	\N	100.00000	0101000020E610000060AAFCDFCF5F5AC0729905A072B44640
+1323738	5756	1970-01-01 00:00:03+00	\N	100.00000	0101000020E61000002BB100E0B7B660C0BEDBDD7F3B930AC0
+1323739	5756	1970-01-01 00:00:04+00	\N	100.00000	0101000020E610000060AAFCDFCFAE56C03447567E192CE3BF
+1323740	5756	1970-01-01 00:00:05+00	\N	100.00000	0101000020E6100000BA5529A0FD2E1BC08E26300001391040
+1323741	5756	1970-01-01 00:00:06+00	\N	100.00000	0101000020E61000003510262081D62A4089E2E17F232C22C0
+1323742	5757	1970-01-01 00:00:07+00	\N	100.00000	0101000020E6100000F1DCF77F40D0314021E7FD7F1CAC40C0
+1323743	5757	1970-01-01 00:00:08+00	\N	100.00000	0101000020E6100000F1DCF77F40133A409E710AC0796641C0
+1323744	5757	1970-01-01 00:00:09+00	\N	100.00000	0101000020E610000040AB064060224640C936F43F8EF139C0
+1323745	5757	1970-01-01 00:00:10+00	\N	100.00000	0101000020E610000040AB0640E08F4940B78928601A982740
+1323746	5757	1970-01-01 00:00:11+00	\N	100.00000	0101000020E61000007E6FD39FFD5017C05A9402A0C40E4240
+1323747	5757	1970-01-01 00:00:12+00	\N	100.00000	0101000020E6100000DABFFC5FBFE33BC0F71D058091504340
+1323748	5757	1970-01-01 00:00:13+00	\N	100.00000	0101000020E6100000196B03A09F994EC0B78928601A982740
+1323749	5758	1970-01-01 00:00:01+00	140.0	100.00000	0101000020E6100000881104C0DF394BC08EA5F6BFAF7E3140
+1323750	5758	1970-01-01 00:00:02+00	\N	100.00000	0101000020E610000060AAFCDFCFDF52C0729905A072344540
+1323937	5771	1970-01-01 00:00:01+00	140.0	100.00000	0101000020E6100000C40802E0EF1C50C08EA5F6BFAF7E3240
+1323938	5771	1970-01-01 00:00:02+00	\N	100.00000	0101000020E610000060AAFCDFCF5F5AC0729905A072B44640
+1323939	5771	1970-01-01 00:00:03+00	\N	100.00000	0101000020E61000002BB100E0B7B660C0BEDBDD7F3B930AC0
+1323940	5771	1970-01-01 00:00:04+00	\N	100.00000	0101000020E610000060AAFCDFCFAE56C03447567E192CE3BF
+1323941	5771	1970-01-01 00:00:05+00	\N	100.00000	0101000020E6100000BA5529A0FD2E1BC08E26300001391040
+1323942	5771	1970-01-01 00:00:06+00	\N	100.00000	0101000020E61000003510262081D62A4089E2E17F232C22C0
+1323943	5772	1970-01-01 00:00:07+00	\N	100.00000	0101000020E6100000F1DCF77F40D0314021E7FD7F1CAC40C0
+1323944	5772	1970-01-01 00:00:08+00	\N	100.00000	0101000020E6100000F1DCF77F40133A409E710AC0796641C0
+1323945	5772	1970-01-01 00:00:09+00	\N	100.00000	0101000020E610000040AB064060224640C936F43F8EF139C0
+1323946	5772	1970-01-01 00:00:10+00	\N	100.00000	0101000020E610000040AB0640E08F4940B78928601A982740
+1323947	5772	1970-01-01 00:00:11+00	\N	100.00000	0101000020E61000007E6FD39FFD5017C05A9402A0C40E4240
+1323948	5772	1970-01-01 00:00:12+00	\N	100.00000	0101000020E6100000DABFFC5FBFE33BC0F71D058091504340
+1323949	5772	1970-01-01 00:00:13+00	\N	100.00000	0101000020E6100000196B03A09F994EC0B78928601A982740
+1323950	5773	1970-01-01 00:00:01+00	140.0	100.00000	0101000020E6100000881104C0DF394BC08EA5F6BFAF7E3140
+1323951	5773	1970-01-01 00:00:02+00	\N	100.00000	0101000020E610000060AAFCDFCFDF52C0729905A072344540
+1323998	5777	1970-01-01 00:00:01+00	14.8	349.80000	0101000020E6100000984727E0114010C0B2DAFCBF6A474940
+1323999	5777	1970-01-01 00:00:02+00	38.3	161.70000	0101000020E61000000585E6DFD34110C04BDB09406D494940
+1324000	5777	1970-01-01 00:00:03+00	33.1	296.50000	0101000020E610000013FFE2DF883210C0B19B0060484B4940
+1324001	5777	1970-01-01 00:00:04+00	98.9	215.90000	0101000020E6100000DFAD2460111B10C0E389FFBFDA4B4940
+1324002	5777	1970-01-01 00:00:05+00	102.7	312.60000	0101000020E610000058C5C0DFD40410C09ABD01A0694C4940
+1324003	5777	1970-01-01 00:00:06+00	30.8	61.80000	0101000020E6100000199571DFACD90FC04C410AE05E4C4940
+1324004	5777	1970-01-01 00:00:07+00	14.7	274.10000	0101000020E61000004BF4A6E0F8AB0FC0BFEEF81FAE4B4940
+1324005	5777	1970-01-01 00:00:08+00	90.2	283.90000	0101000020E6100000984727E011840FC0EF76F7DFCE4A4940
+1324006	5777	1970-01-01 00:00:09+00	83.4	80.90000	0101000020E610000062A2DEDFE2490FC04B71FA1F054A4940
+1324007	5777	1970-01-01 00:00:10+00	52.0	387.30000	0101000020E6100000BBD594E0E4290FC0411107E0D1484940
+1324008	5777	1970-01-01 00:00:11+00	46.4	376.40000	0101000020E61000007314BDDFAAEB0EC0C015FD5FFD4A4940
+1324009	5777	1970-01-01 00:00:12+00	56.4	436.50000	0101000020E61000000585E6DFD3D10EC075FBF6BFED4C4940
+1324010	5777	1970-01-01 00:00:13+00	67.6	358.20000	0101000020E6100000217B7BDF11D00EC0115EF55FEB4F4940
+1324011	5777	1970-01-01 00:00:14+00	57.9	59.60000	0101000020E6100000F0CE90E0FCE40EC0F8DAF99FF8524940
+1324012	5777	1970-01-01 00:00:15+00	11.0	55.40000	0101000020E6100000217F61E056E50EC0024E08801E594940
+1324013	5777	1970-01-01 00:00:16+00	87.4	279.20000	0101000020E6100000780799E0AB080FC02EFBF9DFDF5B4940
+1324014	5777	1970-01-01 00:00:17+00	86.5	353.30000	0101000020E61000007CF82AE03B2D0FC01F42018088604940
+1324015	5777	1970-01-01 00:00:18+00	39.2	223.50000	0101000020E6100000D620ABDF756B0FC020FFF59F6F5B4940
+1324016	5777	1970-01-01 00:00:19+00	26.2	424.90000	0101000020E6100000EF7C79E0E7800FC0EB6F09C03F554940
+1324017	5777	1970-01-01 00:00:20+00	92.1	139.00000	0101000020E6100000EA2F68DFE4B00FC031C7FA1FC3524940
+1324018	5777	1970-01-01 00:00:21+00	19.1	54.10000	0101000020E6100000B787B5DF770710C0B8F0F6FFF54F4940
+1324019	5777	1970-01-01 00:00:22+00	95.3	216.60000	0101000020E6100000FBA6FADF5B3210C01B1000A033514940
+1324020	5777	1970-01-01 00:00:23+00	66.1	143.10000	0101000020E6100000B68BC45FEE2E10C005EFF5FFBB4E4940
+1324021	5778	1970-01-01 00:00:01+00	14.8	349.80000	0101000020E6100000984727E0114010C0B2DAFCBF6A474940
+1324022	5778	1970-01-01 00:00:02+00	38.3	161.70000	0101000020E61000000585E6DFD34110C04BDB09406D494940
+1324023	5778	1970-01-01 00:00:03+00	33.1	296.50000	0101000020E610000013FFE2DF883210C0B19B0060484B4940
+1324024	5778	1970-01-01 00:00:04+00	98.9	215.90000	0101000020E6100000DFAD2460111B10C0E389FFBFDA4B4940
+1324025	5778	1970-01-01 00:00:05+00	102.7	312.60000	0101000020E610000058C5C0DFD40410C09ABD01A0694C4940
+1324026	5778	1970-01-01 00:00:06+00	30.8	61.80000	0101000020E6100000199571DFACD90FC04C410AE05E4C4940
+1324027	5778	1970-01-01 00:00:07+00	14.7	274.10000	0101000020E61000004BF4A6E0F8AB0FC0BFEEF81FAE4B4940
+1324028	5778	1970-01-01 00:00:08+00	90.2	283.90000	0101000020E6100000984727E011840FC0EF76F7DFCE4A4940
+1324029	5778	1970-01-01 00:00:09+00	83.4	80.90000	0101000020E610000062A2DEDFE2490FC04B71FA1F054A4940
+1324030	5778	1970-01-01 00:00:10+00	52.0	387.30000	0101000020E6100000BBD594E0E4290FC0411107E0D1484940
+1324031	5778	1970-01-01 00:00:11+00	46.4	376.40000	0101000020E61000007314BDDFAAEB0EC0C015FD5FFD4A4940
+1324032	5778	1970-01-01 00:00:12+00	56.4	436.50000	0101000020E61000000585E6DFD3D10EC075FBF6BFED4C4940
+1324033	5778	1970-01-01 00:00:13+00	67.6	358.20000	0101000020E6100000217B7BDF11D00EC0115EF55FEB4F4940
+1324034	5778	1970-01-01 00:00:14+00	57.9	59.60000	0101000020E6100000F0CE90E0FCE40EC0F8DAF99FF8524940
+1324035	5778	1970-01-01 00:00:15+00	11.0	55.40000	0101000020E6100000217F61E056E50EC0024E08801E594940
+1324036	5778	1970-01-01 00:00:16+00	87.4	279.20000	0101000020E6100000780799E0AB080FC02EFBF9DFDF5B4940
+1324037	5778	1970-01-01 00:00:17+00	86.5	353.30000	0101000020E61000007CF82AE03B2D0FC01F42018088604940
+1324038	5778	1970-01-01 00:00:18+00	39.2	223.50000	0101000020E6100000D620ABDF756B0FC020FFF59F6F5B4940
+1324039	5778	1970-01-01 00:00:19+00	26.2	424.90000	0101000020E6100000EF7C79E0E7800FC0EB6F09C03F554940
+1324040	5778	1970-01-01 00:00:20+00	92.1	139.00000	0101000020E6100000EA2F68DFE4B00FC031C7FA1FC3524940
+1324041	5778	1970-01-01 00:00:21+00	19.1	54.10000	0101000020E6100000B787B5DF770710C0B8F0F6FFF54F4940
+1324042	5778	1970-01-01 00:00:22+00	95.3	216.60000	0101000020E6100000FBA6FADF5B3210C01B1000A033514940
+1324043	5778	1970-01-01 00:00:23+00	66.1	143.10000	0101000020E6100000B68BC45FEE2E10C005EFF5FFBB4E4940
 1324292	5794	\N	\N	42.00000	0101000020E6100000020000C01E4B0240D6CB02D7A66D4840
 1324293	5794	\N	\N	43.00000	0101000020E610000008000000544E0240F1322640D36D4840
 1324294	5795	\N	\N	36.00000	0101000020E6100000FAFFFFFF870B0240413D64E36D714840
@@ -2493,7 +2551,7 @@ COPY public.itinerary_track_point (id, itinerary_track_segment_id, "time", hdop,
 
 
 --
--- Data for Name: itinerary_track_segment; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: itinerary_track_segment; Type: TABLE DATA; Schema: public; Owner: trip
 --
 
 COPY public.itinerary_track_segment (id, itinerary_track_id, distance, ascent, descent, lowest, highest) FROM stdin;
@@ -2557,7 +2615,7 @@ COPY public.itinerary_track_segment (id, itinerary_track_id, distance, ascent, d
 
 
 --
--- Data for Name: itinerary_waypoint; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: itinerary_waypoint; Type: TABLE DATA; Schema: public; Owner: trip
 --
 
 COPY public.itinerary_waypoint (id, itinerary_id, name, "time", comment, symbol, altitude, description, color, type, avg_samples, geog) FROM stdin;
@@ -2612,7 +2670,7 @@ COPY public.itinerary_waypoint (id, itinerary_id, name, "time", comment, symbol,
 
 
 --
--- Data for Name: location; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: location; Type: TABLE DATA; Schema: public; Owner: trip
 --
 
 COPY public.location (id, user_id, "time", hdop, altitude, speed, bearing, sat, provider, battery, note, geog) FROM stdin;
@@ -4107,35 +4165,35 @@ COPY public.location (id, user_id, "time", hdop, altitude, speed, bearing, sat, 
 15235	29	2016-02-29 13:14:59+00	1320.0	0.00000	0.0	0.00000	\N	\N	\N	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
 15236	29	2016-02-29 13:36:32+00	1320.0	0.00000	0.0	0.00000	\N	\N	\N	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
 15237	29	2016-02-29 14:32:50+00	1596.9	261.73477	0.0	0.37360	\N	\N	\N	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
-15238	29	2016-04-22 13:28:38+01	22.0	0.00000	0.0	0.00000	\N	\N	\N	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
-15239	29	2016-04-22 13:28:38+01	22.0	0.00000	0.0	0.00000	\N	\N	\N	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
-15240	29	2016-04-22 13:28:38+01	22.0	0.00000	0.0	0.00000	\N	\N	\N	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
-15241	29	2016-04-22 13:28:38+01	22.0	0.00000	0.0	0.00000	31	network	92.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
-15242	29	2016-04-22 14:07:46+01	40.5	0.00000	0.0	0.00000	31	network	90.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
-15243	29	2016-04-22 14:08:14+01	36.0	0.00000	0.0	0.00000	31	network	90.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
-15244	29	2016-04-22 14:08:35+01	26.0	0.00000	0.0	0.00000	31	network	90.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
-15245	29	2016-04-22 14:08:56+01	24.0	0.00000	0.0	0.00000	31	network	89.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
-15246	29	2016-04-22 14:09:13+01	9.0	109.00000	0.0	0.00000	31	gps	89.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
-15247	29	2016-04-22 14:09:29+01	11.0	109.00000	0.0	0.00000	31	gps	89.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
-15248	29	2016-04-22 14:09:53+01	33.0	0.00000	0.0	0.00000	22	network	89.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
-15249	29	2016-04-22 14:10:09+01	6.0	106.00000	0.0	0.00000	22	gps	89.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
-15250	29	2016-04-22 14:10:25+01	5.0	106.00000	0.0	0.00000	22	gps	89.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
-15251	29	2016-04-22 14:10:40+01	5.0	106.00000	0.0	0.00000	23	gps	89.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
-15252	29	2016-04-22 14:10:56+01	11.0	106.00000	0.0	0.00000	23	gps	89.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
-15253	29	2016-04-22 14:11:11+01	11.0	106.00000	0.0	0.00000	23	gps	89.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
-15254	29	2016-04-22 14:11:27+01	10.0	106.00000	0.0	0.00000	23	gps	89.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
-15255	29	2016-04-22 14:11:43+01	10.0	106.00000	0.0	0.00000	23	gps	89.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
-15256	29	2016-04-22 14:11:58+01	10.0	106.00000	0.0	0.00000	23	gps	88.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
-15257	29	2016-04-22 14:12:14+01	11.0	106.00000	0.0	0.00000	23	gps	88.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
-15258	29	2016-04-22 14:12:30+01	11.0	106.00000	0.0	0.00000	23	gps	88.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
-15259	29	2016-04-22 14:12:51+01	37.5	0.00000	0.0	0.00000	23	network	88.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
-15260	29	2016-04-22 14:13:10+01	37.5	0.00000	0.0	0.00000	23	network	88.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
-15261	29	2016-04-22 20:22:50+01	48.0	0.00000	0.0	0.00000	19	network	80.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
-15262	29	2016-04-22 20:23:09+01	24.0	0.00000	0.0	0.00000	19	network	79.0	Test note	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
-15263	29	2016-04-22 20:23:32+01	34.5	0.00000	0.0	0.00000	19	network	79.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
-15264	29	2016-04-22 20:24:29+01	39.0	0.00000	0.0	0.00000	19	network	79.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
-15265	29	2016-04-22 20:25:37+01	25.0	0.00000	0.0	0.00000	19	network	79.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
-15266	29	2016-04-22 20:26:38+01	28.0	0.00000	0.0	0.00000	19	network	79.0	A longer note than the previous one.	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
+15238	29	2016-04-22 12:28:38+00	22.0	0.00000	0.0	0.00000	\N	\N	\N	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
+15239	29	2016-04-22 12:28:38+00	22.0	0.00000	0.0	0.00000	\N	\N	\N	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
+15240	29	2016-04-22 12:28:38+00	22.0	0.00000	0.0	0.00000	\N	\N	\N	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
+15241	29	2016-04-22 12:28:38+00	22.0	0.00000	0.0	0.00000	31	network	92.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
+15242	29	2016-04-22 13:07:46+00	40.5	0.00000	0.0	0.00000	31	network	90.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
+15243	29	2016-04-22 13:08:14+00	36.0	0.00000	0.0	0.00000	31	network	90.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
+15244	29	2016-04-22 13:08:35+00	26.0	0.00000	0.0	0.00000	31	network	90.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
+15245	29	2016-04-22 13:08:56+00	24.0	0.00000	0.0	0.00000	31	network	89.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
+15246	29	2016-04-22 13:09:13+00	9.0	109.00000	0.0	0.00000	31	gps	89.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
+15247	29	2016-04-22 13:09:29+00	11.0	109.00000	0.0	0.00000	31	gps	89.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
+15248	29	2016-04-22 13:09:53+00	33.0	0.00000	0.0	0.00000	22	network	89.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
+15249	29	2016-04-22 13:10:09+00	6.0	106.00000	0.0	0.00000	22	gps	89.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
+15250	29	2016-04-22 13:10:25+00	5.0	106.00000	0.0	0.00000	22	gps	89.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
+15251	29	2016-04-22 13:10:40+00	5.0	106.00000	0.0	0.00000	23	gps	89.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
+15252	29	2016-04-22 13:10:56+00	11.0	106.00000	0.0	0.00000	23	gps	89.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
+15253	29	2016-04-22 13:11:11+00	11.0	106.00000	0.0	0.00000	23	gps	89.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
+15254	29	2016-04-22 13:11:27+00	10.0	106.00000	0.0	0.00000	23	gps	89.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
+15255	29	2016-04-22 13:11:43+00	10.0	106.00000	0.0	0.00000	23	gps	89.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
+15256	29	2016-04-22 13:11:58+00	10.0	106.00000	0.0	0.00000	23	gps	88.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
+15257	29	2016-04-22 13:12:14+00	11.0	106.00000	0.0	0.00000	23	gps	88.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
+15258	29	2016-04-22 13:12:30+00	11.0	106.00000	0.0	0.00000	23	gps	88.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
+15259	29	2016-04-22 13:12:51+00	37.5	0.00000	0.0	0.00000	23	network	88.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
+15260	29	2016-04-22 13:13:10+00	37.5	0.00000	0.0	0.00000	23	network	88.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
+15261	29	2016-04-22 19:22:50+00	48.0	0.00000	0.0	0.00000	19	network	80.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
+15262	29	2016-04-22 19:23:09+00	24.0	0.00000	0.0	0.00000	19	network	79.0	Test note	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
+15263	29	2016-04-22 19:23:32+00	34.5	0.00000	0.0	0.00000	19	network	79.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
+15264	29	2016-04-22 19:24:29+00	39.0	0.00000	0.0	0.00000	19	network	79.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
+15265	29	2016-04-22 19:25:37+00	25.0	0.00000	0.0	0.00000	19	network	79.0	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
+15266	29	2016-04-22 19:26:38+00	28.0	0.00000	0.0	0.00000	19	network	79.0	A longer note than the previous one.	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
 15416	29	2017-01-15 13:36:26.292+00	20.0	-46.72000	0.0	0.00000	\N	\N	\N	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
 15417	29	2017-01-15 13:36:57.189+00	13.0	40.28000	0.0	0.00000	\N	\N	\N	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
 15418	29	2017-01-15 13:37:28.148+00	12.0	42.28000	0.0	0.00000	\N	\N	\N	\N	0101000020E61000004260E5D0225B0240DECCC739DA6D4840
@@ -4157,7 +4215,7 @@ COPY public.location (id, user_id, "time", hdop, altitude, speed, bearing, sat, 
 
 
 --
--- Data for Name: location_sharing; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: location_sharing; Type: TABLE DATA; Schema: public; Owner: trip
 --
 
 COPY public.location_sharing (shared_by_id, shared_to_id, recent_minutes, max_minutes, active) FROM stdin;
@@ -4168,7 +4226,7 @@ COPY public.location_sharing (shared_by_id, shared_to_id, recent_minutes, max_mi
 
 
 --
--- Data for Name: path_color; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: path_color; Type: TABLE DATA; Schema: public; Owner: trip
 --
 
 COPY public.path_color (key, value, html_code) FROM stdin;
@@ -4192,7 +4250,7 @@ DarkCyan	Dark Cyan	teal
 
 
 --
--- Data for Name: role; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: role; Type: TABLE DATA; Schema: public; Owner: trip
 --
 
 COPY public.role (id, name) FROM stdin;
@@ -4202,7 +4260,7 @@ COPY public.role (id, name) FROM stdin;
 
 
 --
--- Data for Name: spatial_ref_sys; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: spatial_ref_sys; Type: TABLE DATA; Schema: public; Owner: trip
 --
 
 COPY public.spatial_ref_sys (srid, auth_name, auth_srid, srtext, proj4text) FROM stdin;
@@ -4210,7 +4268,7 @@ COPY public.spatial_ref_sys (srid, auth_name, auth_srid, srtext, proj4text) FROM
 
 
 --
--- Data for Name: tile; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: tile; Type: TABLE DATA; Schema: public; Owner: trip
 --
 
 COPY public.tile (server_id, x, y, z, image, updated, expires) FROM stdin;
@@ -4218,7 +4276,7 @@ COPY public.tile (server_id, x, y, z, image, updated, expires) FROM stdin;
 
 
 --
--- Data for Name: tile_metric; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: tile_metric; Type: TABLE DATA; Schema: public; Owner: trip
 --
 
 COPY public.tile_metric ("time", count) FROM stdin;
@@ -4235,7 +4293,7 @@ COPY public.tile_metric ("time", count) FROM stdin;
 
 
 --
--- Data for Name: user_role; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: user_role; Type: TABLE DATA; Schema: public; Owner: trip
 --
 
 COPY public.user_role (user_id, role_id) FROM stdin;
@@ -4245,7 +4303,7 @@ COPY public.user_role (user_id, role_id) FROM stdin;
 
 
 --
--- Data for Name: usertable; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: usertable; Type: TABLE DATA; Schema: public; Owner: trip
 --
 
 COPY public.usertable (id, firstname, lastname, email, uuid, password, nickname) FROM stdin;
@@ -4274,7 +4332,7 @@ COPY public.usertable (id, firstname, lastname, email, uuid, password, nickname)
 
 
 --
--- Data for Name: waypoint_symbol; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: waypoint_symbol; Type: TABLE DATA; Schema: public; Owner: trip
 --
 
 COPY public.waypoint_symbol (key, value) FROM stdin;
@@ -4486,84 +4544,84 @@ Zoo	Zoo (Garmin)
 
 
 --
--- Name: itinerary_route_point_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: itinerary_route_point_seq; Type: SEQUENCE SET; Schema: public; Owner: trip
 --
 
 SELECT pg_catalog.setval('public.itinerary_route_point_seq', 92568, true);
 
 
 --
--- Name: itinerary_route_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: itinerary_route_seq; Type: SEQUENCE SET; Schema: public; Owner: trip
 --
 
 SELECT pg_catalog.setval('public.itinerary_route_seq', 8358, true);
 
 
 --
--- Name: itinerary_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: itinerary_seq; Type: SEQUENCE SET; Schema: public; Owner: trip
 --
 
 SELECT pg_catalog.setval('public.itinerary_seq', 2442, true);
 
 
 --
--- Name: itinerary_track_point_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: itinerary_track_point_seq; Type: SEQUENCE SET; Schema: public; Owner: trip
 --
 
 SELECT pg_catalog.setval('public.itinerary_track_point_seq', 1325083, true);
 
 
 --
--- Name: itinerary_track_segment_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: itinerary_track_segment_seq; Type: SEQUENCE SET; Schema: public; Owner: trip
 --
 
 SELECT pg_catalog.setval('public.itinerary_track_segment_seq', 5841, true);
 
 
 --
--- Name: itinerary_track_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: itinerary_track_seq; Type: SEQUENCE SET; Schema: public; Owner: trip
 --
 
 SELECT pg_catalog.setval('public.itinerary_track_seq', 1083, true);
 
 
 --
--- Name: itinerary_waypoint_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: itinerary_waypoint_seq; Type: SEQUENCE SET; Schema: public; Owner: trip
 --
 
 SELECT pg_catalog.setval('public.itinerary_waypoint_seq', 10912, true);
 
 
 --
--- Name: location_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: location_seq; Type: SEQUENCE SET; Schema: public; Owner: trip
 --
 
 SELECT pg_catalog.setval('public.location_seq', 15455, true);
 
 
 --
--- Name: role_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: role_seq; Type: SEQUENCE SET; Schema: public; Owner: trip
 --
 
 SELECT pg_catalog.setval('public.role_seq', 2, true);
 
 
 --
--- Name: tile_download_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: tile_download_seq; Type: SEQUENCE SET; Schema: public; Owner: trip
 --
 
 SELECT pg_catalog.setval('public.tile_download_seq', 1060, true);
 
 
 --
--- Name: usertable_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: usertable_seq; Type: SEQUENCE SET; Schema: public; Owner: trip
 --
 
 SELECT pg_catalog.setval('public.usertable_seq', 923, true);
 
 
 --
--- Name: georef_format georef_format_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: georef_format georef_format_pkey; Type: CONSTRAINT; Schema: public; Owner: trip
 --
 
 ALTER TABLE ONLY public.georef_format
@@ -4571,7 +4629,7 @@ ALTER TABLE ONLY public.georef_format
 
 
 --
--- Name: georef_format georef_format_value_key; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: georef_format georef_format_value_key; Type: CONSTRAINT; Schema: public; Owner: trip
 --
 
 ALTER TABLE ONLY public.georef_format
@@ -4579,7 +4637,7 @@ ALTER TABLE ONLY public.georef_format
 
 
 --
--- Name: itinerary itinerary_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: itinerary itinerary_pkey; Type: CONSTRAINT; Schema: public; Owner: trip
 --
 
 ALTER TABLE ONLY public.itinerary
@@ -4587,7 +4645,7 @@ ALTER TABLE ONLY public.itinerary
 
 
 --
--- Name: itinerary_route itinerary_route_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: itinerary_route itinerary_route_pkey; Type: CONSTRAINT; Schema: public; Owner: trip
 --
 
 ALTER TABLE ONLY public.itinerary_route
@@ -4595,7 +4653,7 @@ ALTER TABLE ONLY public.itinerary_route
 
 
 --
--- Name: itinerary_route_point itinerary_route_point_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: itinerary_route_point itinerary_route_point_pkey; Type: CONSTRAINT; Schema: public; Owner: trip
 --
 
 ALTER TABLE ONLY public.itinerary_route_point
@@ -4603,7 +4661,7 @@ ALTER TABLE ONLY public.itinerary_route_point
 
 
 --
--- Name: itinerary_sharing itinerary_sharing_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: itinerary_sharing itinerary_sharing_pkey; Type: CONSTRAINT; Schema: public; Owner: trip
 --
 
 ALTER TABLE ONLY public.itinerary_sharing
@@ -4611,7 +4669,7 @@ ALTER TABLE ONLY public.itinerary_sharing
 
 
 --
--- Name: itinerary_track itinerary_track_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: itinerary_track itinerary_track_pkey; Type: CONSTRAINT; Schema: public; Owner: trip
 --
 
 ALTER TABLE ONLY public.itinerary_track
@@ -4619,7 +4677,7 @@ ALTER TABLE ONLY public.itinerary_track
 
 
 --
--- Name: itinerary_track_point itinerary_track_point_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: itinerary_track_point itinerary_track_point_pkey; Type: CONSTRAINT; Schema: public; Owner: trip
 --
 
 ALTER TABLE ONLY public.itinerary_track_point
@@ -4627,7 +4685,7 @@ ALTER TABLE ONLY public.itinerary_track_point
 
 
 --
--- Name: itinerary_track_segment itinerary_track_segment_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: itinerary_track_segment itinerary_track_segment_pkey; Type: CONSTRAINT; Schema: public; Owner: trip
 --
 
 ALTER TABLE ONLY public.itinerary_track_segment
@@ -4635,7 +4693,7 @@ ALTER TABLE ONLY public.itinerary_track_segment
 
 
 --
--- Name: itinerary_waypoint itinerary_waypoint_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: itinerary_waypoint itinerary_waypoint_pkey; Type: CONSTRAINT; Schema: public; Owner: trip
 --
 
 ALTER TABLE ONLY public.itinerary_waypoint
@@ -4643,7 +4701,7 @@ ALTER TABLE ONLY public.itinerary_waypoint
 
 
 --
--- Name: location location_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: location location_pkey; Type: CONSTRAINT; Schema: public; Owner: trip
 --
 
 ALTER TABLE ONLY public.location
@@ -4651,7 +4709,7 @@ ALTER TABLE ONLY public.location
 
 
 --
--- Name: location_sharing location_sharing_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: location_sharing location_sharing_pkey; Type: CONSTRAINT; Schema: public; Owner: trip
 --
 
 ALTER TABLE ONLY public.location_sharing
@@ -4659,7 +4717,7 @@ ALTER TABLE ONLY public.location_sharing
 
 
 --
--- Name: role role_name_key; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: role role_name_key; Type: CONSTRAINT; Schema: public; Owner: trip
 --
 
 ALTER TABLE ONLY public.role
@@ -4667,7 +4725,7 @@ ALTER TABLE ONLY public.role
 
 
 --
--- Name: role role_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: role role_pkey; Type: CONSTRAINT; Schema: public; Owner: trip
 --
 
 ALTER TABLE ONLY public.role
@@ -4675,7 +4733,7 @@ ALTER TABLE ONLY public.role
 
 
 --
--- Name: tile tile_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: tile tile_pkey; Type: CONSTRAINT; Schema: public; Owner: trip
 --
 
 ALTER TABLE ONLY public.tile
@@ -4683,7 +4741,7 @@ ALTER TABLE ONLY public.tile
 
 
 --
--- Name: path_color track_color_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: path_color track_color_pkey; Type: CONSTRAINT; Schema: public; Owner: trip
 --
 
 ALTER TABLE ONLY public.path_color
@@ -4691,7 +4749,7 @@ ALTER TABLE ONLY public.path_color
 
 
 --
--- Name: path_color track_color_value_key; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: path_color track_color_value_key; Type: CONSTRAINT; Schema: public; Owner: trip
 --
 
 ALTER TABLE ONLY public.path_color
@@ -4699,7 +4757,7 @@ ALTER TABLE ONLY public.path_color
 
 
 --
--- Name: user_role user_role_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: user_role user_role_pkey; Type: CONSTRAINT; Schema: public; Owner: trip
 --
 
 ALTER TABLE ONLY public.user_role
@@ -4707,7 +4765,7 @@ ALTER TABLE ONLY public.user_role
 
 
 --
--- Name: usertable usertable_email_key; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: usertable usertable_email_key; Type: CONSTRAINT; Schema: public; Owner: trip
 --
 
 ALTER TABLE ONLY public.usertable
@@ -4715,7 +4773,7 @@ ALTER TABLE ONLY public.usertable
 
 
 --
--- Name: usertable usertable_nickname_key; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: usertable usertable_nickname_key; Type: CONSTRAINT; Schema: public; Owner: trip
 --
 
 ALTER TABLE ONLY public.usertable
@@ -4723,7 +4781,7 @@ ALTER TABLE ONLY public.usertable
 
 
 --
--- Name: usertable usertable_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: usertable usertable_pkey; Type: CONSTRAINT; Schema: public; Owner: trip
 --
 
 ALTER TABLE ONLY public.usertable
@@ -4731,7 +4789,7 @@ ALTER TABLE ONLY public.usertable
 
 
 --
--- Name: usertable usertable_uuid_key; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: usertable usertable_uuid_key; Type: CONSTRAINT; Schema: public; Owner: trip
 --
 
 ALTER TABLE ONLY public.usertable
@@ -4739,7 +4797,7 @@ ALTER TABLE ONLY public.usertable
 
 
 --
--- Name: waypoint_symbol waypoint_symbol_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: waypoint_symbol waypoint_symbol_pkey; Type: CONSTRAINT; Schema: public; Owner: trip
 --
 
 ALTER TABLE ONLY public.waypoint_symbol
@@ -4747,7 +4805,7 @@ ALTER TABLE ONLY public.waypoint_symbol
 
 
 --
--- Name: waypoint_symbol waypoint_symbol_value_key; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: waypoint_symbol waypoint_symbol_value_key; Type: CONSTRAINT; Schema: public; Owner: trip
 --
 
 ALTER TABLE ONLY public.waypoint_symbol
@@ -4755,7 +4813,7 @@ ALTER TABLE ONLY public.waypoint_symbol
 
 
 --
--- Name: idx_time_inverse; Type: INDEX; Schema: public; Owner: -
+-- Name: idx_time_inverse; Type: INDEX; Schema: public; Owner: trip
 --
 
 CREATE INDEX idx_time_inverse ON public.location USING btree (id, "time" DESC);
@@ -4764,35 +4822,35 @@ ALTER TABLE public.location CLUSTER ON idx_time_inverse;
 
 
 --
--- Name: itineary_route_point_geog_idx; Type: INDEX; Schema: public; Owner: -
+-- Name: itineary_route_point_geog_idx; Type: INDEX; Schema: public; Owner: trip
 --
 
 CREATE INDEX itineary_route_point_geog_idx ON public.itinerary_route_point USING gist (geog);
 
 
 --
--- Name: itineary_track_point_geog_idx; Type: INDEX; Schema: public; Owner: -
+-- Name: itineary_track_point_geog_idx; Type: INDEX; Schema: public; Owner: trip
 --
 
 CREATE INDEX itineary_track_point_geog_idx ON public.itinerary_track_point USING gist (geog);
 
 
 --
--- Name: itinerary_waypoint_geog_idx; Type: INDEX; Schema: public; Owner: -
+-- Name: itinerary_waypoint_geog_idx; Type: INDEX; Schema: public; Owner: trip
 --
 
 CREATE INDEX itinerary_waypoint_geog_idx ON public.itinerary_waypoint USING gist (geog);
 
 
 --
--- Name: location_geog_idx; Type: INDEX; Schema: public; Owner: -
+-- Name: location_geog_idx; Type: INDEX; Schema: public; Owner: trip
 --
 
 CREATE INDEX location_geog_idx ON public.location USING gist (geog);
 
 
 --
--- Name: itinerary_route itinerary_route_itinerary_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: itinerary_route itinerary_route_itinerary_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: trip
 --
 
 ALTER TABLE ONLY public.itinerary_route
@@ -4800,7 +4858,7 @@ ALTER TABLE ONLY public.itinerary_route
 
 
 --
--- Name: itinerary_route_point itinerary_route_point_itinerary_route_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: itinerary_route_point itinerary_route_point_itinerary_route_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: trip
 --
 
 ALTER TABLE ONLY public.itinerary_route_point
@@ -4808,7 +4866,7 @@ ALTER TABLE ONLY public.itinerary_route_point
 
 
 --
--- Name: itinerary_sharing itinerary_sharing_itinerary_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: itinerary_sharing itinerary_sharing_itinerary_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: trip
 --
 
 ALTER TABLE ONLY public.itinerary_sharing
@@ -4816,7 +4874,7 @@ ALTER TABLE ONLY public.itinerary_sharing
 
 
 --
--- Name: itinerary_sharing itinerary_sharing_shared_to_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: itinerary_sharing itinerary_sharing_shared_to_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: trip
 --
 
 ALTER TABLE ONLY public.itinerary_sharing
@@ -4824,7 +4882,7 @@ ALTER TABLE ONLY public.itinerary_sharing
 
 
 --
--- Name: itinerary_track itinerary_track_itinerary_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: itinerary_track itinerary_track_itinerary_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: trip
 --
 
 ALTER TABLE ONLY public.itinerary_track
@@ -4832,7 +4890,7 @@ ALTER TABLE ONLY public.itinerary_track
 
 
 --
--- Name: itinerary_track_point itinerary_track_point_itinerary_track_segment_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: itinerary_track_point itinerary_track_point_itinerary_track_segment_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: trip
 --
 
 ALTER TABLE ONLY public.itinerary_track_point
@@ -4840,7 +4898,7 @@ ALTER TABLE ONLY public.itinerary_track_point
 
 
 --
--- Name: itinerary_track_segment itinerary_track_segment_itinerary_track_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: itinerary_track_segment itinerary_track_segment_itinerary_track_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: trip
 --
 
 ALTER TABLE ONLY public.itinerary_track_segment
@@ -4848,7 +4906,7 @@ ALTER TABLE ONLY public.itinerary_track_segment
 
 
 --
--- Name: itinerary itinerary_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: itinerary itinerary_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: trip
 --
 
 ALTER TABLE ONLY public.itinerary
@@ -4856,7 +4914,7 @@ ALTER TABLE ONLY public.itinerary
 
 
 --
--- Name: itinerary_waypoint itinerary_waypoint_itinerary_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: itinerary_waypoint itinerary_waypoint_itinerary_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: trip
 --
 
 ALTER TABLE ONLY public.itinerary_waypoint
@@ -4864,7 +4922,7 @@ ALTER TABLE ONLY public.itinerary_waypoint
 
 
 --
--- Name: location_sharing location_sharing_shared_by_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: location_sharing location_sharing_shared_by_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: trip
 --
 
 ALTER TABLE ONLY public.location_sharing
@@ -4872,7 +4930,7 @@ ALTER TABLE ONLY public.location_sharing
 
 
 --
--- Name: location_sharing location_sharing_shared_to_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: location_sharing location_sharing_shared_to_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: trip
 --
 
 ALTER TABLE ONLY public.location_sharing
@@ -4880,7 +4938,7 @@ ALTER TABLE ONLY public.location_sharing
 
 
 --
--- Name: location location_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: location location_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: trip
 --
 
 ALTER TABLE ONLY public.location
@@ -4888,210 +4946,210 @@ ALTER TABLE ONLY public.location
 
 
 --
--- Name: SCHEMA public; Type: ACL; Schema: -; Owner: -
+-- Name: SCHEMA public; Type: ACL; Schema: -; Owner: postgres
 --
 
 GRANT USAGE ON SCHEMA public TO trip_role;
 
 
 --
--- Name: TABLE georef_format; Type: ACL; Schema: public; Owner: -
+-- Name: TABLE georef_format; Type: ACL; Schema: public; Owner: trip
 --
 
 GRANT SELECT ON TABLE public.georef_format TO trip_role;
 
 
 --
--- Name: TABLE itinerary; Type: ACL; Schema: public; Owner: -
+-- Name: TABLE itinerary; Type: ACL; Schema: public; Owner: trip
 --
 
 GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.itinerary TO trip_role;
 
 
 --
--- Name: TABLE itinerary_route; Type: ACL; Schema: public; Owner: -
+-- Name: TABLE itinerary_route; Type: ACL; Schema: public; Owner: trip
 --
 
 GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.itinerary_route TO trip_role;
 
 
 --
--- Name: TABLE itinerary_route_point; Type: ACL; Schema: public; Owner: -
+-- Name: TABLE itinerary_route_point; Type: ACL; Schema: public; Owner: trip
 --
 
 GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.itinerary_route_point TO trip_role;
 
 
 --
--- Name: SEQUENCE itinerary_route_point_seq; Type: ACL; Schema: public; Owner: -
+-- Name: SEQUENCE itinerary_route_point_seq; Type: ACL; Schema: public; Owner: trip
 --
 
 GRANT USAGE ON SEQUENCE public.itinerary_route_point_seq TO trip_role;
 
 
 --
--- Name: SEQUENCE itinerary_route_seq; Type: ACL; Schema: public; Owner: -
+-- Name: SEQUENCE itinerary_route_seq; Type: ACL; Schema: public; Owner: trip
 --
 
 GRANT USAGE ON SEQUENCE public.itinerary_route_seq TO trip_role;
 
 
 --
--- Name: SEQUENCE itinerary_seq; Type: ACL; Schema: public; Owner: -
+-- Name: SEQUENCE itinerary_seq; Type: ACL; Schema: public; Owner: trip
 --
 
 GRANT USAGE ON SEQUENCE public.itinerary_seq TO trip_role;
 
 
 --
--- Name: TABLE itinerary_sharing; Type: ACL; Schema: public; Owner: -
+-- Name: TABLE itinerary_sharing; Type: ACL; Schema: public; Owner: trip
 --
 
 GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.itinerary_sharing TO trip_role;
 
 
 --
--- Name: TABLE itinerary_track; Type: ACL; Schema: public; Owner: -
+-- Name: TABLE itinerary_track; Type: ACL; Schema: public; Owner: trip
 --
 
 GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.itinerary_track TO trip_role;
 
 
 --
--- Name: TABLE itinerary_track_point; Type: ACL; Schema: public; Owner: -
+-- Name: TABLE itinerary_track_point; Type: ACL; Schema: public; Owner: trip
 --
 
 GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.itinerary_track_point TO trip_role;
 
 
 --
--- Name: SEQUENCE itinerary_track_point_seq; Type: ACL; Schema: public; Owner: -
+-- Name: SEQUENCE itinerary_track_point_seq; Type: ACL; Schema: public; Owner: trip
 --
 
 GRANT USAGE ON SEQUENCE public.itinerary_track_point_seq TO trip_role;
 
 
 --
--- Name: TABLE itinerary_track_segment; Type: ACL; Schema: public; Owner: -
+-- Name: TABLE itinerary_track_segment; Type: ACL; Schema: public; Owner: trip
 --
 
 GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.itinerary_track_segment TO trip_role;
 
 
 --
--- Name: SEQUENCE itinerary_track_segment_seq; Type: ACL; Schema: public; Owner: -
+-- Name: SEQUENCE itinerary_track_segment_seq; Type: ACL; Schema: public; Owner: trip
 --
 
 GRANT USAGE ON SEQUENCE public.itinerary_track_segment_seq TO trip_role;
 
 
 --
--- Name: SEQUENCE itinerary_track_seq; Type: ACL; Schema: public; Owner: -
+-- Name: SEQUENCE itinerary_track_seq; Type: ACL; Schema: public; Owner: trip
 --
 
 GRANT USAGE ON SEQUENCE public.itinerary_track_seq TO trip_role;
 
 
 --
--- Name: TABLE itinerary_waypoint; Type: ACL; Schema: public; Owner: -
+-- Name: TABLE itinerary_waypoint; Type: ACL; Schema: public; Owner: trip
 --
 
 GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.itinerary_waypoint TO trip_role;
 
 
 --
--- Name: SEQUENCE itinerary_waypoint_seq; Type: ACL; Schema: public; Owner: -
+-- Name: SEQUENCE itinerary_waypoint_seq; Type: ACL; Schema: public; Owner: trip
 --
 
 GRANT USAGE ON SEQUENCE public.itinerary_waypoint_seq TO trip_role;
 
 
 --
--- Name: SEQUENCE location_seq; Type: ACL; Schema: public; Owner: -
+-- Name: SEQUENCE location_seq; Type: ACL; Schema: public; Owner: trip
 --
 
 GRANT USAGE ON SEQUENCE public.location_seq TO trip_role;
 
 
 --
--- Name: TABLE location; Type: ACL; Schema: public; Owner: -
+-- Name: TABLE location; Type: ACL; Schema: public; Owner: trip
 --
 
 GRANT SELECT,INSERT ON TABLE public.location TO trip_role;
 
 
 --
--- Name: TABLE location_sharing; Type: ACL; Schema: public; Owner: -
+-- Name: TABLE location_sharing; Type: ACL; Schema: public; Owner: trip
 --
 
 GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.location_sharing TO trip_role;
 
 
 --
--- Name: TABLE path_color; Type: ACL; Schema: public; Owner: -
+-- Name: TABLE path_color; Type: ACL; Schema: public; Owner: trip
 --
 
 GRANT SELECT ON TABLE public.path_color TO trip_role;
 
 
 --
--- Name: TABLE role; Type: ACL; Schema: public; Owner: -
+-- Name: TABLE role; Type: ACL; Schema: public; Owner: trip
 --
 
 GRANT SELECT,INSERT ON TABLE public.role TO trip_role;
 
 
 --
--- Name: SEQUENCE role_seq; Type: ACL; Schema: public; Owner: -
+-- Name: SEQUENCE role_seq; Type: ACL; Schema: public; Owner: trip
 --
 
 GRANT USAGE ON SEQUENCE public.role_seq TO trip_role;
 
 
 --
--- Name: TABLE tile; Type: ACL; Schema: public; Owner: -
+-- Name: TABLE tile; Type: ACL; Schema: public; Owner: trip
 --
 
 GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.tile TO trip_role;
 
 
 --
--- Name: SEQUENCE tile_download_seq; Type: ACL; Schema: public; Owner: -
+-- Name: SEQUENCE tile_download_seq; Type: ACL; Schema: public; Owner: trip
 --
 
 GRANT USAGE ON SEQUENCE public.tile_download_seq TO trip_role;
 
 
 --
--- Name: TABLE tile_metric; Type: ACL; Schema: public; Owner: -
+-- Name: TABLE tile_metric; Type: ACL; Schema: public; Owner: trip
 --
 
 GRANT SELECT,INSERT ON TABLE public.tile_metric TO trip_role;
 
 
 --
--- Name: TABLE user_role; Type: ACL; Schema: public; Owner: -
+-- Name: TABLE user_role; Type: ACL; Schema: public; Owner: trip
 --
 
 GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.user_role TO trip_role;
 
 
 --
--- Name: SEQUENCE usertable_seq; Type: ACL; Schema: public; Owner: -
+-- Name: SEQUENCE usertable_seq; Type: ACL; Schema: public; Owner: trip
 --
 
 GRANT USAGE ON SEQUENCE public.usertable_seq TO trip_role;
 
 
 --
--- Name: TABLE usertable; Type: ACL; Schema: public; Owner: -
+-- Name: TABLE usertable; Type: ACL; Schema: public; Owner: trip
 --
 
 GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.usertable TO trip_role;
 
 
 --
--- Name: TABLE waypoint_symbol; Type: ACL; Schema: public; Owner: -
+-- Name: TABLE waypoint_symbol; Type: ACL; Schema: public; Owner: trip
 --
 
 GRANT SELECT ON TABLE public.waypoint_symbol TO trip_role;

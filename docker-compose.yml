@@ -1,0 +1,26 @@
+# -*- mode: docker-compose; -*- vim: set ft=yaml:
+version: '3.7'
+
+services:
+  web:
+    build: .
+    image: fdean/trip-server:latest
+    ports:
+      - 8080:8080
+    environment:
+      TRIP_SIGNING_KEY: divmyelfajsa
+      TRIP_RESOURCE_SIGNING_KEY: niqueSlothUg
+      POSTGRES_PASSWORD: EgceOvovbiag
+
+  postgis:
+    build:
+      context: .
+      dockerfile: Dockerfile-postgis
+    image: fdean/trip-database:latest
+    volumes:
+      - trip-db-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: EgceOvovbiag
+
+volumes:
+  trip-db-data:

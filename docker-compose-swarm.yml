@@ -1,0 +1,45 @@
+# -*- mode: docker-compose; -*- vim: set ft=yaml:
+version: '3.7'
+
+services:
+  web:
+    build: .
+    image: fdean/trip-server
+    deploy:
+      replicas: 2
+    ports:
+      - 8080:8080
+    environment:
+      TRIP_SIGNING_KEY_FILE: /run/secrets/jwt_signing_key
+      TRIP_RESOURCE_SIGNING_KEY_FILE: /run/secrets/jwt_resource_signing_key
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+    secrets:
+      - jwt_signing_key
+      - jwt_resource_signing_key
+      - postgres_password
+
+  postgis:
+    build:
+      context: .
+      dockerfile: Dockerfile-postgis
+    image: fdean/trip-database
+    deploy:
+      replicas: 1
+    # restart: always
+    volumes:
+      - trip-db-data:/var/lib/postgresql/data
+    secrets:
+      - postgres_password
+    environment:
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+
+secrets:
+  jwt_signing_key:
+    external: true
+  jwt_resource_signing_key:
+    external: true
+  postgres_password:
+    external: true
+
+volumes:
+  trip-db-data:

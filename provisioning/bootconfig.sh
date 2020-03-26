@@ -38,33 +38,31 @@ if [ -d "/etc/postgresql/${PG_VERSION}" ]; then
 	fi
 fi
 cd /vagrant/spec/support
-su - postgres -c 'createdb trip' 2>/dev/null
-if [ $? -eq 0 ]; then
-	su - postgres -c 'psql trip' <schema.sql >/dev/null
-	su - postgres -c 'psql trip' >/dev/null 2>&1 <<EOF
-CREATE ROLE trip_role;
-EOF
-	su - postgres -c  'psql trip' <permissions.sql >/dev/null
-	CREATED_DB='y'
-fi
 su - postgres -c 'createuser trip' 2>/dev/null
 if [ $? -eq 0 ]; then
 	su - postgres -c 'dropuser trip'
 	echo "CREATE USER trip PASSWORD '$SECRET' NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT" | su - postgres -c psql
-	su - postgres -c 'psql trip' <<EOF
+fi
+su - postgres -c 'createdb trip' 2>/dev/null
+if [ $? -eq 0 ]; then
+	su - postgres -c 'psql trip' >/dev/null 2>&1 <<EOF
+CREATE ROLE trip_role;
 GRANT trip_role TO trip;
 EOF
+	su - postgres -c 'psql trip' <20_schema.sql >/dev/null
+	su - postgres -c  'psql trip' <30_permissions.sql >/dev/null
+	CREATED_DB='y'
 fi
 if [ "$CREATED_DB" == "y" ]; then
 	# Create Test Data
 	if [ "$IMPORT_TEST_DATA" == "y" ]; then
-		su - postgres -c  'psql trip' <test-data.sql >/dev/null
+		su - postgres -c  'psql trip' <90_test-data.sql >/dev/null
 	else
 		ADMIN_PWD_TEXT=$(apg  -m 12 -x 14 -M NC -t -n 20 | tail -n 1)
 		ADMIN_PWD=$(echo $ADMIN_PWD_TEXT | cut -d ' ' -f 1 -)
-		su - postgres -c  'psql trip' <waypoint_symbols.sql >/dev/null
-		su - postgres -c  'psql trip' <georef_formats.sql >/dev/null
-		su - postgres -c  'psql trip' <path_colors.sql >/dev/null
+		su - postgres -c  'psql trip' <60_waypoint_symbols.sql >/dev/null
+		su - postgres -c  'psql trip' <50_georef_formats.sql >/dev/null
+		su - postgres -c  'psql trip' <40_path_colors.sql >/dev/null
 		su - postgres -c 'psql trip' >/dev/null <<EOF
 CREATE EXTENSION pgcrypto;
 INSERT INTO role (name) VALUES ('Admin'), ('User');

@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 9.6.10
--- Dumped by pg_dump version 9.6.10
+-- Dumped from database version 11.7 (Debian 11.7-2.pgdg90+1)
+-- Dumped by pg_dump version 11.7 (Debian 11.7-2.pgdg90+1)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -12,11 +12,12 @@ SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 SELECT pg_catalog.set_config('search_path', '', false);
 SET check_function_bodies = false;
+SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- Data for Name: waypoint_symbol; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: waypoint_symbol; Type: TABLE DATA; Schema: public; Owner: trip
 --
 
 COPY public.waypoint_symbol (key, value) FROM stdin;
@@ -93,6 +94,7 @@ activity	Activity (ViewRanger)
 camp	Camp (ViewRanger)
 building	Building (ViewRanger)
 bridge	Bridge (ViewRanger)
+poi_yellow	Point of Interest - yellow (default) (ViewRanger)
 ATV	ATV (Garmin)
 Airport	Airport (Garmin)
 Amusement Park	Amusement Park (Garmin)
@@ -223,7 +225,6 @@ Water Source	Water Source (Garmin)
 Waterfowl	Waterfowl (Garmin)
 Wrecker	Wrecker (Garmin)
 Zoo	Zoo (Garmin)
-poi_yellow	Point of Interest - yellow (ViewRanger)
 \.
 
 
