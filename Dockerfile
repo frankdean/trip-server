@@ -4,7 +4,7 @@ LABEL uk.co.fdsd.tripserver.version="1.1.5"
 #LABEL uk.co.fdsd.tripserver.release-date="2020-03-19"
 #LABEL uk.co.fdsd.tripserver.is-production=""
 WORKDIR /app
-COPY package.json yarn.lock .yarnrc ./
+COPY package.json yarn.lock ./
 RUN yarn install
 
 FROM node:10.19-buster-slim AS trip-web-client
