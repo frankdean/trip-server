@@ -1281,7 +1281,7 @@ myApp.handleGetTile = function(req, res) {
   var q = url.parse(req.url, true).query;
   // Must be authorized to fetch tiles - but we use URL parameter instead of authorization header
   if (q.access_token === undefined) {
-    myApp.handleError(new login.UnauthorizedError('Access token  missing'), res);
+    myApp.handleError(new login.UnauthorizedError('Access token  missing fetching tile'), res);
   } else {
     login.checkAuthenticatedForBasicResources(q.access_token, function(err, token) {
       if (err) {
@@ -1841,8 +1841,16 @@ myApp.server = http.createServer(function(req, res) {
     // logger.debug('xsrfToken: %j', xsrfToken);
     // logger.debug('Cookies: %j', cookies);
     if (token == null || xsrfToken !== cookies['TRIP-XSRF-TOKEN']) {
-      logger.debug('Access token missing from request or cookie does not match XSRF token');
-      myApp.handleError(new login.UnauthorizedError('Access token  missing'), res);
+      // This happens when the request is simply to '/' when running directly under Node.js
+      // so redirect to '/trip/app'
+      if (req.url == "/") {
+        logger.debug('Redirecting to expected application URL');
+        res.writeHead(307, {Location: '/trip/app/tracks'});
+        res.end();
+      } else {
+        logger.debug('Access token missing from request or cookie does not match XSRF token');
+        myApp.handleError(new login.UnauthorizedError('Access token  missing - unauthorized'), res);
+      }
     } else {
       login.checkAuthenticated(token, xsrfToken, function(err, token) {
         if (err) {
