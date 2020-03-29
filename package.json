@@ -21,6 +21,7 @@
     "jshint": "^2.9.4"
   },
   "scripts": {
+    "nodemon" : "nodemon index.js",
     "test": "jasmine",
     "lint": "jshint *.js spec/*.js"
   },
@@ -39,6 +40,7 @@
     "jsonwebtoken": "^8.5.1",
     "lodash": "~>4.17.14",
     "node-static": "^0.7.9",
+    "nodemon": "^2.0.2",
     "pg": "^6.2.5",
     "qs": "^6.5.0",
     "sax": "^1.2.2",

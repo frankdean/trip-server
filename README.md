@@ -89,6 +89,22 @@ The [Docker][] container can be stopped with:
 
 	$ docker-compose down
 
+To use a Docker container for development:
+
+	$ docker-compose --file docker-compose-dev.yml up --build -d
+	$ docker-compose logs --follow
+
+The environment requires both the `trip-server` and `trip-web-client` projects
+to share the same parent folder.  These folders are mounted within the Docker
+container such that changes made on the host are also reflected within the
+container.
+
+The server will automatically restart if any of it's `.js` or `.json` files
+are altered.
+
+When making changes to the `trip-web-client` HTML or JavaScript, you will need
+to refresh the browser to replace the cached version.
+
 ## Quick Start Using [Vagrant][]
 
 This option provides a working example of the application running in a
