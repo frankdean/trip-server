@@ -61,6 +61,42 @@ You can quickly get the full application up and running either using
 simplest and easiest method to use.  Using both are described in following
 sections.
 
+## Quick Start Using [Play with Docker][play]
+
+Use [Play with Docker][play] to run the application with some test data in a
+browser, without having to install anything.
+
+Navigate to [Play with Docker][play] and login using a Docker ID.  If you do
+not have one, you will see the option to sign up after clicking `Login` then
+`Docker`.
+
+Cut and paste each of the following commands in sequence into the terminal
+window.  This will create a Docker network and run two containers, one
+providing the database and the other the application web server.
+
+	$ docker network create trip-server
+
+	$ docker run --network trip-server --network-alias postgis \
+	-e POSTGRES_PASSWORD=secret -d fdean/trip-database
+
+	$ docker run --network trip-server -e TRIP_SIGNING_KEY=secret \
+	-e TRIP_RESOURCE_SIGNING_KEY=secret -e POSTGRES_PASSWORD=secret \
+	--publish 8080:8080 -d fdean/trip-server
+
+Once the application is running a link titled `8080` will be shown next to the
+`OPEN PORT` button at the top of the page.  Click on the `8080` link to open a
+new browser window to the running web server.
+
+Login using one of the following users and credentials:
+
+	user@trip.test  rasHuthlutcew7
+	admin@trip.test 7TwilfOrucFeug
+
+See the [user documentation](https://www.fdsd.co.uk/trip-web-client-docs/) for
+information on using the application.
+
+[play]: https://labs.play-with-docker.com "Play with Docker"
+
 ## Quick Start Using [Docker][]
 
 1.  Follow the
@@ -70,19 +106,17 @@ sections.
 
 3.  Run the following command in the route of the cloned repository:
 
-	$ docker-compose up -d
+		$ docker-compose up -d
 
 4.  Navigate to <http://localhost:8080/app> with a web-browser.  The
     application runs with a small amount of test data.
 
-5.  To find some test credentials, clone the `trip-web-client` source code
+5.  Login using one of the following users and credentials:
 
-	$ git clone git://www.fdsd.co.uk/trip-web-client.git
+		user@trip.test  rasHuthlutcew7
+		admin@trip.test 7TwilfOrucFeug
 
-6.  Credentials for some test users are stored in
-    `./trip-web-client/test/environment.js`
-
-7.  Click `Help` in the Trip Web Client menu for the online user
+6.  Click `Help` in the Trip Web Client menu for the online user
     documentation.
 
 The [Docker][] container can be stopped with:
@@ -104,6 +138,28 @@ are altered.
 
 When making changes to the `trip-web-client` HTML or JavaScript, you will need
 to refresh the browser to replace the cached version.
+
+### Docker Swarm
+
+The source code also contains a configuration file named
+`docker-compose-swarm.yml` for running the application as a Docker swarm.
+This uses Docker secrets instead of environment variables to pass secrets to
+the container.  This can be used as the basis for a production configuration,
+but it does not work across multiple nodes as it is using Docker's local volume
+storage provider.  A third-party swarm aware storage provider is required to
+work across multiple nodes.
+
+After initialising the swarm, the secrets can be created as follows:
+
+	$ echo 'secret' | docker secret create postgres_password -
+	$ echo 'secret' | docker secret create jwt_signing_key -
+	$ echo 'secret' | docker secret create jwt_resource_signing_key -
+
+Note that the `postgres_password` is used to form a URI so must not contain a
+forward-slash character.
+
+See [DockerTips](https://www.fdsd.co.uk/wiki/Tech/DockerTips.html) which
+contains some notes on running a Docker swarm.
 
 ## Quick Start Using [Vagrant][]
 
@@ -879,44 +935,16 @@ a release of the web client.
 
 ## Next Release
 
-This section describes any environmental changes, such as database changes or
-configuration changes that need to be made since the last release, when
-upgrading to the this release.
+The behaviour of automatically terminating the server after the
+`app.autoQuit.timeOut` seconds parameter in `config.json` has been changed.
+Setting the value to zero disables automatically shutting the system down.
 
-This release introduces using [PostGIS][] providing a full spatial database.
-On a Debian system, install PostGIS with:
-
-		$ sudo apt-get install postgresql-9.6-postgis-2.3 postgresql-9.6-postgis-2.3-scripts
-
-
-Backup the existing database.  Then execute the following `psql` commands to
-upgrade the database to the new format:
-
-	CREATE EXTENSION postgis;
-
-	ALTER TABLE itinerary_waypoint ADD COLUMN geog GEOGRAPHY(POINT,4326);
-	CREATE INDEX itinerary_waypoint_geog_idx ON itinerary_waypoint USING GIST(geog);
-	UPDATE itinerary_waypoint SET geog = ST_SetSRID(ST_Point(position[0], position[1]),4326);
-	ALTER TABLE itinerary_waypoint ALTER COLUMN geog SET NOT NULL;
-	ALTER TABLE itinerary_waypoint DROP COLUMN position;
-
-	ALTER TABLE itinerary_route_point ADD COLUMN geog GEOGRAPHY(POINT, 4326);
-	CREATE INDEX itineary_route_point_geog_idx ON itinerary_route_point USING GIST(geog);
-	UPDATE itinerary_route_point SET geog = ST_SetSRID(ST_Point(position[0], position[1]),4326);
-	ALTER TABLE itinerary_route_point ALTER COLUMN geog SET NOT NULL;
-	ALTER TABLE itinerary_route_point DROP COLUMN position;
-
-	ALTER TABLE itinerary_track_point ADD COLUMN geog GEOGRAPHY(POINT, 4326);
-	CREATE INDEX itineary_track_point_geog_idx ON itinerary_track_point USING GIST(geog);
-	UPDATE itinerary_track_point SET geog = ST_SetSRID(ST_Point(position[0], position[1]),4326);
-	ALTER TABLE itinerary_track_point ALTER COLUMN geog SET NOT NULL;
-	ALTER TABLE itinerary_track_point DROP COLUMN position;
-
-	ALTER TABLE location ADD COLUMN geog GEOGRAPHY(POINT, 4326);
-	CREATE INDEX location_geog_idx ON location USING GIST(geog);
-	UPDATE location SET geog = ST_SetSRID(ST_Point(location[0], location[1]),4326);
-	ALTER TABLE location ALTER COLUMN geog SET NOT NULL;
-	ALTER TABLE location DROP COLUMN location;
+Previously, automatic shutdown only occurred for instances running under
+`systemd`.  In order to maintain the previous behaviour for non-systemd
+systems, a new parameter, `app.autoQuit.nonSystemd.enabled` must be set to
+`true` before autoquit will be activated on a non-systemd system.  Where it is
+not specified in `config.json`, the default is `false`.  See
+`config-dist.json` for an example value.
 
 
 [trip-web-client]: https://www.fdsd.co.uk/trip-web-client-docs/

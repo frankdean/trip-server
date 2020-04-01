@@ -11,6 +11,7 @@ if [ -r "$TRIP_RESOURCE_SIGNING_KEY_FILE" ];then
     TRIP_RESOURCE_SIGNING_KEY=$(cat ${TRIP_RESOURCE_SIGNING_KEY_FILE})
 fi
 
+umask 0026
 cat > config.json <<EOF
 {
   "app": {
@@ -23,7 +24,7 @@ cat > config.json <<EOF
       "allowInvalidXsd": false
     },
     "autoQuit": {
-      "timeOut": 300
+      "timeOut": 0
     },
     "token": {
       "expiresIn": 43200,
@@ -45,7 +46,7 @@ cat >>config.json <<EOF
     "cache": {
       "maxAge": 0
     },
-    "providers": [
+    "providers_READ_TILE_USAGE_POLICY_BELOW_AND_SET_USER_AGENT_AND_REFERRER_INFO_BEFORE_USING": [
       {
         "help": " see http://wiki.openstreetmap.org/wiki/Tile_usage_policy",
         "userAgentInfo": "(mailto:your.contact@email.address)",

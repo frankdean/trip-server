@@ -9,7 +9,10 @@
       "allowInvalidXsd": false
     },
     "autoQuit": {
-      "timeOut": 300
+      "timeOut": 300,
+      "nonSystemd": {
+        "enabled": false
+      }
     },
     "token": {
       "expiresIn": 43200,
@@ -29,7 +32,7 @@
     "cache": {
       "maxAge": 0
     },
-    "providers": [
+    "providers_READ_TILE_USAGE_POLICY_BELOW_AND_SET_USER_AGENT_AND_REFERRER_INFO_BEFORE_USING": [
       {
         "help": " see http://wiki.openstreetmap.org/wiki/Tile_usage_policy",
         "userAgentInfo": "(mailto:your.contact@email.address)",

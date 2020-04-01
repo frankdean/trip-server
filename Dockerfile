@@ -27,9 +27,12 @@ WORKDIR /app
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=trip-web-client /app/app ./app
 COPY . .
-COPY config-dist.json config.json
 
 COPY docker-entrypoint.sh /usr/local/bin/
+
+RUN rm -f config.json && touch config.json && chown node:node config.json && chmod 0640 config.json
+
+USER node
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 

@@ -1525,8 +1525,8 @@ myApp.handleGetConfigMapAttribution = function(req, res, token) {
       });
       myApp.respondWithData(null, res, layers);
     } else {
-      logger.error('config.json is invalid - tile.providers must be defined as an array');
-      myApp.handleError(new SystemError('config.json is invalid - no tile.providers defined'), res);
+      logger.warn('config.json is invalid - tile.providers must be defined as an array');
+      myApp.respondWithData(null, res, [ {"name": "Error", "type": "xyz", "tileAttributions": [{"text": "No map provider configured"}]} ]);
     }
   });
 };
@@ -1884,13 +1884,14 @@ io.on('connection', function(socket) {
 });
 
 var port = process.env.LISTEN_PID > 0 ? 'systemd' : 8080;
-if (port === 'systemd') {
+if (config.app.autoQuit && (config.app.autoQuit.nonSystemd && config.app.autoQuit.nonSystemd.enabled === true || port === 'systemd') && config.app.autoQuit.timeOut > 0) {
   myApp.server.autoQuit({ timeOut: config.app.autoQuit.timeOut, exitFn: myApp.shutdown });
-  logger.info('TRIP v%s running under systemd with autoQuit after %d seconds', myApp.version, config.app.autoQuit.timeOut);
+  logger.info('TRIP v%s running with autoQuit after %d seconds', myApp.version, config.app.autoQuit.timeOut);
 } else {
-  logger.info('TRIP v%s running in development mode', myApp.version);
+  logger.info('TRIP v%s running in normal mode', myApp.version);
 }
 myApp.server.on('close', function() {
   logger.info('[index.js] server closed');
 });
+logger.info('Listening on port %s', port);
 myApp.server.listen(port);

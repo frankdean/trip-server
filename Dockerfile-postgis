@@ -4,13 +4,17 @@ LABEL uk.co.fdsd.tripserver.db.version="1.1.5"
 #LABEL uk.co.fdsd.tripserver.db.release-date="2020-03-19"
 #LABEL uk.co.fdsd.tripserver.db.is-production=""
 
-ENV POSTGIS_MAJOR 3
-ENV POSTGIS_VERSION 3.0.0+dfsg-2~exp1.pgdg90+1
+# ENV POSTGIS_MAJOR 3
+# ENV POSTGIS_VERSION 3.0.1+dfsg-2.pgdg90+1
+#     postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR=$POSTGIS_VERSION \
+#     postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR-scripts=$POSTGIS_VERSION \
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-    postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR=$POSTGIS_VERSION \
-    postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR-scripts=$POSTGIS_VERSION \
+    postgresql-11 \
+    postgresql-11-postgis-2.5 \
+    postgresql-contrib \
+    postgis \
     && rm -rf /var/lib/apt/lists/*
 RUN localedef -i en_GB -c -f UTF-8 -A /usr/share/locale/locale.alias en_GB.UTF-8
 ENV LANG en_GB.utf8
@@ -20,9 +24,7 @@ ENV POSTGRES_DB trip
 WORKDIR /docker-entrypoint-initdb.d
 RUN mkdir -p /docker-entrypoint-initdb.d
 COPY spec/support/10_init-trip-db.sh \
-    ./
-RUN mkdir -p /sql
-COPY spec/support/10_trip_role.sql \
+    spec/support/10_trip_role.sql \
     spec/support/20_schema.sql \
     spec/support/30_permissions.sql \
     spec/support/40_path_colors.sql \

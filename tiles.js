@@ -144,6 +144,11 @@ function fetchTile(id, x, y, z, callback) {
     logger.error('config.tile.cache.maxAge in config.json must be an integer and less than %d', Number.MAX_SAFE_INTEGER);
     config.tile.cache.maxAge = 0;
   }
+  if (config.tile.providers === undefined) {
+    logger.warn('No map tile provider configured in config.json');
+    callback(new Error('No map tile provider configured in config.json'));
+    return;
+  }
   if (_.isInteger(Number(id)) && _.inRange(id, config.tile.providers.length) &&
       _.isInteger(Number(x)) && _.inRange(x, Number.MAX_SAFE_INTEGER) &&
       _.isInteger(Number(y)) && _.inRange(y, Number.MAX_SAFE_INTEGER) &&
