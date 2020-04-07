@@ -1,6 +1,6 @@
 /**
  * @license TRIP - Trip Recording and Itinerary Planning application.
- * (c) 2016-2019 Frank Dean <frank@fdsd.co.uk>
+ * (c) 2016-2020 Frank Dean <frank@fdsd.co.uk>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,30 +17,35 @@
  */
 'use strict';
 
-var winston = require('winston');
-var config = require('./config.json');
+var util = require('util'),
+    config = require('./config.json');
 
 function createLogger(label) {
 
-  var myLogFormat = winston.format.printf(({ level, message, label, timestamp }) => {
-    // Don't want timestamps when running under systemd as system log will have them anyway
-    return (process.env.LISTEN_PID > 0) ? `[${label}] ${level}: ${message}` : `${timestamp} [${label}] ${level}: ${message}`;
-  });
+  var levels = [ 'trace', 'debug', 'info', 'warn', 'error' ],
+      timestamp = !process.env.LISTEN_PID > 0,
+      level = levels.indexOf(config.log.level),
+      timeOptions = {hour: '2-digit', hourCycle: 'h24', minute: '2-digit', second: '2-digit', fractionalSecondDigits: '3' },
+      dateFormatter = new Intl.DateTimeFormat(undefined, timeOptions);
 
-  return winston.createLogger({
-    level: config.log.level,
-    transports: [
-      new winston.transports.Console()
-    ],
-    format: winston.format.combine(
-      winston.format.label({ label: label }),
-      winston.format.timestamp({format: 'YYYY-MM-DD HH:mm:ss'}),
-      winston.format.splat(),
-      myLogFormat
-    ),
-    exitOnError: false,
-    silent: false
-  });
+  function log(format, args) {
+    if (timestamp) {
+      console.log(dateFormatter.format(new Date()), label, "[" + levels[level] + "]", util.format(format, args));
+    } else {
+      console.log(label, "[" + levels[level] + "]", util.format(format, args));
+    }
+  }
+
+  function nolog() {}
+
+  return {
+    trace: level <= 0 ? log : nolog,
+    debug: level <= 1 ? log : nolog,
+    info: level <= 2 ? log : nolog,
+    warn: level <= 3 ? log : nolog,
+    error: level <= 4 ? log : nolog
+  };
+
 }
 
 module.exports = {
