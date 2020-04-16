@@ -16,6 +16,9 @@
     "planner",
     "GPS"
   ],
+  "resolutions": {
+    "minimist": "^1.2.3"
+  },
   "devDependencies": {
     "jasmine": "^3.4.0",
     "jshint": "^2.9.4"

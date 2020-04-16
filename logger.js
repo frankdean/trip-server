@@ -23,7 +23,7 @@ var util = require('util'),
 function createLogger(label) {
 
   var levels = [ 'trace', 'debug', 'info', 'warn', 'error' ],
-      timestamp = !process.env.LISTEN_PID > 0,
+      timestamp = process.env.LISTEN_PID <= 0,
       level = levels.indexOf(config.log.level),
       timeOptions = {hour: '2-digit', hourCycle: 'h24', minute: '2-digit', second: '2-digit', fractionalSecondDigits: '3' },
       dateFormatter = new Intl.DateTimeFormat(undefined, timeOptions);
