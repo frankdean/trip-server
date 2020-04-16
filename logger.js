@@ -22,7 +22,7 @@ var util = require('util'),
 
 function createLogger(label) {
 
-  var levels = [ 'trace', 'debug', 'info', 'warn', 'error' ],
+  var levels = [ 'emergency', 'alert', 'critical', 'error', 'warn', 'notice', 'info', 'debug' ],
       timestamp = process.env.LISTEN_PID <= 0,
       level = levels.indexOf(config.log.level),
       timeOptions = {hour: '2-digit', hourCycle: 'h24', minute: '2-digit', second: '2-digit', fractionalSecondDigits: '3' },
@@ -38,12 +38,16 @@ function createLogger(label) {
 
   function nolog() {}
 
+  // From https://tools.ietf.org/html/rfc5424
   return {
-    trace: level <= 0 ? log : nolog,
-    debug: level <= 1 ? log : nolog,
-    info: level <= 2 ? log : nolog,
-    warn: level <= 3 ? log : nolog,
-    error: level <= 4 ? log : nolog
+    emergency: level >= 0 ? log : nolog,
+    alert: level >= 1 ? log : nolog,
+    critical: level >= 2 ? log : nolog,
+    error: level >= 3 ? log : nolog,
+    warn: level >= 4 ? log : nolog,
+    notice: level >= 5 ? log : nolog,
+    info: level >= 6 ? log : nolog,
+    debug: level >= 7 ? log : nolog
   };
 
 }

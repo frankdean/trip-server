@@ -74,7 +74,7 @@ function fetchRemoteTile(id, x, y, z, callback) {
   req = http.request(options, function(res) {
     // logger.debug('Response status code %d for tile x=%d y=%d z=%d', res.statusCode, x, y, z);
     if (res.statusCode !== 200) {
-      logger.verbose('Fetching remote tile id: %s, x=%d y=%d z=%d failed: %d', id, x, y, z, res.statusCode);
+      logger.debug('Fetching remote tile id: %s, x=%d y=%d z=%d failed: %d', id, x, y, z, res.statusCode);
       callback(new Error(util.format('Failure fetching remote tile x=%d y=%d z=%d', x, y, z)));
     } else {
       res.setEncoding('binary');
