@@ -31,7 +31,9 @@ var turf = {
   point: turfHelpers.point
 };
 
-var logger = require('./logger').createLogger('utils.js');
+var config = require('./config.json');
+
+var logger = require('./logger').createLogger('utils.js', config.log.level, config.log.timestamp);
 
 module.exports = {
   handleError: handleError,

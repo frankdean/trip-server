@@ -3,8 +3,20 @@
 # Uncomment the following to debug the script
 #set -x
 
+export DEBIAN_FRONTEND=noninteractive
 apt-get update
 #apt-get upgrade --yes
+
+sed -i -e 's/# en_GB.UTF-8 UTF-8/en_GB.UTF-8 UTF-8/' /etc/locale.gen
+locale-gen
+export LANG=en_GB.utf8
+localedef -i en_GB -c -f UTF-8 -A /usr/share/locale/locale.alias en_GB.UTF-8
+update-locale LANG=en_GB.UTF-8 LANGUAGE
+
+ln -fs /usr/share/zoneinfo/Europe/London /etc/localtime
+apt-get install -y tzdata
+dpkg-reconfigure tzdata
+
 apt-get install apt-transport-https
 apt-get install --yes g++ git nginx postgresql postgresql-contrib postgis apg screen
 
@@ -13,13 +25,10 @@ echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/source
 apt-get update
 apt-get install --yes yarn+ cmdtest- nodejs-
 
-export LANG=en_GB.utf8
-localedef -i en_GB -c -f UTF-8 -A /usr/share/locale/locale.alias en_GB.UTF-8
-
-NODE_VERSION="v10.19.0"
+NODE_VERSION="v10.20.1"
 NODE_FILENAME="node-${NODE_VERSION}-linux-x64"
 NODE_TAR_FILENAME="${NODE_FILENAME}.tar.xz"
-NODE_SHA256="34127c7c6b1ba02d6d4dc3a926f38a5fb88bb37fc7f051349005ce331c7a53c6  ${NODE_TAR_FILENAME}"
+NODE_SHA256="5e0b1fbc6cf8c2c34dc33d880670ee1bc1c1e931099de3796a96143a962c92ee  ${NODE_TAR_FILENAME}"
 NODE_EXTRACT_DIR="${NODE_FILENAME}"
 NODE_DOWNLOAD_URL="https://nodejs.org/dist/${NODE_VERSION}/${NODE_TAR_FILENAME}"
 

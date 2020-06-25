@@ -31,7 +31,7 @@ var validNickname = /^[!-\.0->@-~]+$/;
 var printableRegex = /^[!-~]+$/;
 var printableRegexPlusSpace = /^[ -~]+$/;
 
-var logger = require('./logger').createLogger('login.js');
+var logger = require('./logger').createLogger('login.js', config.log.level, config.log.timestamp);
 
 module.exports = {
   UnauthorizedError: UnauthorizedError,

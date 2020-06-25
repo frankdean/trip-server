@@ -6,7 +6,7 @@ services:
     build: .
     depends_on:
       - postgis
-    image: fdean/trip-server:latest
+    image: fdean/trip-server:1.2.0
     deploy:
       replicas: 2
       restart_policy:
@@ -36,7 +36,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-postgis
-    image: fdean/trip-database:latest
+    image: fdean/trip-database:1.2.0
     deploy:
       replicas: 1
       restart_policy:
@@ -51,6 +51,9 @@ services:
         reservations:
           cpus: '0.1'
           memory: 20M
+      placement:
+        constraints:
+          - "node.role==manager"
     volumes:
       - trip-db-data:/var/lib/postgresql/data
     environment:

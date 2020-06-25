@@ -44,7 +44,7 @@ var myApp = myApp || {};
 myApp.version = npm_package.version;
 module.exports = myApp;
 
-var logger = require('./logger').createLogger('index.js');
+var logger = require('./logger').createLogger('index.js', config.log.level, config.log.timestamp);
 
 myApp.fileServer = new(nstatic.Server)('./', {cache: 3600});
 // Set to x to indent JSON with x spaces.  Zero: no pretty print.

@@ -95,7 +95,8 @@
   },
   "debug": false,
   "log": {
-    "level": "info"
+    "level": "info",
+    "timestamp": false
   },
   "validation": {
     "headers" : {

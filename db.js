@@ -25,7 +25,7 @@ var NUMERIC_OID = 1700;
 
 var config = require('./config.json');
 
-var logger = require('./logger').createLogger('db.js');
+var logger = require('./logger').createLogger('db.js', config.log.level, config.log.timestamp);
 
 //// See node-postgres documentation
 // pg.defaults.poolSize = (config.db && config.db.poolSize) || 25;
@@ -2705,7 +2705,7 @@ function createItineraryTracks(itineraryId, tracks, callback) {
   });
 }
 
-function deleteItineraryWaypoint(itineraryId, waypointId, w, callback) {
+function deleteItineraryWaypoint(itineraryId, waypointId, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
   pool.connect(function(err, client, done) {
     if (err) {

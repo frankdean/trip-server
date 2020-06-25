@@ -17,39 +17,65 @@
  */
 'use strict';
 
-var util = require('util'),
-    config = require('./config.json');
+var util = require('util');
 
-function createLogger(label) {
+function createLogger(label, logLevel, timestamp = true) {
 
+  // Logging levels from https://tools.ietf.org/html/rfc5424
   var levels = [ 'emergency', 'alert', 'critical', 'error', 'warn', 'notice', 'info', 'debug' ],
-      timestamp = process.env.LISTEN_PID <= 0,
-      level = levels.indexOf(config.log.level),
       timeOptions = {hour: '2-digit', hourCycle: 'h24', minute: '2-digit', second: '2-digit', fractionalSecondDigits: '3' },
-      dateFormatter = new Intl.DateTimeFormat(undefined, timeOptions);
+      dateFormatter = new Intl.DateTimeFormat(undefined, timeOptions),
+      logger = {};
 
-  function log(format, args) {
-    if (timestamp) {
-      console.log(dateFormatter.format(new Date()), label, "[" + levels[level] + "]", util.format(format, args));
-    } else {
-      console.log(label, "[" + levels[level] + "]", util.format(format, args));
-    }
+  // Default log level is 'info'
+  if (logLevel === undefined) {
+    logLevel = levels[6];
   }
+
+  var level = levels.indexOf(logLevel.toLowerCase());
 
   function nolog() {}
 
-  // From https://tools.ietf.org/html/rfc5424
-  return {
-    emergency: level >= 0 ? log : nolog,
-    alert: level >= 1 ? log : nolog,
-    critical: level >= 2 ? log : nolog,
-    error: level >= 3 ? log : nolog,
-    warn: level >= 4 ? log : nolog,
-    notice: level >= 5 ? log : nolog,
-    info: level >= 6 ? log : nolog,
-    debug: level >= 7 ? log : nolog
-  };
+  function log() {
+    var level,
+        args = Array.from(arguments),
+        logArgs = [];
+    level = args.shift();
+    if (timestamp) {
+      logArgs.push(dateFormatter.format(new Date()));
+    }
+    if (label) {
+      logArgs.push(label);
+    }
+    logArgs.push("[" + level + "]");
+    logArgs.push(util.format.apply(util, args));
+    console.log.apply(null, logArgs);
+  }
 
+  function logWithLevel() {
+    var level, params, args = Array.from(arguments);
+    level = args.shift();
+    params = Array.from(args.shift());
+    params.unshift(String(level).toUpperCase());
+    log.apply(log, params);
+  }
+
+  function makeFunc(name) {
+    function innerLog() {
+      logWithLevel(name, arguments);
+    }
+    return innerLog;
+  }
+
+  // Create logXXX methods for each of items defined in the levels array
+  for (var i = 0; i < levels.length; i++) {
+    var name = 'log' + levels[i].charAt(0).toUpperCase() + levels[i].slice(1);
+    var text = levels[i];
+    createLogger[name] = makeFunc(text);
+    logger[levels[i]] = level >= i ? createLogger[name] : nolog;
+  }
+
+  return logger;
 }
 
 module.exports = {

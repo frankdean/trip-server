@@ -1,6 +1,6 @@
 {
   "name": "trip-server",
-  "version": "1.1.5",
+  "version": "1.2.0",
   "description": "TRIP - Trip Recording and Itinerary Planner RESTful server",
   "author": {
     "name": "Frank Dean",
@@ -24,8 +24,9 @@
     "jshint": "^2.9.4"
   },
   "scripts": {
-    "nodemon" : "nodemon index.js",
-    "test": "jasmine",
+    "nodemon" : "nodemon --ignore 'app/*' index.js",
+    "test": "nodemon --ignore 'app/*' ./node_modules/jasmine/bin/jasmine.js",
+    "test-single-run": "jasmine",
     "lint": "jshint *.js spec/*.js"
   },
   "dependencies": {

@@ -28,7 +28,7 @@ var utils = require('./utils');
 // TileSet containing coordinates of all tiles on the system
 var tiles;
 
-var logger = require('./logger').createLogger('elevation.js');
+var logger = require('./logger').createLogger('elevation.js', config.log.level, config.log.timestamp);
 
 module.exports = {
   init:  function() {

@@ -25,7 +25,9 @@ The [web client][trip-web-client] is an [AngularJS][] single-page application
 The following features are provided:
 
 * Remote tracking server—client applications such as
-  [TripLogger Remote for iOS][TripLogger] or
+  [TripLogger Remote for iOS][TripLogger] &ndash;
+  ([on the App Store](https://apps.apple.com/us/app/triplogger-remote/id1322577876?mt=8))
+  or
   [GPSLogger for Android][GPSLogger] can be used to submit locations to the
   server.
 
@@ -69,6 +71,8 @@ browser, without having to install anything.
 Navigate to [Play with Docker][play] and login using a Docker ID.  If you do
 not have one, you will see the option to sign up after clicking `Login` then
 `Docker`.
+
+Click `+ ADD NEW INSTANCE`
 
 Cut and paste each of the following commands in sequence into the terminal
 window.  This will create a Docker network and run two containers, one
@@ -122,6 +126,21 @@ information on using the application.
 The [Docker][] container can be stopped with:
 
 	$ docker-compose down
+
+The script creates a Docker volume named 'trip-server_trip-db-data' for the
+database store.  List the Docker volumes with:
+
+	$ docker volume ls
+
+If you stop the container with the `--volumes` option, the database volume is
+removed as well as the container:
+
+	$ docker-compose down --volumes
+
+Alternatively, to remove the volume after the container has been stopped, it
+can be removed with:
+
+	$ docker volume rm trip-server_trip-db-data
 
 To use a Docker container for development:
 

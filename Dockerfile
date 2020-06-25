@@ -1,7 +1,7 @@
 # -*- mode: dockerfile; -*- vim: set ft=dockerfile:
 FROM node:10.19-buster-slim AS build
-LABEL uk.co.fdsd.tripserver.version="1.1.5"
-#LABEL uk.co.fdsd.tripserver.release-date="2020-03-19"
+LABEL uk.co.fdsd.tripserver.version="1.2.0-rc.5"
+#LABEL uk.co.fdsd.tripserver.release-date="2020-05-26"
 #LABEL uk.co.fdsd.tripserver.is-production=""
 WORKDIR /app
 COPY package.json yarn.lock ./
@@ -9,6 +9,8 @@ RUN yarn install
 
 FROM node:10.19-buster-slim AS trip-web-client
 WORKDIR /app
+ARG TRIP_CLIENT_VERSION=v1.2.0-rc.5
+ARG TRIP_CLIENT_SHA256=5fd39f1406c68508e88e8c97ed32938e71fb064803324b376f2f9d74dbd31bb5
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
     curl \
@@ -16,10 +18,10 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 RUN true \
     && mkdir app \
-    && curl -fsSL https://www.fdsd.co.uk/trip-server/download/trip-web-client-release-v1.1.5.tar.gz -o trip-web-client-release-v1.1.5.tar.gz \
-    && echo 'c595703e94235bdab33a30d02dfb0d76b577f33422527af9aaf21a95e67bb4ad *trip-web-client-release-v1.1.5.tar.gz' | sha256sum -c - \
-    && tar --strip-components=1 -xaf trip-web-client-release-v1.1.5.tar.gz -C /app/app \
-    && rm trip-web-client-release-v1.1.5.tar.gz
+    && curl -fsSL "https://www.fdsd.co.uk/trip-server/download/trip-web-client-release-${TRIP_CLIENT_VERSION}.tar.gz" -o "trip-web-client-release-${TRIP_CLIENT_VERSION}.tar.gz" \
+    && echo "$TRIP_CLIENT_SHA256 *trip-web-client-release-${TRIP_CLIENT_VERSION}.tar.gz" | sha256sum -c - \
+    && tar --strip-components=1 -xaf "trip-web-client-release-${TRIP_CLIENT_VERSION}.tar.gz" -C /app/app \
+    && rm "trip-web-client-release-${TRIP_CLIENT_VERSION}.tar.gz"
 
 FROM node:10.19-buster-slim
 

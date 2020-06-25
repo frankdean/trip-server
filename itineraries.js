@@ -28,7 +28,7 @@ var utils = require('./utils');
 
 var validNickname = /^[!-\.0->@-~]+$/;
 
-var logger = require('./logger').createLogger('itineries.js');
+var logger = require('./logger').createLogger('itineries.js', config.log.level, config.log.timestamp);
 
 // TODO This should be a per user configurable default
 var flatSpeed = (config.app.averageFlatSpeedKph) || 4;

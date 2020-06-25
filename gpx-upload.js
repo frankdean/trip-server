@@ -24,8 +24,9 @@ var _ = require('lodash');
 var elevation = require('./elevation').init();
 var db = require('./db');
 var utils = require('./utils');
+var config = require('./config.json');
 
-var logger = require('./logger').createLogger('gpx-upload.js');
+var logger = require('./logger').createLogger('gpx-upload.js', config.log.level, config.log.timestamp);
 
 module.exports = {
   importFile: importFile,

@@ -23,8 +23,9 @@ var _ = require('lodash');
 
 var db = require('./db');
 var utils = require('./utils');
+var config = require('./config.json');
 
-var logger = require('./logger').createLogger('tracks.js');
+var logger = require('./logger').createLogger('tracks.js', config.log.level, config.log.timestamp);
 
 module.exports = {
   getLocations: getLocations,
