@@ -17,6 +17,7 @@
     "inject": false,
     "process": false,
     "require": false,
+    "setImmediate": false,
     "setTimeout": false,
     "setInterval": false,
     "clearInterval": false

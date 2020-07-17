@@ -297,6 +297,8 @@ function importFile(itineraryId, pathname, deleteFlag, callback) {
       elevation.fillElevationsForRoutes(routes, elevationFillOptions, function(err) {
         if (err) {
           logger.error('Error filling elevations values for routes', err);
+          callback(err);
+          return;
         }
         elevationFillError = err;
         utils.fillDistanceElevationForRoutes(routes);

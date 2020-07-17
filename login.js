@@ -201,7 +201,7 @@ function checkAuthenticated(token, xsrfToken, callback) {
       // Check XSRF token <https://docs.angularjs.org/api/ng/service/$http>
       hmac = crypt.createHmac('sha256', config.jwt.signingKey).update(token).digest('hex');
       if (hmac !== xsrfToken) {
-        logger.warn('Invalid XSRF-TOKEN');
+        logger.debug('Invalid XSRF-TOKEN');
         err = new Error('Invalid XSRF-TOKEN');
       }
     }

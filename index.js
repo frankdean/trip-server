@@ -18,6 +18,8 @@
  */
 'use strict';
 
+// console.time('app-init');
+
 var http = require('http');
 var url = require('url');
 
@@ -1895,3 +1897,4 @@ myApp.server.on('close', function() {
 });
 logger.info('Listening on port %s', port);
 myApp.server.listen(port);
+// console.timeEnd('app-init');
