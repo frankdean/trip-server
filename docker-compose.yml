@@ -6,7 +6,7 @@ services:
     build: .
     depends_on:
       - postgis
-    image: fdean/trip-server:1.2.0
+    image: fdean/trip-server:1.3.0
     deploy:
       replicas: 2
       restart_policy:
@@ -32,7 +32,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-postgis
-    image: fdean/trip-database:1.2.0
+    image: fdean/trip-database:1.3.0
     deploy:
       replicas: 1
       restart_policy:

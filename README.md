@@ -110,7 +110,7 @@ information on using the application.
 
 3.  Run the following command in the route of the cloned repository:
 
-		$ docker-compose up -d
+		$ sudo docker-compose up -d
 
 4.  Navigate to <http://localhost:8080/app> with a web-browser.  The
     application runs with a small amount of test data.
@@ -125,27 +125,27 @@ information on using the application.
 
 The [Docker][] container can be stopped with:
 
-	$ docker-compose down
+	$ sudo docker-compose down
 
 The script creates a Docker volume named 'trip-server_trip-db-data' for the
 database store.  List the Docker volumes with:
 
-	$ docker volume ls
+	$ sudo docker volume ls
 
 If you stop the container with the `--volumes` option, the database volume is
 removed as well as the container:
 
-	$ docker-compose down --volumes
+	$ sudo docker-compose down --volumes
 
 Alternatively, to remove the volume after the container has been stopped, it
 can be removed with:
 
-	$ docker volume rm trip-server_trip-db-data
+	$ sudo docker volume rm trip-server_trip-db-data
 
 To use a Docker container for development:
 
-	$ docker-compose --file docker-compose-dev.yml up --build -d
-	$ docker-compose logs --follow
+	$ sudo docker-compose --file docker-compose-dev.yml up --build -d
+	$ sudo docker-compose logs --follow
 
 The environment requires both the `trip-server` and `trip-web-client` projects
 to share the same parent folder.  These folders are mounted within the Docker
@@ -170,9 +170,9 @@ work across multiple nodes.
 
 After initialising the swarm, the secrets can be created as follows:
 
-	$ echo 'secret' | docker secret create postgres_password -
-	$ echo 'secret' | docker secret create jwt_signing_key -
-	$ echo 'secret' | docker secret create jwt_resource_signing_key -
+	$ echo 'secret' | sudo docker secret create postgres_password -
+	$ echo 'secret' | sudo docker secret create jwt_signing_key -
+	$ echo 'secret' | sudo docker secret create jwt_resource_signing_key -
 
 Note that the `postgres_password` is used to form a URI so must not contain a
 forward-slash character.
@@ -939,7 +939,7 @@ a release of the web client.
 
 1.  Run `yarn run lint`
 
-1.  Update the version number in `index.js myApp.version`
+1.  Update the version number in `package.json`
 
 1.  Check in the change and push the changes
 
@@ -955,14 +955,14 @@ a release of the web client.
 ## Next Release
 
 The behaviour of automatically terminating the server after the
-`app.autoQuit.timeOut` seconds parameter in `config.json` has been changed.
+`app.autoQuit.timeOut` seconds parameter in `config.json`, has been changed.
 Setting the value to zero disables automatically shutting the system down.
 
 Previously, automatic shutdown only occurred for instances running under
 `systemd`.  In order to maintain the previous behaviour for non-systemd
 systems, a new parameter, `app.autoQuit.nonSystemd.enabled` must be set to
-`true` before autoquit will be activated on a non-systemd system.  Where it is
-not specified in `config.json`, the default is `false`.  See
+`true` before autoquit will be activated on a non-systemd instance.  Where it
+is not specified in `config.json`, the default is `false`.  See
 `config-dist.json` for an example value.
 
 

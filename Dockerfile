@@ -1,7 +1,7 @@
 # -*- mode: dockerfile; -*- vim: set ft=dockerfile:
 FROM node:10.19-buster-slim AS build
-LABEL uk.co.fdsd.tripserver.version="1.2.0-rc.5"
-#LABEL uk.co.fdsd.tripserver.release-date="2020-05-26"
+LABEL uk.co.fdsd.tripserver.version="1.3.0"
+#LABEL uk.co.fdsd.tripserver.release-date="2020-08-12"
 #LABEL uk.co.fdsd.tripserver.is-production=""
 WORKDIR /app
 COPY package.json yarn.lock ./
@@ -9,8 +9,8 @@ RUN yarn install
 
 FROM node:10.19-buster-slim AS trip-web-client
 WORKDIR /app
-ARG TRIP_CLIENT_VERSION=v1.2.0-rc.5
-ARG TRIP_CLIENT_SHA256=5fd39f1406c68508e88e8c97ed32938e71fb064803324b376f2f9d74dbd31bb5
+ARG TRIP_CLIENT_VERSION=v1.3.0
+ARG TRIP_CLIENT_SHA256=4498905236de5cfeea8ab8972013ed5e8a98cf4adf5af0b52b35612e0d75d6b4
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
     curl \
