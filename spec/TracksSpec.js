@@ -608,4 +608,101 @@ describe('tracks.js', function() {
 
   });
 
+  describe('createDefaultSettings', function() {
+    var host = 'www.trip.test',
+        port = '8080',
+        validRequest = {
+          headers: { 'host':  host + ':' + port},
+          url: '/trip/rest/nickname/download/settings/triplogger'
+        },
+        validRequestNoPort = {
+          headers: { 'host':  host},
+          url: '/trip/rest/nickname/download/settings/triplogger'
+        },
+        validRequestNoHost = {
+          headers: {},
+          url: '/trip/rest/nickname/download/settings/triplogger'
+        },
+        validRequestNoUrlPrefix = {
+          headers: {},
+          url: '/nickname/download/settings/triplogger'
+        },
+        validRequestRubbishURL = {
+          headers: { 'host':  host + ':' + port},
+          url: '/trip/rest/rubbish'
+        },
+        testUserId = 'test user id',
+        testConfig = {
+          "defaultProfile": {
+            "uuid": null,
+            "name": "Initial configuration",
+            "localLoggingInterval": 1.2e+1,
+            "localLoggingDistance": 1e+1,
+            "localLoggingEnabled": true,
+            "remoteInterval": 1.8e+2,
+            "remoteDistance": 1.5e+2,
+            "remoteEnabled": false,
+            "desiredAccuracyIndex": 0,
+            "minimumHdop": 1.5e+1,
+            "maxAccuracySeekTime": 3e+1,
+            "strictHdopCompliance": false
+          },
+          "defaultSettings": {
+            "currentSettingUUID": null,
+            "settingProfiles": null,
+            "activityBarEnabled": true,
+            "notifyAfterSendNote": false,
+            "notifyAfterSendSingle": false,
+            "maxActivityHistory": 100,
+            "batteryChargingLevel": 0e+0,
+            "batteryDischargingLevel": 0e+0,
+            "httpsEnabled": true,
+            "httpPostEnabled": true,
+            "postJson": false,
+            "hostname": "trip.test",
+            "hostPort": "8000",
+            "hostPath": "/location",
+            "userId": null,
+            "noteSuggestions": ["Parked here"]
+          }
+        };
+
+    it('should set the host name based on the passed request', function() {
+      var result = Tracks.unitTests.createDefaultSettings(null, validRequest, testUserId);
+      expect(result.hostname).toEqual(host);
+      expect(result.hostPort).toEqual(port);
+      expect(result.hostPath).toEqual('/trip/rest/log_point');
+      expect(result.userId).toEqual(testUserId);
+    });
+
+    it('should set the host name based on the passed request where no port name is specified', function() {
+      var result = Tracks.unitTests.createDefaultSettings(null, validRequestNoPort, testUserId);
+      expect(result.hostname).toEqual(host);
+      expect(result.hostPort).toEqual('');
+      expect(result.userId).toEqual(testUserId);
+    });
+
+    it('should not set the host name based on the passed request where no host is specified', function() {
+      var result = Tracks.unitTests.createDefaultSettings(null, validRequestNoHost, testUserId);
+      expect(result.hostname).toEqual('');
+      expect(result.hostPort).toEqual('');
+      expect(result.userId).toEqual(testUserId);
+    });
+
+    it('should set the url where the passed request does not contain a url prefixed with /trip/rest', function() {
+      var result = Tracks.unitTests.createDefaultSettings(null, validRequestNoUrlPrefix, testUserId);
+      expect(result.hostPath).toEqual('/log_point');
+      expect(result.userId).toEqual(testUserId);
+    });
+
+    it('should set values based on the passed configuration', function() {
+      var result = Tracks.unitTests.createDefaultSettings(testConfig, validRequestRubbishURL, testUserId);
+      expect(result.hostname).toEqual(testConfig.defaultSettings.hostname);
+      expect(result.hostPort).toEqual(testConfig.defaultSettings.hostPort);
+      expect(result.hostPath).toEqual(testConfig.defaultSettings.hostPath);
+      expect(result.userId).toEqual(testConfig.defaultSettings.userId);
+    });
+
+  });
+
 });

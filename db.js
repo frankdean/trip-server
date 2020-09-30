@@ -23,7 +23,7 @@ var pg = require('pg');
 var types = require('pg').types;
 var NUMERIC_OID = 1700;
 
-var config = require('./config.json');
+var config = require('./config');
 
 var logger = require('./logger').createLogger('db.js', config.log.level, config.log.timestamp);
 
@@ -49,6 +49,13 @@ logger.info('max pool size: %d', pgConfig.max);
 logger.info('idleTimeoutMillis: %d', pgConfig.idleTimeoutMillis);
 logger.info('connectionTimeoutMillis: %d', pgConfig.connectionTimeoutMillis);
 
+/**
+ * Contains functions interacting with the database.  Implemented as a
+ * separate module so that in the future, different database types could be
+ * more easily supported.
+ *
+ * @module db
+ */
 module.exports = {
   createLocationShare: createLocationShare,
   updateUser: updateUser,
@@ -154,6 +161,8 @@ module.exports = {
   deleteItineraryTracks: deleteItineraryTracks,
   updateTile: updateTile,
   updateTrackingInfo: updateTrackingInfo,
+  updateTripLoggerSettingsByUsername: updateTripLoggerSettingsByUsername,
+  getTripLoggerSettingsByUsername: getTripLoggerSettingsByUsername,
   getTileCount: getTileCount,
   unitTests: {convertArrayToSqlArray: convertArrayToSqlArray},
   shutdown: shutdown
@@ -284,7 +293,6 @@ function getUsers(offset, limit, nickname, email, searchType, callback) {
       if (limit) {
         sql += ' LIMIT ' + limit;
       }
-      logger.debug('Execute query');
       client.query(sql,
                    criteria.params,
                    function(err, result) {
@@ -703,6 +711,47 @@ function updateTrackingInfo(username, newUuid, callback) {
                      // release the client back to the pool
                      done();
                      callback(err);
+                   });
+    }
+  });
+}
+
+function updateTripLoggerSettingsByUsername(username, settingsText, callback) {
+  callback = typeof callback === 'function' ? callback : function() {};
+  pool.connect(function(err, client, done) {
+    if (err) {
+      callback(err);
+    } else {
+      client.query('UPDATE usertable SET tl_settings=$2 WHERE email=$1',
+                   [username, settingsText],
+                   function(err, result) {
+                     done();
+                     callback(err);
+                   });
+    }
+  });
+}
+
+function getTripLoggerSettingsByUsername(username, callback) {
+  callback = typeof callback === 'function' ? callback : function() {};
+  pool.connect(function(err, client, done) {
+    if (err) {
+      callback(err);
+    } else {
+      client.query('SELECT uuid, tl_settings FROM usertable WHERE email = $1',
+                   [username],
+                   function(err, result) {
+                     // release the client back to the pool
+                     done();
+                     if (err) {
+                       callback(err);
+                     } else {
+                       if (result.rowCount > 0) {
+                         callback(null, result.rows[0]);
+                       } else {
+                         callback(new Error('TripLogger settings not found'));
+                       }
+                     }
                    });
     }
   });
@@ -1270,7 +1319,6 @@ function getItineraryWaypointsByDistanceWithin(userId, itineraryId, longitude, l
                        logger.error(err);
                        callback(err);
                      } else {
-                       logger.debug('Result: %j', result.rows);
                        callback(err, result.rows);
                      }
                    });
@@ -1306,7 +1354,6 @@ function getItineraryTracksByDistanceWithin(userId, itineraryId, longitude, lati
         'AND ST_DWithin(itp.geog, ST_MakePoint($3,$4), $5) ' +
         ') AS q ' +
         'ORDER BY name, id ';
-      logger.debug('SQL: %s', query);
       client.query(query,
                    [userId, itineraryId, longitude, latitude, distance],
                    function(err, result) {

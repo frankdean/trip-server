@@ -25,7 +25,7 @@ var uuid = require('uuid');
 
 var db = require('./db');
 var utils = require('./utils');
-var config = require('./config.json');
+var config = require('./config');
 
 var validNickname = /^[!-\.0->@-~]+$/;
 var printableRegex = /^[!-~]+$/;
@@ -33,6 +33,10 @@ var printableRegexPlusSpace = /^[ -~]+$/;
 
 var logger = require('./logger').createLogger('login.js', config.log.level, config.log.timestamp);
 
+/**
+ * Primarily contains functions for handling users.
+ * @module login
+ */
 module.exports = {
   UnauthorizedError: UnauthorizedError,
   InvalidCredentialsError: InvalidCredentialsError,

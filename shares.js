@@ -23,6 +23,10 @@ var db = require('./db');
 
 var validNickname = /^[!-\.0->@-~]+$/;
 
+/**
+ * Primarily contains functions for handling the sharing of itineries.
+ * @module shares
+ */
 module.exports = {
   deleteLocationSharesForShareList: deleteLocationSharesForShareList,
   getLocationShares: getLocationShares,

@@ -17,25 +17,38 @@
  */
 'use strict';
 
+var fs = require('fs');
 var builder = require('xmlbuilder');
 var uuid = require('uuid');
 var _ = require('lodash');
+var YAML = require('yaml');
 
 var db = require('./db');
 var utils = require('./utils');
-var config = require('./config.json');
+var config = require('./config');
 
 var logger = require('./logger').createLogger('tracks.js', config.log.level, config.log.timestamp);
 
+/**
+ * Primarily contains functions for handling location tracks.
+ *
+ * @module tracks
+ */
+
 module.exports = {
+  /** Fetches location points. */
   getLocations: getLocations,
+  /** Fetches locations as XML */
   getLocationsAsXml: getLocationsAsXml,
   getNicknames: getNicknames,
   getColors: getColors,
   getTrackingInfo: getTrackingInfo,
   logPoint: logPoint,
   updateTrackingInfo: updateTrackingInfo,
+  importSettingsFile: importSettingsFile,
+  downloadSettingsFile: downloadSettingsFile,
   unitTests: {
+    createDefaultSettings: createDefaultSettings,
     constrainSharedLocationDates: constrainSharedLocationDates,
     toNum: toNum
   }
@@ -71,6 +84,150 @@ function updateTrackingInfo(username, callback) {
   var newUuid = uuid.v4();
   db.updateTrackingInfo(username, newUuid, function(err) {
     callback(err, {uuid: newUuid});
+  });
+}
+
+function importSettingsFile(username, pathname, deleteFileAfter, callback) {
+  logger.debug('Importing settings from file %s', pathname);
+  var yaml, s = fs.readFile(pathname, { encoding: 'utf8' }, function(err, data) {
+    // logger.debug('File data: %s', data);
+    try {
+      yaml = YAML.parse(data);
+    } catch (e) {
+      logger.error('Unable to parse upload', e);
+    }
+    if (yaml && yaml.userId !== undefined &&
+        Array.isArray(yaml.settingProfiles) &&
+        Array.isArray(yaml.noteSuggestions) &&
+        yaml.currentSettingUUID !== undefined &&
+        yaml !== undefined) {
+      db.updateTripLoggerSettingsByUsername(username, data, function(err) {
+        if (err) {
+          logger.error('Error saving to database', err);
+        } else {
+          logger.debug('Successfully imported TripLogger settings');
+        }
+        callback(err);
+        if (deleteFileAfter) {
+          // logger.debug('Deleting %s', pathname);
+          fs.unlinkSync(pathname);
+        }
+      });
+    } else {
+      logger.info('Uploaded file is not a valid TripLogger YAML settings file');
+      callback(new Error('Uploaded file is not a valid TripLogger YAML settings file'));
+      if (deleteFileAfter) {
+        // logger.debug('Deleting %s', pathname);
+        fs.unlinkSync(pathname);
+      }
+    }
+  });
+}
+
+/**
+ * Creates a Settings object based on values contained in the site's
+ * configuration.  Where no values are configured for the HTTP request
+ * parameters for logging location points, they are guessed from the passed
+ * HTTP Request object.
+ * @param tripLoggerConfig optional object containing a default configuration.
+ * Typically this would be an object from the site's configuration file,
+ * e.g. config.tripLogger.defaultConfiguration.
+ * @param httpRequest the HTTP request object
+ * @param {string} userUuid
+ * @return {object} a Settings object populated with default values
+ */
+function createDefaultSettings(tripLoggerConfig, httpRequest, userUuid) {
+  var s, p, m, host, port, url;
+  p = {
+    uuid: uuid.v4(),
+    name: 'Initial configuration',
+    localLoggingInterval: 1.2e+1,
+    localLoggingDistance: 1e+1,
+    localLoggingEnabled: true,
+    remoteInterval: 1.8e+2,
+    remoteDistance: 1.5e+2,
+    remoteEnabled: false,
+    desiredAccuracyIndex: 0,
+    minimumHdop: 1.5e+1,
+    maxAccuracySeekTime: 3e+1,
+    strictHdopCompliance: false
+  };
+  s = {
+    currentSettingUUID: p.uuid,
+    settingProfiles: [p],
+    activityBarEnabled: true,
+    notifyAfterSendNote: false,
+    notifyAfterSendSingle: false,
+    maxActivityHistory: 100,
+    batteryChargingLevel: 0e+0,
+    batteryDischargingLevel: 0e+0,
+    httpsEnabled: true,
+    httpPostEnabled: true,
+    postJson: false,
+    hostname: '',
+    hostPort: '',
+    hostPath: '',
+    userId: userUuid,
+    noteSuggestions: ['Parked here']
+  };
+  if (s.hostname == null || s.hostname.length === 0) {
+    host = httpRequest.headers.host;
+    if (host && host.length > 0) {
+      var h = host.split(':');
+      if (h.length > 0) {
+        s.hostname = h[0];
+      }
+      if (h.length > 1) {
+        s.hostPort = h[1];
+      }
+    }
+  }
+  if ((s.hostPath == null || s.hostPath.length === 0) && (httpRequest.url && httpRequest.url.length > 0)) {
+    m = /(.*)\/nickname\/download\/settings\/triplogger(\?.*)?/.exec(httpRequest.url);
+    s.hostPath = (m && m[1] != null) ? m[1] + '/log_point' : '/log_point';
+  }
+  if (tripLoggerConfig) {
+    logger.debug('Building settings based on site configuration');
+    s = tripLoggerConfig.defaultSettings;
+    tripLoggerConfig.defaultSettings.userId = userUuid;
+    if (tripLoggerConfig.defaultProfile.uuid == null) {
+      tripLoggerConfig.defaultProfile.uuid = uuid.v4();
+    }
+    s.currentSettingUUID = tripLoggerConfig.defaultProfile.uuid;
+    s.settingProfiles = [tripLoggerConfig.defaultProfile];
+  }
+  return s;
+}
+
+/**
+ * @param httpRequest the HTTP request object
+ * @param username the e-mail address of the user
+ */
+function downloadSettingsFile(httpRequest, username, callback) {
+  var settings, defaultProfile, myResult;
+  db.getTripLoggerSettingsByUsername(username, function(err, result) {
+    if (result && result.tl_settings ==  null) {
+      logger.debug('Settings not available from database');
+      settings = createDefaultSettings(
+        config.tripLogger && config.tripLogger.defaultConfiguration ? config.tripLogger.defaultConfiguration : null,
+        httpRequest,
+        result.uuid);
+    } else {
+      try {
+        logger.debug('Using settings from database');
+        settings = YAML.parse(result.tl_settings);
+        settings.userId = result.uuid;
+      } catch (e) {
+        logger.error('Failure parsing stored TripLogger settings', e);
+      }
+    }
+    try {
+      myResult =  YAML.stringify(settings);
+      callback(err, myResult);
+    } catch (e) {
+      logger.error('Failure creating YAML from settings', e);
+      callback(e);
+    }
   });
 }
 
@@ -196,6 +353,9 @@ function getLocations(query, callback) {
                                 result.lowest = path.lowest;
                                 result.highest = path.highest;
                               }
+                              if (err) {
+                                logger.error('Error fetching locations:', err);
+                              }
                               callback(err, result);
                             });
       } else {
@@ -218,6 +378,9 @@ function getLocations(query, callback) {
                                result.descent = path.descent;
                                result.lowest = path.lowest;
                                result.highest = path.highest;
+                             }
+                             if (err) {
+                               logger.error('Error fetching locations:', err);
                              }
                              callback(err, result);
                            });

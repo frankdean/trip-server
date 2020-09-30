@@ -1,4 +1,4 @@
-<!-- -*- mode: markdown; -*- -->
+<!-- -*- mode: markdown; -*- vim: set tw=78 ts=4 sts=0 sw=4 noet ft=markdown norl: -->
 
 # TRIP - Trip Recording and Itinerary Planner
 
@@ -50,9 +50,9 @@ The following features are provided:
 
 ## Requirements
 
-* [Node.js][] - v6.x.x
+* [Node.js][] - v10.x.x
 
-* [PostgreSQL][] database server - (Known to run on version 9.4 and 9.6)
+* [PostgreSQL][] database server - (Known to run on version 11.9)
 
 * [PostGIS][] PostGIS spatial extension to PostgreSQL (2.5.x)
 
@@ -108,7 +108,7 @@ information on using the application.
 
 2.  Clone this repository with [git][].
 
-3.  Run the following command in the route of the cloned repository:
+3.  Run the following command in the root of the cloned repository:
 
 		$ sudo docker-compose up -d
 
@@ -324,7 +324,7 @@ The basic installation consists of downloading and configuring the
 `trip-server` application, the `trip-web-client` application, and configuring
 with the [PostgreSQL][] database server.
 
-On a Debian 9 (Stretch) system, install the following packages:
+On a Debian 10 (Buster) system, install the following packages:
 
 		$ sudo apt-get install postgresql postgresql-contrib postgis
 
@@ -332,7 +332,7 @@ The following package will be installed automatically, unless you have set
 `APT::Install-Recommends` to false in apt preferences.  If they aren't
 automatically installed:
 
-		$ sudo apt-get install postgresql-9.6-postgis-2.3 postgresql-9.6-postgis-2.3-scripts
+		$ sudo apt-get install postgresql-11-postgis-2.5 postgresql-11-postgis-2.5-scripts
 
 If the application is exposed to the Internet, ideally it should also be
 configured to run behind an [Apache web server][Apache] using HTTPS.
@@ -370,10 +370,18 @@ configured to run behind an [Apache web server][Apache] using HTTPS.
 		$ cd /usr/local/trip-server/app
 		$ yarn install
 
-1.  Create and modify `config.json` by initially making a copy of
-    `config-dist.json`.  Make sure the file is not world-readable as it will
-    contain the database and token signing passwords.  Review the file,
-    modifying entries to suit your requirements.
+1.  TRIP server's configuration is maintained in a file named `config.json` or
+    `config.yaml` in the application's root directory.  Create either the JSON
+    or YAML format according to your personal preference.  If you don't have a
+    preference, YAML is probably easier to use.  If both exist, `config.yaml`
+    is chosen in preference by TRIP.
+
+	Create the initial version by making a copy of `config-dist.json` or
+    `config-dist.yaml` and modifying to suit your environment and preferences.
+
+	Make sure the file is not world-readable as it will contain the database
+    and token signing passwords.  Review the file, modifying entries to suit
+    your requirements.
 
 	* `app.json.indent.level` - Indent level when debugging server with pretty
 	  print enabled
@@ -411,7 +419,7 @@ and there may be sanctions if you fail to do so.  E.g. If you are using the
 [OpenStreetMap][] tile server, read and comply with their
 [Tile Usage Policy][].
 Please ensure you configure the following entries correctly for the
-appropriate element of the `tile.providers` section(s) of `config.json`.
+appropriate element of the `tile.providers` section(s) of `config.json` or `config.yaml`.
 
 [Tile Usage Policy]: https://operations.osmfoundation.org/policies/tiles/ "OSM Tile Usage Policy"
 
@@ -454,7 +462,7 @@ link to `SRTM Data` to download `zip` files that contain `tiff` files
 with 5m x 5m elevation data.
 
 Extract the `tiff` files to a folder, e.g. `/var/local/elevation-data`
-and configure an `elevation` section in `config.json`, e.g.
+and configure an `elevation` section in `config.json` or `config.yaml`, e.g.
 
     ...
 
@@ -560,7 +568,7 @@ for more information
 
 #### Configure md5 password access for trip user to trip database
 
-Add the following entry to `/etc/postgresql/9.4/main/pg_hba.conf`, just
+Add the following entry to `/etc/postgresql/11/main/pg_hba.conf`, just
 before the first entry for the `all` DATABASE and `all` USER type:
 
 		local   trip     trip                             md5
@@ -581,7 +589,7 @@ As a Unix user who is also a postgresql superuser:
 		$ createuser -PDRS trip
 
 This will command will prompt for a password for the user.  This needs to
-match the password embedded in the `db.url` attribute in `config.json` when
+match the password embedded in the `db.url` attribute in `config.json` or `config.yaml` when
 the application is deployed.
 
 
@@ -954,17 +962,7 @@ a release of the web client.
 
 ## Next Release
 
-The behaviour of automatically terminating the server after the
-`app.autoQuit.timeOut` seconds parameter in `config.json`, has been changed.
-Setting the value to zero disables automatically shutting the system down.
-
-Previously, automatic shutdown only occurred for instances running under
-`systemd`.  In order to maintain the previous behaviour for non-systemd
-systems, a new parameter, `app.autoQuit.nonSystemd.enabled` must be set to
-`true` before autoquit will be activated on a non-systemd instance.  Where it
-is not specified in `config.json`, the default is `false`.  See
-`config-dist.json` for an example value.
-
+See [CHANGELOG](./CHANGELOG.md)
 
 [trip-web-client]: https://www.fdsd.co.uk/trip-web-client-docs/
 [AngularJS]: https://angularjs.org

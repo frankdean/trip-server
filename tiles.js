@@ -23,10 +23,14 @@ var util = require('util');
 var _ = require('lodash');
 
 var db = require('./db');
-var config = require('./config.json');
+var config = require('./config');
 
 var logger = require('./logger').createLogger('tiles.js', config.log.level, config.log.timestamp);
 
+/**
+ * Primarily contains functions for handling map tiles.
+ * @module tiles
+ */
 module.exports = {
   fetchTile: fetchTile,
   unitTests: {transliterateTileUrl: transliterateTileUrl}

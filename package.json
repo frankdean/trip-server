@@ -1,6 +1,6 @@
 {
   "name": "trip-server",
-  "version": "1.3.0",
+  "version": "1.3.1-rc.1",
   "description": "TRIP - Trip Recording and Itinerary Planner RESTful server",
   "author": {
     "name": "Frank Dean",
@@ -21,14 +21,20 @@
   },
   "devDependencies": {
     "jasmine": "^3.4.0",
+    "jsdoc": "^3.6.6",
     "jshint": "^2.9.4",
-    "nodemon": "^2.0.4"
+    "nodemon": "^2.0.4",
+    "rimraf": "^3.0.2",
+    "yargs": "^16.0.3"
   },
   "scripts": {
-    "nodemon": "nodemon --ignore 'app/*' index.js",
-    "test": "nodemon --ignore 'app/*' ./node_modules/jasmine/bin/jasmine.js",
+    "nodemon": "nodemon --ext 'json,js,yaml' --ignore 'app/*' index.js",
+    "config2yaml": "node ./spec/support/json2yaml.js --outfile config.yaml",
+    "test": "nodemon --ext 'json,js,yaml' --ignore 'app/*' ./node_modules/jasmine/bin/jasmine.js",
     "test-single-run": "jasmine",
-    "lint": "jshint *.js spec/*.js"
+    "clean": "rimraf docs",
+    "docs": "nodemon ./node_modules/jsdoc/jsdoc.js --ignore 'docs/*' -- --destination docs --readme README.md --package package.json ./",
+    "lint": "jshint *.js spec/*.js spec/support/*.js"
   },
   "dependencies": {
     "@turf/bbox": "^5.1.5",
@@ -51,6 +57,7 @@
     "socket.io": "^2.2.0",
     "systemd": "^0.3.1",
     "uuid": "^3.0.1",
-    "xmlbuilder": "^12.0.1"
+    "xmlbuilder": "^12.0.1",
+    "yaml": "^1.10.0"
   }
 }

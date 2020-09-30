@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 11.7 (Debian 11.7-2.pgdg90+1)
--- Dumped by pg_dump version 11.7 (Debian 11.7-2.pgdg90+1)
+-- Dumped from database version 11.9
+-- Dumped by pg_dump version 11.9
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -606,7 +606,8 @@ CREATE TABLE public.usertable (
     email text NOT NULL,
     uuid uuid NOT NULL,
     password text NOT NULL,
-    nickname text NOT NULL
+    nickname text NOT NULL,
+    tl_settings text
 );
 
 

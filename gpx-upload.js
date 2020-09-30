@@ -21,13 +21,17 @@ var fs = require('fs');
 var sax = require('sax');
 var _ = require('lodash');
 
-var elevation = require('./elevation').init();
+var elevation = require('./elevation');
 var db = require('./db');
 var utils = require('./utils');
-var config = require('./config.json');
+var config = require('./config');
 
 var logger = require('./logger').createLogger('gpx-upload.js', config.log.level, config.log.timestamp);
 
+/**
+ * Handles uploading GPX files.
+ * @module gpx-upload
+ */
 module.exports = {
   importFile: importFile,
   parseFile: parseFile

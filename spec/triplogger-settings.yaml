@@ -1,0 +1,29 @@
+currentSettingUUID: 39d31db3-2c29-4f4f-92bf-c8956e715160
+settingProfiles:
+  - uuid: 39d31db3-2c29-4f4f-92bf-c8956e715160
+    name: Initial configuration
+    localLoggingInterval: 12
+    localLoggingDistance: 10
+    localLoggingEnabled: true
+    remoteInterval: 180
+    remoteDistance: 150
+    remoteEnabled: false
+    desiredAccuracyIndex: 0
+    minimumHdop: 15
+    maxAccuracySeekTime: 30
+    strictHdopCompliance: false
+activityBarEnabled: true
+notifyAfterSendNote: false
+notifyAfterSendSingle: false
+maxActivityHistory: 100
+batteryChargingLevel: 0
+batteryDischargingLevel: 0
+httpsEnabled: true
+httpPostEnabled: true
+postJson: false
+hostname: null
+hostPort: null
+hostPath: null
+userId: 483fa4f2-2fd5-47e4-9487-6755944af99d
+noteSuggestions:
+  - Parked here

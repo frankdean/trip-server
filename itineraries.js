@@ -22,8 +22,8 @@ var _ = require('lodash');
 var builder = require('xmlbuilder');
 
 var db = require('./db');
-var config = require('./config.json');
-var elevation = require('./elevation').init();
+var config = require('./config');
+var elevation = require('./elevation');
 var utils = require('./utils');
 
 var validNickname = /^[!-\.0->@-~]+$/;
@@ -33,6 +33,10 @@ var logger = require('./logger').createLogger('itineries.js', config.log.level, 
 // TODO This should be a per user configurable default
 var flatSpeed = (config.app.averageFlatSpeedKph) || 4;
 
+/**
+ * Primarily contains functions for managing itineraries.
+ * @module itineraries
+ */
 module.exports = {
   deleteItinerary: deleteItinerary,
   getItinerary: getItinerary,
@@ -754,9 +758,13 @@ function getItineraryTrackSegmentForUser(username, itineraryId, segmentId, offse
                     // As we're getting all the segment points, return a segment populated with its attributes
                     db.getItineraryTrackSegment(itineraryId, segmentId, function(err, segment) {
                       if (utils.handleError(err, callback)) {
-                        segment.count = count;
-                        segment.points = points;
-                        callback(err, segment);
+                        if (segment != null) {
+                          segment.count = count;
+                          segment.points = points;
+                          callback(err, segment);
+                        } else {
+                          callback(new Error('Itinerary Track Segment not found'), segment);
+                        }
                       }
                     });
                   }

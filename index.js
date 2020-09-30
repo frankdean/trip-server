@@ -30,7 +30,7 @@ var nstatic = require('node-static');
 var qs = require('qs');
 var systemd = require('systemd');
 
-var config = require('./config.json');
+var config = require('./config');
 var npm_package = require('./package.json');
 var db = require('./db');
 var itineraries = require('./itineraries.js');
@@ -331,7 +331,6 @@ myApp.handleGetItinerariesWithinDistance = function(req, res, token) {
 };
 
 myApp.handleGetItineraryRoutesWithinDistance = function(req, res, token) {
-  logger.debug('----------------------------------------');
   var match, id, q;
   req.on('data', function() {
   }).on('end', function() {
@@ -1501,6 +1500,59 @@ myApp.handleUpdateTrackingInfo = function(req, res, token) {
   });
 };
 
+myApp.handleUpdateTripLoggerSettingsByUsername = function(req, res, token) {
+  var result,
+      form = new formidable.IncomingForm();
+  form.maxFieldsSize = 10 * 1024 * 1024;
+  form.hash = 'sha1';
+  form.on('file', function(name, file) {
+    // logger.debug('File saved as %s', file.path);
+    // logger.debug('Original name: %s', file.name);
+    // logger.debug('File size: %d bytes', file.size);
+    // logger.debug('Hash: %s', file.hash);
+    tracks.importSettingsFile(token.sub, file.path, true, function(err) {
+      if (myApp.handleError(err, res)) {
+        res.statusCode = 200;
+      }
+      res.end();
+    });
+  });
+  form.on('error', function() {
+    logger.warn('Form upload failed');
+    myApp.handleError(new Error('Form upload failed'));
+  });
+  form.on('abort', function() {
+    logger.warn('Form upload aborted');
+    myApp.handleError(new Error('Form upload aborted'));
+  });
+  form.on('end', function() {
+    // logger.debug('Received upload of %d bytes', form.bytesReceived);
+    // logger.debug('Expected %d bytes', form.bytesExpected);
+    // logger.debug('File path: %s', form.uploadDir);
+  });
+  form.parse(req, function(err, fields, files) {
+    logger.debug('Settings file uploaded');
+  });
+  return;
+};
+
+myApp.handleDownloadTripLoggerSettingsByUsername = function(req, res, token) {
+  var body = [];
+  req.on('data', function(chunk) {
+    body.push(chunk);
+  }).on('end', function() {
+    body = Buffer.concat(body).toString();
+    tracks.downloadSettingsFile(req, token.sub, function(err, settings) {
+      if (myApp.handleError(err, res)) {
+        res.setHeader('Content-type', 'application/x-yaml');
+        res.setHeader('Content-Disposition', 'attachment; filename=triplogger-settings.yaml');
+        res.statusCode = 200;
+        res.end(settings);
+      }
+    });
+  });
+};
+
 myApp.handleGetLocationShares = function(req, res, token) {
   req.on('data', function() {
   }).on('end', function() {
@@ -1618,6 +1670,10 @@ myApp.handleFullyAuthenticatedRequests = function(req, res, token) {
     myApp.handleGetNicknames(req, res, token);
   } else if (req.method === 'GET' && /\/nickname\/?(\?.*)?$/.test(req.url)) {
     myApp.handleGetNickname(req, res, token);
+  } else if (req.method === 'POST' && /\/nickname\/settings\/triplogger/.test(req.url)) {
+    myApp.handleUpdateTripLoggerSettingsByUsername(req, res, token);
+  } else if (req.method === 'POST' && /\/nickname\/download\/settings\/triplogger/.test(req.url)) {
+    myApp.handleDownloadTripLoggerSettingsByUsername(req, res, token);
   } else if (req.method === 'GET' && /\/download\/tracks(\/)?([!-\.0->@-~]+)?(\?.*)?$/.test(req.url)) {
     myApp.handleDownloadLocations(req, res, token);
   } else if (req.method === 'POST' && /\/download\/itinerary\/(\d+)\/gpx(?:\/)?([!-\.0->@-~]+)?(\?.*)?$/.test(req.url)) {

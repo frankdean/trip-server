@@ -1,0 +1,109 @@
+app:
+  json:
+    indent:
+      level: 0
+  gpx:
+    allowInvalidXsd: false
+  autoQuit:
+    timeOut: 300
+    nonSystemd:
+      enabled: false
+  token:
+    expiresIn: 43200
+    renewWithin: 21600
+  resourceToken:
+    expiresIn: 86400
+  maxItinerarySearchRadius: 50000
+  averageFlatSpeedKph: 4
+jwt:
+  signingKey: secret
+  resourceSigningKey: different-secret
+tile:
+  cache:
+    maxAge: 0
+  providers_READ_TILE_USAGE_POLICY_BELOW_AND_SET_USER_AGENT_AND_REFERRER_INFO_BEFORE_USING:
+    - help: " see http://wiki.openstreetmap.org/wiki/Tile_usage_policy"
+      userAgentInfo: (mailto:your.contact@email.address)
+      refererInfo: http://link_to_deployed_application_information
+      options:
+        protocol: "http:"
+        host: tile.openstreetmap.org
+        port: "80"
+        path: /{z}/{x}/{y}.png
+        method: GET
+      mapLayer:
+        name: OSM Mapnik
+        type: xyz
+        tileAttributions:
+          - text: "Map data &copy; "
+          - text: OpenStreetMap
+            link: http://openstreetmap.org
+          - text: " contributors, "
+          - text: CC-BY-SA
+            link: http://creativecommons.org/licenses/by-sa/2.0/
+db:
+  uri: postgresql://trip:secret@localhost/trip
+  poolSize: 10
+  poolIdleTimeout: 10000
+  connectionTimeoutMillis: 0
+elevation-local-disabled:
+  tileCacheMs: 60000
+  datasetDir: ./elevation-data/
+elevation-remote-disabled:
+  provider:
+    userAgentInfo: (mailto:your.contact@email.address)
+    refererInfo: http://link_to_deployed_application_information
+    options:
+      protocol: "http:"
+      host: localhost
+      port: "8082"
+      path: /api/v1/lookup
+      method: POST
+tripLogger:
+  defaultConfiguration:
+    defaultProfile:
+      uuid: null
+      name: Initial configuration
+      localLoggingInterval: 12
+      localLoggingDistance: 10
+      localLoggingEnabled: true
+      remoteInterval: 180
+      remoteDistance: 150
+      remoteEnabled: false
+      desiredAccuracyIndex: 0
+      minimumHdop: 15
+      maxAccuracySeekTime: 30
+      strictHdopCompliance: false
+    defaultSettings:
+      currentSettingUUID: null
+      settingProfiles: null
+      activityBarEnabled: true
+      notifyAfterSendNote: false
+      notifyAfterSendSingle: false
+      maxActivityHistory: 100
+      batteryChargingLevel: 0
+      batteryDischargingLevel: 0
+      httpsEnabled: true
+      httpPostEnabled: true
+      postJson: false
+      hostname: 192.168.1.8
+      hostPort: "8080"
+      hostPath: /trip/rest/log_point
+      userId: null
+      noteSuggestions:
+        - Parked here
+staticFiles:
+  allow: true
+debug: false
+log:
+  level: info
+  timestamp: false
+validation:
+  headers:
+    contentType:
+      warn: true
+reporting:
+  metrics:
+    tile:
+      count:
+        frequency: 100

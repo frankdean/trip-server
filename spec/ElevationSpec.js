@@ -20,7 +20,7 @@
 var logger = require('../logger').createLogger('ElevationSpec.js');
 
 describe('elevation.js', function() {
-  var Elevation = require('../elevation.js').init();
+  var Elevation = require('../elevation.js');
   var err, result;
   var p1 = {lat: 51.500194, lng: -0.134583};
   var p2 = {lat: 51.493355, lng: -0.491638};

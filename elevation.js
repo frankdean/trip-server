@@ -17,42 +17,24 @@
  */
 'use strict';
 
-var _ = require('lodash');
-var fs = require('fs');
-var http = require('http');
-
-var config = require('./config.json');
-var gdal = require('gdal');
-var utils = require('./utils');
-
-var logger = require('./logger').createLogger('elevation.js', config.log.level, config.log.timestamp);
+const _ = require('lodash'),
+      fs = require('fs'),
+      http = require('http'),
+      gdal = require('gdal'),
+      config = require('./config'),
+      utils = require('./utils'),
+      logger = require('./logger').createLogger('elevation.js', config.log.level, config.log.timestamp);
 
 // an array containing ElevationTile instances with coordinates of all elevation data tiles on the system
-var elevationTiles;
-var unitLoaded = false;
-var unitReady = false;
+var elevationTiles,
+    unitLoaded = false,
+    unitReady = false;
 
+/**
+ * Handles loading tiles containing elevation (altitude/height) data.
+ * @module elevation
+ */
 module.exports = {
-  init:  function() {
-    if (config.elevation != null && config.elevation.datasetDir != null && !unitLoaded ) {
-      unitLoaded = true;
-      logger.debug('Searching for tif files in %s', config.elevation.datasetDir);
-      logger.debug("Memory before processing tiles", process.memoryUsage());
-//      console.time('load-tiles');
-      loadTiles(config.elevation.datasetDir)
-        .then(function(tiles) {
-//          console.timeEnd('load-tiles');
-          elevationTiles = tiles;
-          unitReady = true;
-          logger.debug("Memory after processing tiles", process.memoryUsage());
-          logger.info('Loaded %d elevation data tiles', tiles.length);
-        })
-        .catch(function(err) {
-          logger.alert('Failed to load elevation data: %s', err);
-        });
-    }
-    return this;
-  },
   fillElevations: fillElevations,
   fillElevationsForRoutes: fillElevationsForRoutes
 };
@@ -377,4 +359,23 @@ function fillElevationsForRoutes(routes, options, callback) {
       }
     });
   });
+}
+
+// Initialise the module
+if (config.elevation != null && config.elevation.datasetDir != null && !unitLoaded ) {
+  unitLoaded = true;
+  logger.debug('Searching for tif files in %s', config.elevation.datasetDir);
+  logger.debug("Memory before processing tiles", process.memoryUsage());
+  //      console.time('load-tiles');
+  loadTiles(config.elevation.datasetDir)
+    .then(function(tiles) {
+      //          console.timeEnd('load-tiles');
+      elevationTiles = tiles;
+      unitReady = true;
+      logger.debug("Memory after processing tiles", process.memoryUsage());
+      logger.info('Loaded %d elevation data tiles', tiles.length);
+    })
+    .catch(function(err) {
+      logger.alert('Failed to load elevation data: %s', err);
+    });
 }

@@ -1,6 +1,6 @@
 /**
  * @license TRIP - Trip Recording and Itinerary Planning application.
- * (c) 2016, 2017 Frank Dean <frank@fdsd.co.uk>
+ * (c) 2016-2020 Frank Dean <frank@fdsd.co.uk>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,22 +17,22 @@
  */
 'use strict';
 
-var db = require('./db');
-var utils = require('./utils');
+describe('TripLogger settings upload', function() {
+  var err,
+      db = require('../db.js'),
+      testModule = require('../tracks.js');
 
-/**
- * Contains functions for reporting on the system status.
- * @module reports
- */
-module.exports = {
-  getSystemStatus: getSystemStatus
-};
-
-function getSystemStatus(callback) {
-  callback = typeof callback === 'function' ? callback : function() {};
-  db.getTileCount(function(err, result) {
-    if (utils.handleError(err, callback)) {
-      callback(err, {tileUsage: result});
-    }
+  beforeEach(function(done) {
+    spyOn(db, 'updateTripLoggerSettingsByUsername').and.callThrough();
+    testModule.importSettingsFile('user@trip.test', './spec/triplogger-settings.yaml', false, function(_err_) {
+      err = _err_;
+      done();
+    });
   });
-}
+
+  it('should import a valid triplogger settings file', function() {
+    expect(err).toBeFalsy();
+    expect(db.updateTripLoggerSettingsByUsername).toHaveBeenCalledTimes(1);
+  });
+
+});

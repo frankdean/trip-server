@@ -31,10 +31,14 @@ var turf = {
   point: turfHelpers.point
 };
 
-var config = require('./config.json');
+var config = require('./config');
 
 var logger = require('./logger').createLogger('utils.js', config.log.level, config.log.timestamp);
 
+/**
+ * Various utility methods.
+ * @module utils
+ */
 module.exports = {
   handleError: handleError,
   fillDistanceElevationForPath: fillDistanceElevationForPath,

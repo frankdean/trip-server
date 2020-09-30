@@ -73,9 +73,9 @@
     "poolIdleTimeout": 10000,
     "connectionTimeoutMillis": 0
   },
-  "elevation-local-disabled" : {
-    "tileCacheMs" : 60000,
-    "datasetDir" : "./elevation-data/"
+  "elevation-local-disabled": {
+    "tileCacheMs": 60000,
+    "datasetDir": "./elevation-data/"
   },
   "elevation-remote-disabled": {
     "provider": {
@@ -90,6 +90,44 @@
       }
     }
   },
+  "tripLogger": {
+    "defaultConfiguration": {
+      "defaultProfile": {
+        "uuid": null,
+        "name": "Initial configuration",
+        "localLoggingInterval": 12,
+        "localLoggingDistance": 10,
+        "localLoggingEnabled": true,
+        "remoteInterval": 180,
+        "remoteDistance": 150,
+        "remoteEnabled": false,
+        "desiredAccuracyIndex": 0,
+        "minimumHdop": 15,
+        "maxAccuracySeekTime": 30,
+        "strictHdopCompliance": false
+      },
+      "defaultSettings": {
+        "currentSettingUUID": null,
+        "settingProfiles": null,
+        "activityBarEnabled": true,
+        "notifyAfterSendNote": false,
+        "notifyAfterSendSingle": false,
+        "maxActivityHistory": 100,
+        "batteryChargingLevel": 0,
+        "batteryDischargingLevel": 0,
+        "httpsEnabled": true,
+        "httpPostEnabled": true,
+        "postJson": false,
+        "hostname": "192.168.1.8",
+        "hostPort": "8080",
+        "hostPath": "/trip/rest/log_point",
+        "userId": null,
+        "noteSuggestions": [
+          "Parked here"
+        ]
+      }
+    }
+  },
   "staticFiles": {
     "allow": true
   },
@@ -99,8 +137,8 @@
     "timestamp": false
   },
   "validation": {
-    "headers" : {
-      "contentType" : {
+    "headers": {
+      "contentType": {
         "warn": true
       }
     }
