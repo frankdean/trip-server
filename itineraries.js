@@ -1,3 +1,4 @@
+
 // vim: set ts=2 sts=-1 sw=2 et ft=javascript norl:
 /**
  * @license TRIP - Trip Recording and Itinerary Planning application.
@@ -68,6 +69,7 @@ module.exports = {
   getItineraryWaypointForUser: getItineraryWaypointForUser,
   getItineraryWaypointsForUser: getItineraryWaypointsForUser,
   getSpecifiedItineraryWaypointsForUser: getSpecifiedItineraryWaypointsForUser,
+  createWaypoints: createWaypoints,
   saveItineraryWaypoint: saveItineraryWaypoint,
   moveItineraryWaypoint: moveItineraryWaypoint,
   deleteItineraryWaypoint: deleteItineraryWaypoint,
@@ -633,6 +635,30 @@ function getSpecifiedItineraryWaypointsForUser(username, itineraryId, waypointId
         });
       } else {
         callback(new Error('Access denied'));
+      }
+    }
+  });
+}
+
+/**
+ * Creates itinerary waypoints using the standard waypoint attribute names for this application.
+ * @param {String} username the e-mail address for the user
+ * @param {number} itineraryId the itinerary's ID
+ * @param {array} an array of waypoint objects
+ * @param {object} callback the callback function, the first parameter returned
+ * being null or an Error.
+ */
+function createWaypoints(username, itineraryId, waypoints, callback) {
+  var elevationFillOptions = {force: false, skipIfAnyExist: false};
+  callback = typeof callback === 'function' ? callback : function() {};
+  db.confirmItineraryOwnership(username, itineraryId, function(err, result) {
+    if (utils.handleError(err, callback)) {
+      if (result !== true) {
+        callback(new Error('Access denied'));
+      } else {
+        elevation.fillElevations(waypoints, elevationFillOptions, function(err) {
+          db.createItineraryWaypoints2(itineraryId, waypoints, callback);
+        });
       }
     }
   });

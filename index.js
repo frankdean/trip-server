@@ -546,6 +546,29 @@ myApp.handleGetSpecifiedItineraryWaypoints = function(req, res, token) {
   });
 };
 
+myApp.handleCreateItineraryWaypoints = function(req, res, token) {
+  var match, itineraryId, body = [];
+  req.on('data', function(chunk) {
+    body.push(chunk);
+  }).on('end', function() {
+    body = Buffer.concat(body).toString();
+    myApp.validateHeadersAndBody(req.headers, body, function(err) {
+      if (myApp.handleError(err, res)) {
+        match =  /\/itinerary\/(\d+)\/waypoints\/create(?:\?.*)?$/.exec(req.url);
+        itineraryId = match ? match[1] : undefined;
+        var params = JSON.parse(body);
+        if (params && Array.isArray(params.waypoints)) {
+          itineraries.createWaypoints(token.sub, itineraryId, params.waypoints, function(err, waypoints) {
+            myApp.respondWithData(err, res, waypoints);
+          });
+        } else {
+          myApp.handleError(new Error('Invalid parameters'), res);
+        }
+      }
+    });
+  });
+};
+
 myApp.handleSaveItineraryWaypoint = function(req, res, token) {
   var match, itineraryId, wptId, body = [];
   req.on('data', function(chunk) {
@@ -1716,6 +1739,8 @@ myApp.handleFullyAuthenticatedRequests = function(req, res, token) {
     myApp.handleGetItineraryWaypointCount(req, res, token);
   } else if (req.method === 'POST' && /\/itinerary\/(\d+)\/waypoints\/specified(?:\?.*)?$/.test(req.url)) {
     myApp.handleGetSpecifiedItineraryWaypoints(req, res, token);
+  } else if (req.method === 'POST' && /\/itinerary\/(\d+)\/waypoints\/create(?:\?.*)?$/.test(req.url)) {
+    myApp.handleCreateItineraryWaypoints(req, res, token);
   } else if (req.method === 'GET' && /\/itinerary\/(\d+)\/waypoint(?:\?.*)?$/.test(req.url)) {
     myApp.handleGetItineraryWaypoints(req, res, token);
   } else if (req.method === 'GET' && /\/itinerary\/(\d+)\/waypoint\/(\d+)(?:\?.*)?$/.test(req.url)) {

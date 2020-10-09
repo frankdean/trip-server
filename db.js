@@ -148,6 +148,7 @@ module.exports = {
   updateItineraryTrackName: updateItineraryTrackName,
   updateItineraryTrackDistanceElevation: updateItineraryTrackDistanceElevation,
   createItineraryWaypoints: createItineraryWaypoints,
+  createItineraryWaypoints2: createItineraryWaypoints2,
   createItineraryRoute: createItineraryRoute,
   createItineraryRoutes: createItineraryRoutes,
   updateItineraryDistanceElevationData: updateItineraryDistanceElevationData,
@@ -2486,6 +2487,13 @@ function updateItineraryTrackDistanceElevation(itineraryId, trackId, track, call
   });
 }
 
+/**
+ * Creates itinerary waypoints using waypoint attribute names created during XML import of GPX files.
+ * @param {number} itineraryId the itinerary's ID
+ * @param {array} an array of waypoint objects
+ * @param {object} callback the callback function, the first parameter
+ * being null or an Error.
+ */
 function createItineraryWaypoints(itineraryId, waypoints, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
   var waypointCounter = waypoints.length;
@@ -2501,6 +2509,41 @@ function createItineraryWaypoints(itineraryId, waypoints, callback) {
         client.query({name: 'crt-itnry-wpt',
                       text: 'INSERT INTO itinerary_waypoint (itinerary_id, name, geog, altitude, time, comment, description, symbol, color, type, avg_samples) VALUES ($1, $2, ST_SetSRID(ST_POINT($3, $4),4326), $5, $6, $7, $8, $9, $10, $11, $12)',
                       values: [itineraryId, w.name, w.lng, w.lat, w.ele, w.time, w.cmt, w.desc, w.sym, w.color, w.type, w.samples]}, function(err, result) {
+                        if (err) {
+                          logger.error('Failure inserting itinerary_waypoint', err);
+                        }
+                        if (--waypointCounter === 0) {
+                          done();
+                          callback(null);
+                        }
+                      });
+      });
+    }
+  });
+}
+
+/**
+ * Creates itinerary waypoints using the standard waypoint attribute names for this application.
+ * @param {number} itineraryId the itinerary's ID
+ * @param {array} an array of waypoint objects
+ * @param {object} callback the callback function, the first parameter returned
+ * being null or an Error.
+ */
+function createItineraryWaypoints2(itineraryId, waypoints, callback) {
+  callback = typeof callback === 'function' ? callback : function() {};
+  var waypointCounter = waypoints.length;
+  if (waypointCounter === 0) {
+    callback(null);
+    return;
+  }
+  pool.connect(function(err, client, done) {
+    if (err) {
+      callback(err);
+    } else {
+      waypoints.forEach(function(w) {
+        client.query({name: 'crt-itnry-wpt',
+                      text: 'INSERT INTO itinerary_waypoint (itinerary_id, name, geog, altitude, time, comment, description, symbol, color, type, avg_samples) VALUES ($1, $2, ST_SetSRID(ST_POINT($3, $4),4326), $5, $6, $7, $8, $9, $10, $11, $12)',
+                      values: [itineraryId, w.name, w.lng, w.lat, w.altitude, w.time, w.comment, w.description, w.symbol, w.color, w.type, w.samples]}, function(err, result) {
                         if (err) {
                           logger.error('Failure inserting itinerary_waypoint', err);
                         }

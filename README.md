@@ -955,7 +955,7 @@ a release of the web client.
 
 1.  Run `yarn install` on the target server
 
-1.  Optionally, run`yarn outdated` and compare versions with test environment
+1.  Optionally, run `yarn outdated` and compare versions with test environment
 
 1.  If necessary run `yarn upgrade`
 
