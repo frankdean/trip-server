@@ -28,7 +28,9 @@ var autoquit = require('autoquit');
 var formidable = require('formidable');
 var nstatic = require('node-static');
 var qs = require('qs');
-var systemd = require('systemd');
+const systemd = require('systemd'),
+      util = require('util'),
+      YAML = require('yaml');
 
 var config = require('./config');
 var npm_package = require('./package.json');
@@ -87,7 +89,7 @@ myApp.handleError = function handleError(e, res) {
       logger.debug(e);
     }
     var resBody = {
-      error: e.message
+      error: e.message ? e.message : e
     };
     if (config.debug) {
       try {
@@ -285,6 +287,80 @@ myApp.handleGetItinerary = function(req, res, token) {
   });
 };
 
+myApp.handleGetItineraryYaml = function(req, res, token) {
+  var match, id, yaml;
+  req.on('data', function() {
+  }).on('end', function() {
+    match = /\/itinerary\/(\d+)\/download\/yaml\/?$/.exec(req.url);
+    id = match ? match[1] : undefined;
+    itineraries.getItineraryForUser(token.sub, id).then((itinerary) => {
+      try {
+        yaml = YAML.stringify(itinerary);
+        res.setHeader('Content-type', 'application/x-yaml');
+        res.setHeader('Content-Disposition', util.format('attachment; filename=trip-itinerary-%d.yaml', id));
+        res.statusCode = 200;
+        res.end(yaml);
+      } catch (e) {
+        logger.error('Failure creating YAML for itinerary ID %d', id, e);
+        myApp.handleError(e);
+      }
+    }).catch(reason => {
+      myApp.handleError(reason, res);
+    });
+  });
+};
+
+myApp.handleUploadItineraryYaml = function(req, res, token) {
+  var processed = false,
+      form = new formidable.IncomingForm();
+  form.maxFieldsSize = 10 * 1024 * 1024;
+  form.hash = 'sha1';
+  form.on('file', function(name, file) {
+    processed = true;
+    // logger.debug('File saved as %s', file.path);
+    // logger.debug('Original name: %s', file.name);
+    // logger.debug('File size: %d bytes', file.size);
+    // logger.debug('Hash: %s', file.hash);
+    itineraries.uploadItineraryYaml(token.sub, file.path, true).then((itineraryId) => {
+      myApp.respondWithData2(res, {id: itineraryId});
+    }).catch(reason => {
+      myApp.handleError(reason, res);
+    });
+  });
+  form.on('error', function() {
+    logger.warn('Form itinerary upload failed');
+    myApp.handleError(new Error('Form itinerary upload failed'), res);
+  });
+  form.on('abort', function() {
+    logger.warn('Form itinerary upload aborted');
+    myApp.handleError(new Error('Form itinerary upload aborted'), res);
+  });
+  form.on('end', function() {
+    // logger.debug('Received upload of %d bytes', form.bytesReceived);
+    // logger.debug('Expected %d bytes', form.bytesExpected);
+    // logger.debug('File path: %s', form.uploadDir);
+    if (!processed) {
+      myApp.handleError(new Error('No form uploaded'), res);
+    }
+  });
+  form.parse(req, function(err, fields, files) {
+    // logger.debug('Itinerary file parsing complete');
+  });
+  return;
+};
+
+myApp.handleCopyItinerary = function(req, res, token) {
+  const match = /\/itinerary\/(\d+)\/duplicate\/?$/.exec(req.url);
+  const id = match ? match[1] : undefined;
+  itineraries.getItineraryForUser(token.sub, id).then((itinerary) => {
+    return itineraries.createItineraryCopy(token.sub, itinerary).then((itineraryId) => {
+      myApp.respondWithData2(res, {id: itineraryId});
+    });
+  }).catch(reason => {
+    myApp.handleError(reason, res);
+  });
+};
+
 myApp.handleGetItineraries = function(req, res, token) {
   req.on('data', function() {
   }).on('end', function() {
@@ -467,11 +543,11 @@ myApp.handleUploadItineraryFile = function(req, res, token) {
   });
   form.on('error', function() {
     logger.warn('Form upload failed');
-    myApp.handleError(new Error('Form upload failed'));
+    myApp.handleError(new Error('Form upload failed'), res);
   });
   form.on('abort', function() {
     logger.warn('Form upload aborted');
-    myApp.handleError(new Error('Form upload aborted'));
+    myApp.handleError(new Error('Form upload aborted'), res);
   });
   form.on('end', function() {
     // logger.debug('Received upload of %d bytes', form.bytesReceived);
@@ -1247,8 +1323,10 @@ myApp.handleGetNicknames = function(req, res, token) {
 };
 
 myApp.handleGetNickname = function(req, res, token) {
-  login.getNicknameForUsername(token.sub, function(err, nickname) {
-    myApp.respondWithData(err, res, {nickname: nickname});
+  login.getNicknameForUsername(token.sub).then((nickname) => {
+    myApp.respondWithData2(res, {nickname: nickname});
+  }).catch(reason => {
+    myApp.handleError(reason, res);
   });
 };
 
@@ -1542,11 +1620,11 @@ myApp.handleUpdateTripLoggerSettingsByUsername = function(req, res, token) {
   });
   form.on('error', function() {
     logger.warn('Form upload failed');
-    myApp.handleError(new Error('Form upload failed'));
+    myApp.handleError(new Error('Form upload failed'), res);
   });
   form.on('abort', function() {
     logger.warn('Form upload aborted');
-    myApp.handleError(new Error('Form upload aborted'));
+    myApp.handleError(new Error('Form upload aborted'), res);
   });
   form.on('end', function() {
     // logger.debug('Received upload of %d bytes', form.bytesReceived);
@@ -1619,15 +1697,19 @@ myApp.noResponseData = function(err, res) {
 
 myApp.respondWithData = function(err, res, result) {
   if (myApp.handleError(err, res)) {
-    if (result) {
-      res.setHeader('Content-Type', 'application/json');
-    }
-    res.statusCode = 200;
-    if (result) {
-      res.end(JSON.stringify(result, null, myApp.pretty) + '\n');
-    } else {
-      res.end();
-    }
+    myApp.respondWithData2(res, result);
+  }
+};
+
+myApp.respondWithData2 = function(res, result) {
+  if (result) {
+    res.setHeader('Content-Type', 'application/json');
+  }
+  res.statusCode = 200;
+  if (result) {
+    res.end(JSON.stringify(result, null, myApp.pretty) + '\n');
+  } else {
+    res.end();
   }
 };
 
@@ -1729,6 +1811,12 @@ myApp.handleFullyAuthenticatedRequests = function(req, res, token) {
     myApp.handleGetItineraries(req, res, token);
   } else if (req.method === 'GET' && /\/itinerary\/?(?:[0-9]+)?(?:\?.*)?$/.test(req.url)) {
     myApp.handleGetItinerary(req, res, token);
+  } else if (req.method === 'GET' && /\/itinerary\/(\d+)\/download\/yaml\/?$/.test(req.url)) {
+    myApp.handleGetItineraryYaml(req, res, token);
+  } else if (req.method === 'POST' && /\/itinerary\/upload\/yaml\/?$/.test(req.url)) {
+    myApp.handleUploadItineraryYaml(req, res, token);
+  } else if (req.method === 'POST' && /\/itinerary\/(\d+)\/duplicate\/?$/.test(req.url)) {
+    myApp.handleCopyItinerary(req, res, token);
   } else if (req.method === 'POST' && /\/itinerary\/?(?:[0-9]+)?(?:\?.*)?$/.test(req.url)) {
     myApp.handleSaveItinerary(req, res, token);
   } else if (req.method === 'DELETE' && /\/itinerary\/?(?:[0-9]+)?(?:\?.*)?$/.test(req.url)) {

@@ -14,10 +14,22 @@
 
 		ALTER TABLE usertable ADD COLUMN IF NOT EXISTS tl_settings text;
 
+* Options to import and export full itinerary, including text and sharing.
+
+* Option to create a duplicate copy of an itinerary.
+
+* Where the start and finish dates of an itinerary being viewed relate to a
+  different time zone, show the time alongside the date on the itinerary page
+  to clarify, otherwise it can appear the dates differ by a day in some
+  circumstances.
+
 * Optionally using YAML instead of JSON for the TRIP configuration file.
 
 	The existing `config.json` script can be converted to `config.yaml` with
     `yarn run config2yaml`.
+
+* Bug fix - pasting waypoints into an itinerary didn't necessarily create them
+  in time order.
 
 [trip-web-client]: https://www.fdsd.co.uk/trip-web-client-docs/
 

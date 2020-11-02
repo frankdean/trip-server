@@ -1,4 +1,3 @@
-
 // vim: set ts=2 sts=-1 sw=2 et ft=javascript norl:
 /**
  * @license TRIP - Trip Recording and Itinerary Planning application.
@@ -19,8 +18,10 @@
  */
 'use strict';
 
-var _ = require('lodash');
-var builder = require('xmlbuilder');
+const _ = require('lodash'),
+      builder = require('xmlbuilder'),
+      fs = require('fs'),
+      YAML = require('yaml');
 
 var db = require('./db');
 var config = require('./config');
@@ -66,6 +67,9 @@ module.exports = {
   getItineraryTrackNames: getItineraryTrackNames,
   getItineraryTrackName: getItineraryTrackName,
   updateItineraryTrackName: updateItineraryTrackName,
+  getItineraryForUser: getItineraryForUser,
+  uploadItineraryYaml: uploadItineraryYaml,
+  createItineraryCopy: createItineraryCopy,
   getItineraryWaypointForUser: getItineraryWaypointForUser,
   getItineraryWaypointsForUser: getItineraryWaypointsForUser,
   getSpecifiedItineraryWaypointsForUser: getSpecifiedItineraryWaypointsForUser,
@@ -397,16 +401,12 @@ function deleteItinerarySharesForShareList(username, itineraryId, shares, callba
 }
 
 function getItineraryWaypointCount(username, itineraryId, callback) {
-  db.confirmItinerarySharedAccess(username, itineraryId, function(err, result) {
-    if (utils.handleError(err, callback)) {
-      if (result) {
-        db.getItineraryWaypointCount(itineraryId, function(err, result) {
-          callback(err, result);
-        });
-      } else {
-        callback(new Error('Access denied'));
-      }
-    }
+  db.confirmItinerarySharedAccess(username, itineraryId).then(() => {
+    db.getItineraryWaypointCount(itineraryId, function(err, result) {
+      callback(err, result);
+    });
+  }).catch(reason => {
+    utils.handleError(reason, callback);
   });
 }
 
@@ -481,24 +481,20 @@ function deleteItineraryRoutePoints(username, itineraryId, routeId, points, call
 
 function getItineraryRouteNames(username, itineraryId, callback) {
   var t;
-  db.confirmItinerarySharedAccess(username, itineraryId, function(err, result) {
-    if (utils.handleError(err, callback)) {
-      if (result) {
-        db.getItineraryRouteNames(itineraryId, function(err, result) {
-          if (utils.handleError(err, callback)) {
-            result.forEach(function(v) {
-              // Calculation using Scarf's Equivalence based on flat speed of 4 km/h
-              t = utils.scarfsEquivalence(v.distance, v.ascent, flatSpeed);
-              v.hours = t.hours;
-              v.minutes = t.minutes;
-            });
-            callback(err, result);
-          }
+  db.confirmItinerarySharedAccess(username, itineraryId).then (() => {
+    db.getItineraryRouteNames(itineraryId, function(err, result) {
+      if (utils.handleError(err, callback)) {
+        result.forEach(function(v) {
+          // Calculation using Scarf's Equivalence based on flat speed of 4 km/h
+          t = utils.scarfsEquivalence(v.distance, v.ascent, flatSpeed);
+          v.hours = t.hours;
+          v.minutes = t.minutes;
         });
-      } else {
-        callback(new Error('Access denied'));
+        callback(err, result);
       }
-    }
+    });
+  }).catch(reason => {
+    callback(reason);
   });
 }
 
@@ -535,34 +531,26 @@ function updateItineraryRouteName(username, itineraryId, routeId, name, color, c
 }
 
 function getItineraryRoutePoints(username, itineraryId, routeId, offset, limit, callback) {
-  db.confirmItinerarySharedAccess(username, itineraryId, function(err, result) {
-    if (utils.handleError(err, callback)) {
-      if (result) {
-        db.getItineraryRoutePointsCount(itineraryId, routeId, function(err, count) {
-          if (utils.handleError(err, callback)) {
-            db.getItineraryRoutePoints(itineraryId, routeId, offset, limit, function(err, result) {
-              callback(err, {count: count, points: result});
-            });
-          }
+  db.confirmItinerarySharedAccess(username, itineraryId).then(() => {
+    db.getItineraryRoutePointsCount(itineraryId, routeId, function(err, count) {
+      if (utils.handleError(err, callback)) {
+        db.getItineraryRoutePoints(itineraryId, routeId, offset, limit, function(err, result) {
+          callback(err, {count: count, points: result});
         });
-      } else {
-        callback(new Error('Access denied'));
       }
-    }
+    });
+  }).catch(reason => {
+    callback(reason);
   });
 }
 
 function getItineraryTrackNames(username, itineraryId, callback) {
-  db.confirmItinerarySharedAccess(username, itineraryId, function(err, result) {
-    if (utils.handleError(err, callback)) {
-      if (result) {
-        db.getItineraryTrackNames(itineraryId, function(err, result) {
-          callback(err, result);
-        });
-      } else {
-        callback(new Error('Access denied'));
-      }
-    }
+  db.confirmItinerarySharedAccess(username, itineraryId).then(() => {
+    db.getItineraryTrackNames(itineraryId, function(err, result) {
+      callback(err, result);
+    });
+  }).catch(reason => {
+    callback(reason);
   });
 }
 
@@ -599,44 +587,271 @@ function updateItineraryTrackName(username, itineraryId, trackId, name, color, c
 }
 
 function getItineraryWaypointForUser(username, itineraryId, waypointId, callback) {
-  db.confirmItinerarySharedAccess(username, itineraryId, function(err, result) {
-    if (utils.handleError(err, callback)) {
-      if (result) {
-        db.getItineraryWaypoint(itineraryId, waypointId, function(err, result) {
-          callback(err, result);
-        });
-      } else {
-        callback(new Error('Access denied'));
+  db.confirmItinerarySharedAccess(username, itineraryId).then(() => {
+    db.getItineraryWaypoint(itineraryId, waypointId, function(err, result) {
+      callback(err, result);
+    });
+  }).catch(reason => {
+    callback(reason);
+  });
+}
+
+/**
+ * Returns an itinerary object fully populated with child objects.
+ * @param {String} username the email address of the user requesting the itinerary.
+ * @param {number} itineraryId the ID of the itinerary to be returned.
+ * @return {Promise} the first parameter being an itinerary object.
+ */
+function getItineraryForUser(username, itineraryId) {
+
+  function routesWaypointsTracksPromise(resolve, itineraryId, itinerary) {
+    return db.getItineraryRoutesWithoutAccessCheck(itineraryId)
+      .then((routes) => {
+        itinerary.routes = routes;
+        return db.getItineraryWaypoints(itineraryId);
+      })
+      .then((waypoints) => {
+        itinerary.waypoints = waypoints;
+        return db.getItineraryTracksWithoutAccessCheck(itineraryId);
+      })
+      .then((tracks) => {
+        itinerary.tracks = tracks;
+        resolve(itinerary);
+      });
+  }
+
+  return new Promise((resolve, reject) => {
+    db.confirmItinerarySharedAccess(username, itineraryId)
+      .then(() => db.getNicknameForUsername(username))
+      .then((nickname) => {
+        return db.getItineraryWithoutAccessCheck(itineraryId)
+          .then((itinerary) => {
+            delete (itinerary.shared_to_nickname);
+            if (nickname === itinerary.owned_by_nickname) {
+              return db.getItinerarySharesWithoutAccessCheck(itineraryId)
+                .then((shares) => {
+                  itinerary.itinerary_shares = shares;
+                  return routesWaypointsTracksPromise(resolve, itineraryId, itinerary);
+                });
+            } else {
+              itinerary.itinerary_shares = [];
+              return routesWaypointsTracksPromise(resolve, itineraryId, itinerary);
+            }
+          });
+      }).catch(reason => {
+        reject(reason);
+      });
+  });
+}
+
+function removeFile(pathname) {
+  return new Promise(resolve => {
+    logger.debug('Deleting %s', pathname);
+    fs.unlink(pathname, err => {
+      if (err) {
+        logger.error('Error deleting %s: %s', pathname, err);
       }
+      resolve();
+    });
+  });
+}
+
+function findUserByName(username) {
+  return new Promise((resolve, reject) => {
+    db.findUserByUsername(username, function(err, userId) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(userId);
+      }
+    });
+  });
+}
+
+function parseYamlFile(pathname, deleteFileAfter) {
+  return new Promise((resolve, reject) => {
+    fs.readFile(pathname, { encoding: 'utf8' }, function(err, data) {
+      if (deleteFileAfter) {
+        removeFile(pathname);
+      }
+      try {
+        const result = YAML.parse(data);
+        resolve(result);
+      } catch (e) {
+        reject(new Error('Uploaded file is not a valid TripLogger YAML itinerary file'));
+      }
+    });
+  });
+}
+
+function createNewItinerary(userId, itinerary) {
+  return new Promise((resolve, reject) => {
+    db.createItinerary(userId, itinerary, function(err, result) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(result.id);
+      }
+    });
+  });
+}
+
+function createItineraryShares(itineraryId, itinerary) {
+  return new Promise((resolve, reject) => {
+    if (Array.isArray(itinerary.itinerary_shares) && itinerary.itinerary_shares.length > 0) {
+      var gerr, c = itinerary.itinerary_shares.length;
+      itinerary.itinerary_shares.forEach(function(share) {
+        db.createItineraryShare(itineraryId, share.nickname, share.active, function(err, result) {
+          if (err) {
+            logger.warn('Failed to create share for nickname \'%s\' - %s: %s', share.nickname, share.active, err);
+          } else {
+            logger.debug('Created share for \'%s\' - %s', share.nickname, share.active);
+          }
+          if (--c === 0) {
+            if (gerr) {
+              reject(gerr);
+            } else {
+              resolve();
+            }
+          }
+        });
+      });
+    } else {
+      resolve();
     }
+  });
+}
+
+function createItineraryRoutes(itineraryId, itinerary) {
+  return new Promise((resolve, reject) => {
+    if (Array.isArray(itinerary.routes)) {
+      db.createItineraryRoutes(itineraryId, itinerary.routes, function(err) {
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      });
+    } else {
+      resolve();
+    }
+  });
+}
+
+function createItineraryWaypoints(itineraryId, itinerary) {
+  return new Promise((resolve, reject) => {
+    if (Array.isArray(itinerary.waypoints)) {
+      db.createItineraryWaypoints2(itineraryId, itinerary.waypoints, function(err) {
+        if (err) {
+          reject(err);
+        }
+        resolve();
+      });
+    } else {
+      resolve();
+    }
+  });
+}
+
+function createItineraryTracks(itineraryId, itinerary) {
+  return new Promise((resolve, reject) => {
+    if (Array.isArray(itinerary.tracks)) {
+      db.createItineraryTracks(itineraryId, itinerary.tracks, function(err) {
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      });
+    } else {
+      resolve();
+    }
+  });
+}
+
+/**
+ * Handles the import of a YAML formatted file representing an itinerary
+ * object.
+ * @param {string} username the email address of the user to assign the
+ * itinerary too.
+ * @param {object} itinerary a fully populated itinerary object, which is used
+ * to create a new itinerary from.
+ * @return {Promise} the first parameter being the ID of newly created itinerary.
+ */
+function createItineraryCopy(username, itinerary) {
+  return new Promise((resolve, reject) => {
+    findUserByName(username).then((userId) => {
+      var id, suffix;
+      logger.debug('Itinerary Id: %j', itinerary.id);
+      id = ("" + itinerary.id).trim();
+      if (itinerary.id && id.length > 0) {
+        suffix = `Copy of ${id}`;
+      } else {
+        suffix = "Copy";
+      }
+      if (itinerary.title && itinerary.title.trim().length > 0) {
+        itinerary.title = itinerary.title + '—' + suffix;
+      } else {
+        itinerary.title = suffix;
+      }
+      return createNewItinerary(userId, itinerary)
+        .then((itineraryId) => createItineraryShares(itineraryId, itinerary)
+              .then(() => createItineraryRoutes(itineraryId, itinerary))
+              .then(() => createItineraryWaypoints(itineraryId, itinerary))
+              .then(() => createItineraryTracks(itineraryId, itinerary))
+              .then(() => {
+                resolve(itineraryId);
+              }));
+    }).catch(reason => {
+      reject(reason);
+    });
+  });
+}
+
+/**
+ * Handles the import of a YAML formatted file representing an itinerary object.
+ * @param {string} username the email address of the user to assign the itinerary too.
+ * @param {string} pathname the path to the uploaded temporary file containing the YAML text.
+ * @param {boolean} deleteFileAfter when true, the file is deleted after being read.
+ * @return {Promise} the first parameter being the ID of newly created itinerary.
+ */
+function uploadItineraryYaml(username, pathname, deleteFileAfter) {
+  return new Promise((resolve, reject) => {
+    logger.debug('Creating itinerary from imported file %s', pathname);
+    return parseYamlFile(pathname, deleteFileAfter)
+      .then((itinerary) => {
+        if (!itinerary) {
+          reject(new Error('File does not contain an itinerary'));
+        } else {
+          createItineraryCopy(username, itinerary).then((itineraryId) => {
+            resolve(itineraryId);
+          }).catch(reason => {
+            reject(reason);
+          });
+        }
+      }).catch((reason) => {
+        reject(reason);
+      });
   });
 }
 
 function getItineraryWaypointsForUser(username, itineraryId, callback) {
-  db.confirmItinerarySharedAccess(username, itineraryId, function(err, result) {
-    if (utils.handleError(err, callback)) {
-      if (result) {
-        db.getItineraryWaypoints(itineraryId, function(err, result) {
-          callback(err, result);
-        });
-      } else {
-        callback(new Error('Access denied'));
-      }
-    }
+  db.confirmItinerarySharedAccess(username, itineraryId).then(() => {
+    return db.getItineraryWaypoints(itineraryId).then((result) => {
+      callback(null, result);
+    });
+  }).catch(reason => {
+    callback(reason);
   });
 }
 
 function getSpecifiedItineraryWaypointsForUser(username, itineraryId, waypointIds, callback) {
-  db.confirmItinerarySharedAccess(username, itineraryId, function(err, result) {
-    if (utils.handleError(err, callback)) {
-      if (result) {
-        db.getSpecifiedItineraryWaypoints(itineraryId, waypointIds, function(err, result) {
-          callback(err, result);
-        });
-      } else {
-        callback(new Error('Access denied'));
-      }
-    }
+  db.confirmItinerarySharedAccess(username, itineraryId).then(() => {
+    db.getSpecifiedItineraryWaypoints(itineraryId, waypointIds, function(err, result) {
+      callback(err, result);
+    });
+  }).catch(reason => {
+    callback(reason);
   });
 }
 
@@ -645,7 +860,7 @@ function getSpecifiedItineraryWaypointsForUser(username, itineraryId, waypointId
  * @param {String} username the e-mail address for the user
  * @param {number} itineraryId the itinerary's ID
  * @param {array} an array of waypoint objects
- * @param {object} callback the callback function, the first parameter returned
+ * @param {function} callback the callback function, the first parameter returned
  * being null or an Error.
  */
 function createWaypoints(username, itineraryId, waypoints, callback) {
@@ -726,85 +941,73 @@ function deleteItineraryWaypoint(username, itineraryId, waypointId, callback) {
 }
 
 function getItineraryTracksForUser(username, itineraryId, trackIds, callback) {
-  db.confirmItinerarySharedAccess(username, itineraryId, function(err, result) {
-    if (utils.handleError(err, callback)) {
-      if (result) {
-        db.getItineraryTracks(itineraryId, trackIds, function(err, result) {
-          callback(err, result);
-        });
-      } else {
-        callback(new Error('Access denied'));
-      }
-    }
+  db.confirmItinerarySharedAccess(username, itineraryId).then(() => {
+    db.getItineraryTracks(itineraryId, trackIds, function(err, result) {
+      callback(err, result);
+    });
+  }).catch(reason => {
+    callback(reason);
   });
 }
 
 function getItineraryTrackSegmentsForUser(username, itineraryId, trackId, offset, limit, callback) {
-  db.confirmItinerarySharedAccess(username, itineraryId, function(err, result) {
-    if (utils.handleError(err, callback)) {
-      if (result) {
-        db.getItineraryTrackSegmentCount(trackId, function(err, count) {
-          if (utils.handleError(err, callback)) {
-            if (count > 0) {
-              db.getItineraryTrackName(itineraryId, trackId, function(err, track) {
+  db.confirmItinerarySharedAccess(username, itineraryId).then(() => {
+    db.getItineraryTrackSegmentCount(trackId, function(err, count) {
+      if (utils.handleError(err, callback)) {
+        if (count > 0) {
+          db.getItineraryTrackName(itineraryId, trackId, function(err, track) {
+            if (utils.handleError(err, callback)) {
+              db.getItineraryTrackSegments(itineraryId, trackId, offset, limit, function(err, segments) {
                 if (utils.handleError(err, callback)) {
-                  db.getItineraryTrackSegments(itineraryId, trackId, offset, limit, function(err, segments) {
-                    if (utils.handleError(err, callback)) {
-                      track.segments = segments;
-                      callback(err, {count: count, track: track});
-                    }
-                  });
+                  track.segments = segments;
+                  callback(err, {count: count, track: track});
                 }
               });
-            } else {
-              callback(null, {count: 0, track: {id: null, segments: []}});
             }
-          }
-        });
-      } else {
-        callback(new Error('Access denied'));
+          });
+        } else {
+          callback(null, {count: 0, track: {id: null, segments: []}});
+        }
       }
-    }
+    });
+  }).catch(reason => {
+    callback(reason);
   });
 }
 
 function getItineraryTrackSegmentForUser(username, itineraryId, segmentId, offset, limit, callback) {
-  db.confirmItinerarySharedAccess(username, itineraryId, function(err, result) {
-    if (utils.handleError(err, callback)) {
-      if (result) {
-        db.getItineraryTrackSegmentPointCount(segmentId, function(err, count) {
-          if (utils.handleError(err, callback)) {
-            if (count > 0) {
-              db.getItineraryTrackSegmentPoints(itineraryId, segmentId, offset, limit, function(err, points) {
-                if (utils.handleError(err, callback)) {
-                  if (offset && limit) {
-                    // If called to get just a page of segment points
-                    callback(err, {count: count, points: points});
-                  } else {
-                    // As we're getting all the segment points, return a segment populated with its attributes
-                    db.getItineraryTrackSegment(itineraryId, segmentId, function(err, segment) {
-                      if (utils.handleError(err, callback)) {
-                        if (segment != null) {
-                          segment.count = count;
-                          segment.points = points;
-                          callback(err, segment);
-                        } else {
-                          callback(new Error('Itinerary Track Segment not found'), segment);
-                        }
-                      }
-                    });
+  db.confirmItinerarySharedAccess(username, itineraryId).then(() => {
+    db.getItineraryTrackSegmentPointCount(segmentId, function(err, count) {
+      if (utils.handleError(err, callback)) {
+        if (count > 0) {
+          db.getItineraryTrackSegmentPoints(itineraryId, segmentId, offset, limit, function(err, points) {
+            if (utils.handleError(err, callback)) {
+              if (offset && limit) {
+                // If called to get just a page of segment points
+                callback(err, {count: count, points: points});
+              } else {
+                // As we're getting all the segment points, return a segment populated with its attributes
+                db.getItineraryTrackSegment(itineraryId, segmentId, function(err, segment) {
+                  if (utils.handleError(err, callback)) {
+                    if (segment != null) {
+                      segment.count = count;
+                      segment.points = points;
+                      callback(err, segment);
+                    } else {
+                      callback(new Error('Itinerary Track Segment not found'), segment);
+                    }
                   }
-                }
-              });
-          } else {
-              callback(null, {count: 0, points: []});
+                });
+              }
             }
-          }
-        });
-      } else {
-        callback(new Error('Access denied'));
+          });
+        } else {
+          callback(null, {count: 0, points: []});
+        }
       }
-    }
+    });
+  }).catch(reason => {
+    callback(reason);
   });
 }
 
@@ -900,16 +1103,12 @@ function deleteItineraryTrackSegmentPointsForUser(username, itineraryId, trackId
 }
 
 function getItineraryRoutesForUser(username, itineraryId, routeIds, callback) {
-  db.confirmItinerarySharedAccess(username, itineraryId, function(err, result) {
-    if (utils.handleError(err, callback)) {
-      if (result) {
-        db.getItineraryRoutes(itineraryId, routeIds, function(err, result) {
-          callback(err, result);
-        });
-      } else {
-        callback(new Error('Access denied'));
-      }
-    }
+  db.confirmItinerarySharedAccess(username, itineraryId).then(() => {
+    db.getItineraryRoutes(itineraryId, routeIds, function(err, result) {
+      callback(err, result);
+    });
+  }).catch(reason => {
+    callback(reason);
   });
 }
 
@@ -949,127 +1148,123 @@ function getTracks(itineraryId, trackIds, callback) {
 function downloadItineraryGpx(username, itineraryId, params, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
   var rteptCount, rteptName, root, rte, rteext, rtept, trk, trkseg, trkpt, wpt, ext, trkext, wptext;
-  db.confirmItinerarySharedAccess(username, itineraryId, function(err, result) {
-    if (utils.handleError(err, callback)) {
-      if (result !== true) {
-        callback(new Error('Access denied'));
-      } else {
-        getWaypoints(itineraryId, params.waypoints, function(err, waypoints) {
+  db.confirmItinerarySharedAccess(username, itineraryId).then(() => {
+    getWaypoints(itineraryId, params.waypoints, function(err, waypoints) {
+      if (utils.handleError(err, callback)) {
+        getRoutes(itineraryId, params.routes, function(err, routes) {
           if (utils.handleError(err, callback)) {
-            getRoutes(itineraryId, params.routes, function(err, routes) {
-              if (utils.handleError(err, callback)) {
-                getTracks(itineraryId, params.tracks, function(err, tracks) {
-                  root = builder.create('gpx', {version: '1.0', encoding: 'UTF-8'});
-                  root.a('xmlns:xsi', 'http://www.w3.org/2001/XMLSchema-instance')
-                    .a('creator', 'TRIP')
-                    .a('version', '1.1')
-                    .a('xmlns', 'http://www.topografix.com/GPX/1/1')
-                    .a('xmlns:gpxx', 'http://www.garmin.com/xmlschemas/GpxExtensions/v3')
-                    .a('xmlns:wptx1', 'http://www.garmin.com/xmlschemas/WaypointExtension/v1')
-                    .a('xsi:schemaLocation',
-                       'http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www8.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/WaypointExtension/v1 http://www8.garmin.com/xmlschemas/WaypointExtensionv1.xsd');
-                  root.e('metadata')
-                    .e('time', null, (new Date()).toISOString());
-                  if (waypoints !== undefined && Array.isArray(waypoints)) {
-                    waypoints.forEach(function(v, i, a) {
-                      wpt = root.e('wpt', {lon: v.lng, lat: v.lat});
-                      if (v.altitude) wpt.e('ele', null, v.altitude);
-                      if (v.time) wpt.e('time', null, v.time.toISOString());
-                      if (v.name) {
-                        wpt.e('name', v.name);
-                      } else {
-                        wpt.e('name', 'WPT: ' + v.id);
-                      }
-                      if (v.comment) wpt.e('cmt', v.comment);
-                      if (v.description) wpt.e('desc', v.description);
-                      if (v.symbol) wpt.e('sym', v.symbol);
-                      if (v.type) wpt.e('type', v.type);
-                      // 'color' element used by OsmAnd is not allowed in the XSDs, so optional config
-                      if ((config.app.gpx && config.app.gpx.allowInvalidXsd && v.color) || v.samples) {
-                        ext = wpt.e('extensions');
-                        if (config.app.gpx && config.app.gpx.allowInvalidXsd && v.color) {
-                          ext.e('color', v.color);
-                        }
-                        if (v.samples) {
-                          wptext = ext.e('wptx1:WaypointExtension');
-                          wptext.e('wptx1:Samples', v.samples);
-                        }
-                      }
-                    });
+            getTracks(itineraryId, params.tracks, function(err, tracks) {
+              root = builder.create('gpx', {version: '1.0', encoding: 'UTF-8'});
+              root.a('xmlns:xsi', 'http://www.w3.org/2001/XMLSchema-instance')
+                .a('creator', 'TRIP')
+                .a('version', '1.1')
+                .a('xmlns', 'http://www.topografix.com/GPX/1/1')
+                .a('xmlns:gpxx', 'http://www.garmin.com/xmlschemas/GpxExtensions/v3')
+                .a('xmlns:wptx1', 'http://www.garmin.com/xmlschemas/WaypointExtension/v1')
+                .a('xsi:schemaLocation',
+                   'http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www8.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/WaypointExtension/v1 http://www8.garmin.com/xmlschemas/WaypointExtensionv1.xsd');
+              root.e('metadata')
+                .e('time', null, (new Date()).toISOString());
+              if (waypoints !== undefined && Array.isArray(waypoints)) {
+                waypoints.forEach(function(v, i, a) {
+                  wpt = root.e('wpt', {lon: v.lng, lat: v.lat});
+                  if (v.altitude) wpt.e('ele', null, v.altitude);
+                  if (v.time) wpt.e('time', null, v.time.toISOString());
+                  if (v.name) {
+                    wpt.e('name', v.name);
+                  } else {
+                    wpt.e('name', 'WPT: ' + v.id);
                   }
-                  if (routes !== undefined && Array.isArray(routes)) {
-                    routes.forEach(function(r) {
-                      rte = root.e('rte');
-                      if (r.name) {
-                        rte.e('name', r.name);
-                      } else {
-                        rte.e('name', 'RTE: ' + r.id);
-                      }
-                      if (r.color) {
-                        ext = rte.e('extensions');
-                        rteext = ext.e('gpxx:RouteExtension');
-                        // IsAutoNamed is mandatory for a RouteExtension in XSD
-                        rteext.e('gpxx:IsAutoNamed', 'false');
-                        rteext.e('gpxx:DisplayColor', r.color);
-                      }
-                      if (r.points !== undefined && Array.isArray(r.points)) {
-                        rteptCount = 0;
-                        r.points.forEach(function(v) {
-                          rtept = rte.e('rtept', {lon: v.lng, lat: v.lat});
-                          if (v.altitude) rtept.e('ele', null, v.altitude);
-                          if (v.name) {
-                            rtept.e('name', v.name);
-                          } else {
-                            rteptName = '00' + (++rteptCount);
-                            rtept.e('name', rteptName.slice(-3));
-                          }
-                          if (v.comment) rtept.e('cmt', v.comment);
-                          if (v.description) rtept.e('desc', v.description);
-                          if (v.symbol) rtept.e('sym', v.symbol);
-                        });
-                      }
-                    });
+                  if (v.comment) wpt.e('cmt', v.comment);
+                  if (v.description) wpt.e('desc', v.description);
+                  if (v.symbol) wpt.e('sym', v.symbol);
+                  if (v.type) wpt.e('type', v.type);
+                  // 'color' element used by OsmAnd is not allowed in the XSDs, so optional config
+                  if ((config.app.gpx && config.app.gpx.allowInvalidXsd && v.color) || v.samples) {
+                    ext = wpt.e('extensions');
+                    if (config.app.gpx && config.app.gpx.allowInvalidXsd && v.color) {
+                      ext.e('color', v.color);
+                    }
+                    if (v.samples) {
+                      wptext = ext.e('wptx1:WaypointExtension');
+                      wptext.e('wptx1:Samples', v.samples);
+                    }
                   }
-                  if (tracks !== undefined && Array.isArray(tracks)) {
-                    tracks.forEach(function(t) {
-                      trk = root.e('trk');
-                      if (t.name) {
-                        trk.e('name', t.name);
-                      } else {
-                        trk.e('name', 'TRK: ' + t.id);
-                      }
-                      if (t.color) {
-                        ext = trk.e('extensions');
-                        trkext = ext.e('gpxx:TrackExtension');
-                        trkext.e('gpxx:DisplayColor', t.color);
-                      }
-                      if (t.segments && Array.isArray(t.segments)) {
-                        t.segments.forEach(function(ts) {
-                          trkseg = trk.e('trkseg');
-                          if (ts.points !== undefined && Array.isArray(ts.points)) {
-                            ts.points.forEach(function(v) {
-                              trkpt = trkseg.e('trkpt', {lon: v.lng, lat: v.lat});
-                              if (v.altitude) trkpt.e('ele', null, v.altitude);
-                              if (v.time) trkpt.e('time', null, v.time.toISOString());
-                              if (v.hdop) trkpt.e('hdop', null, v.hdop);
-                            });
-                          } else {
-                            logger.error('Track segment points array is missing');
-                          }
-                        }); // forEach trackSegment
-                      } else {
-                        logger.error('Track segments array is missing');
-                      }
-                    }); // forEach track
-                  }
-                  callback(null, root.end({pretty: false}));
                 });
               }
+              if (routes !== undefined && Array.isArray(routes)) {
+                routes.forEach(function(r) {
+                  rte = root.e('rte');
+                  if (r.name) {
+                    rte.e('name', r.name);
+                  } else {
+                    rte.e('name', 'RTE: ' + r.id);
+                  }
+                  if (r.color) {
+                    ext = rte.e('extensions');
+                    rteext = ext.e('gpxx:RouteExtension');
+                    // IsAutoNamed is mandatory for a RouteExtension in XSD
+                    rteext.e('gpxx:IsAutoNamed', 'false');
+                    rteext.e('gpxx:DisplayColor', r.color);
+                  }
+                  if (r.points !== undefined && Array.isArray(r.points)) {
+                    rteptCount = 0;
+                    r.points.forEach(function(v) {
+                      rtept = rte.e('rtept', {lon: v.lng, lat: v.lat});
+                      if (v.altitude) rtept.e('ele', null, v.altitude);
+                      if (v.name) {
+                        rtept.e('name', v.name);
+                      } else {
+                        rteptName = '00' + (++rteptCount);
+                        rtept.e('name', rteptName.slice(-3));
+                      }
+                      if (v.comment) rtept.e('cmt', v.comment);
+                      if (v.description) rtept.e('desc', v.description);
+                      if (v.symbol) rtept.e('sym', v.symbol);
+                    });
+                  }
+                });
+              }
+              if (tracks !== undefined && Array.isArray(tracks)) {
+                tracks.forEach(function(t) {
+                  trk = root.e('trk');
+                  if (t.name) {
+                    trk.e('name', t.name);
+                  } else {
+                    trk.e('name', 'TRK: ' + t.id);
+                  }
+                  if (t.color) {
+                    ext = trk.e('extensions');
+                    trkext = ext.e('gpxx:TrackExtension');
+                    trkext.e('gpxx:DisplayColor', t.color);
+                  }
+                  if (t.segments && Array.isArray(t.segments)) {
+                    t.segments.forEach(function(ts) {
+                      trkseg = trk.e('trkseg');
+                      if (ts.points !== undefined && Array.isArray(ts.points)) {
+                        ts.points.forEach(function(v) {
+                          trkpt = trkseg.e('trkpt', {lon: v.lng, lat: v.lat});
+                          if (v.altitude) trkpt.e('ele', null, v.altitude);
+                          if (v.time) trkpt.e('time', null, v.time.toISOString());
+                          if (v.hdop) trkpt.e('hdop', null, v.hdop);
+                        });
+                      } else {
+                        logger.error('Track segment points array is missing');
+                      }
+                    }); // forEach trackSegment
+                  } else {
+                    logger.error('Track segments array is missing');
+                  }
+                }); // forEach track
+              }
+              callback(null, root.end({pretty: false}));
             });
           }
         });
       }
-    }
+    });
+  }).catch(reason => {
+    callback(reason);
   });
 }
 
@@ -1337,86 +1532,82 @@ function downloadItineraryKml(username, itineraryId, params, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
   var root, doc, tmpFolder, tmpFolder2, tmpFolder3, lookAt,
       bounds, boundsQuery, center, timeSpan, range;
-  db.confirmItinerarySharedAccess(username, itineraryId, function(err, result) {
-    if (utils.handleError(err, callback)) {
-      if (result !== true) {
-        callback(new Error('Access denied'));
-      } else {
-        getWaypoints(itineraryId, params.waypoints, function(err, waypoints) {
+  db.confirmItinerarySharedAccess(username, itineraryId).then(() => {
+    getWaypoints(itineraryId, params.waypoints, function(err, waypoints) {
+      if (utils.handleError(err, callback)) {
+        getRoutes(itineraryId, params.routes, function(err, routes) {
           if (utils.handleError(err, callback)) {
-            getRoutes(itineraryId, params.routes, function(err, routes) {
-              if (utils.handleError(err, callback)) {
-                getTracks(itineraryId, params.tracks, function(err, tracks) {
-                  utils.fillDistanceElevationForRoutes(routes, {calcPoints: true});
-                  utils.fillDistanceElevationForTracks(tracks, {calcPoints: true});
-                  timeSpan = utils.getTimeSpanForWaypoints(waypoints);
-                  boundsQuery = [];
-                  // NOTE: bounds has lng/lat order, not lat/lng
-                  bounds = utils.getWaypointBounds(waypoints);
-                  if (bounds) {
-                    boundsQuery.push(bounds);
-                  }
-                  if (routes.bounds) {
-                    boundsQuery.push(routes.bounds);
-                  }
-                  if (tracks.bounds) {
-                    boundsQuery.push(tracks.bounds);
-                  }
-                  if (boundsQuery.length > 0) {
-                    bounds = utils.getBounds(boundsQuery);
-                    center = utils.getCenter(bounds);
-                    timeSpan = utils.getTimeSpan([timeSpan, routes, tracks]);
-                    // length of the diagonal of the bounding box in kms
-                    range = utils.getRange(bounds);
-                    if (range < 1) {
-                      range = 1;
-                    }
-                  }
-                  root = builder.create('kml', {version: '1.0', encoding: 'UTF-8'});
-                  root.a('xmlns', 'http://www.opengis.net/kml/2.2')
-                    .a('xmlns:gx', 'http://www.google.com/kml/ext/2.2');
-                  doc = root.e('Document');
-                  doc.e('name', null, 'GPS device');
-                  doc.e('snippet', null, 'Created ' + formatKmlSnippetDate(new Date()));
-
-                  lookAt = doc.e('LookAt');
-                  if (timeSpan.startTime) {
-                      lookAt.e('gx:TimeSpan')
-                      .e('begin', null, timeSpan.startTime.toISOString())
-                      .insertAfter('end', null, timeSpan.endTime.toISOString());
-                  }
-
-                  if (Array.isArray(center)) {
-                    lookAt.e('longitude', center[0].toFixed(6))
-                      .insertAfter('latitude', center[1].toFixed(6))
-                      .insertAfter('range', (range * 1300).toFixed(6));
-                  } else {
-                    lookAt.e('longitude', Number(0).toFixed(6))
-                      .insertAfter('latitude', Number(0).toFixed(6))
-                      .insertAfter('range', Number(26000000).toFixed(6));
-                  }
-
-                  writeKmlStyles(doc, routes, waypoints, tracks);
-
-                  if (Array.isArray(routes) && routes.length > 0) {
-                    doc.e('Style', {'id':'lineStyle'})
-                      .e('LineStyle')
-                      .e('color', null, '99ffac59')
-                      .insertAfter('width', null, 6);
-                  }
-
-                  writeKmlWaypointsFolder(doc, waypoints);
-                  writeKmlTracksFolder(doc, tracks);
-                  writeKmlRoutesFolder(doc, routes);
-
-                  callback(null, root.end({pretty: true}));
-                });
+            getTracks(itineraryId, params.tracks, function(err, tracks) {
+              utils.fillDistanceElevationForRoutes(routes, {calcPoints: true});
+              utils.fillDistanceElevationForTracks(tracks, {calcPoints: true});
+              timeSpan = utils.getTimeSpanForWaypoints(waypoints);
+              boundsQuery = [];
+              // NOTE: bounds has lng/lat order, not lat/lng
+              bounds = utils.getWaypointBounds(waypoints);
+              if (bounds) {
+                boundsQuery.push(bounds);
               }
+              if (routes.bounds) {
+                boundsQuery.push(routes.bounds);
+              }
+              if (tracks.bounds) {
+                boundsQuery.push(tracks.bounds);
+              }
+              if (boundsQuery.length > 0) {
+                bounds = utils.getBounds(boundsQuery);
+                center = utils.getCenter(bounds);
+                timeSpan = utils.getTimeSpan([timeSpan, routes, tracks]);
+                // length of the diagonal of the bounding box in kms
+                range = utils.getRange(bounds);
+                if (range < 1) {
+                  range = 1;
+                }
+              }
+              root = builder.create('kml', {version: '1.0', encoding: 'UTF-8'});
+              root.a('xmlns', 'http://www.opengis.net/kml/2.2')
+                .a('xmlns:gx', 'http://www.google.com/kml/ext/2.2');
+              doc = root.e('Document');
+              doc.e('name', null, 'GPS device');
+              doc.e('snippet', null, 'Created ' + formatKmlSnippetDate(new Date()));
+
+              lookAt = doc.e('LookAt');
+              if (timeSpan.startTime) {
+                lookAt.e('gx:TimeSpan')
+                  .e('begin', null, timeSpan.startTime.toISOString())
+                  .insertAfter('end', null, timeSpan.endTime.toISOString());
+              }
+
+              if (Array.isArray(center)) {
+                lookAt.e('longitude', center[0].toFixed(6))
+                  .insertAfter('latitude', center[1].toFixed(6))
+                  .insertAfter('range', (range * 1300).toFixed(6));
+              } else {
+                lookAt.e('longitude', Number(0).toFixed(6))
+                  .insertAfter('latitude', Number(0).toFixed(6))
+                  .insertAfter('range', Number(26000000).toFixed(6));
+              }
+
+              writeKmlStyles(doc, routes, waypoints, tracks);
+
+              if (Array.isArray(routes) && routes.length > 0) {
+                doc.e('Style', {'id':'lineStyle'})
+                  .e('LineStyle')
+                  .e('color', null, '99ffac59')
+                  .insertAfter('width', null, 6);
+              }
+
+              writeKmlWaypointsFolder(doc, waypoints);
+              writeKmlTracksFolder(doc, tracks);
+              writeKmlRoutesFolder(doc, routes);
+
+              callback(null, root.end({pretty: true}));
             });
           }
         });
       }
-    }
+    });
+  }).catch(reason => {
+    callback(reason);
   });
 }
 

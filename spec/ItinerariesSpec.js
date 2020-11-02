@@ -680,8 +680,10 @@ describe('itinerary.js', function() {
 
     beforeEach(function(done) {
       spyOn(db, 'confirmItinerarySharedAccess').and.callFake(
-        function(username, itineraryId, callback) {
-          callback(null, true);
+        function(username, itineraryId) {
+          return new Promise(resolve => {
+            resolve(true);
+          });
         });
       spyOn(db, 'getItineraryWaypoint').and.callFake(
         function(itineraryId, waypointId, callback) {
@@ -696,7 +698,7 @@ describe('itinerary.js', function() {
 
     it('should return the altitude as a numeric value', function() {
       expect(wpt.altitude).toEqual(429);
-      expect(db.confirmItinerarySharedAccess).toHaveBeenCalledWith(testUsername, itineraryId, jasmine.any(Function));
+      expect(db.confirmItinerarySharedAccess).toHaveBeenCalledWith(testUsername, itineraryId);
       expect(db.getItineraryWaypoint).toHaveBeenCalledWith(itineraryId, waypointId, jasmine.any(Function));
     });
 

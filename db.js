@@ -106,6 +106,7 @@ module.exports = {
   updateLocationShare: updateLocationShare,
   updateLocationShareActiveStates: updateLocationShareActiveStates,
   getItinerary: getItinerary,
+  getItineraryWithoutAccessCheck: getItineraryWithoutAccessCheck,
   getItinerariesCountByUsername: getItinerariesCountByUsername,
   getItinerariesByUsername: getItinerariesByUsername,
   updateItinerary: updateItinerary,
@@ -114,6 +115,7 @@ module.exports = {
   confirmItinerarySharedAccess: confirmItinerarySharedAccess,
   getItinerarySharesCountByUsername: getItinerarySharesCountByUsername,
   getItinerarySharesByUsername: getItinerarySharesByUsername,
+  getItinerarySharesWithoutAccessCheck: getItinerarySharesWithoutAccessCheck,
   getItineraryShare: getItineraryShare,
   getCountSharedItinerariesForUser: getCountSharedItinerariesForUser,
   getSharedItinerariesForUser: getSharedItinerariesForUser,
@@ -129,9 +131,11 @@ module.exports = {
   getItineraryWaypoints: getItineraryWaypoints,
   getSpecifiedItineraryWaypoints: getSpecifiedItineraryWaypoints,
   getItineraryRoutes: getItineraryRoutes,
+  getItineraryRoutesWithoutAccessCheck: getItineraryRoutesWithoutAccessCheck,
   getItineraryRoutePointsCount: getItineraryRoutePointsCount,
   getItineraryRoutePoints: getItineraryRoutePoints,
   getItineraryTracks: getItineraryTracks,
+  getItineraryTracksWithoutAccessCheck: getItineraryTracksWithoutAccessCheck,
   getItineraryTrackSegment: getItineraryTrackSegment,
   getItineraryTrackSegmentCount: getItineraryTrackSegmentCount,
   getItineraryTrackSegments: getItineraryTrackSegments,
@@ -168,6 +172,18 @@ module.exports = {
   unitTests: {convertArrayToSqlArray: convertArrayToSqlArray},
   shutdown: shutdown
 };
+
+/**
+ * Parse numeric PSQL type as float see
+ * https://github.com/brianc/node-pg-types.  All results from the backend are
+ * generally strings.  Where we want a number, we need to create a parser to
+ * convert the string based on the column type.
+ * @param {string} val The numeric value as a string to parse to a float.
+ * @return {number}
+ */
+function floatParser(val) {
+  return parseFloat(val);
+}
 
 function UserNotFoundError(message) {
   this.name = 'UserNotFoundError';
@@ -466,28 +482,33 @@ function findUserByNickname(nickname, callback) {
   });
 }
 
-function getNicknameForUsername(username, callback) {
-  callback = typeof callback === 'function' ? callback : function() {};
-  pool.connect(function(err, client, done) {
-    if (err) {
-      callback(err);
-    } else {
-      client.query('SELECT nickname FROM usertable WHERE email = $1',
-                   [username],
-                   function(err, result) {
-                     // release the client back to the pool
-                     done();
-                     if (err) {
-                       callback(err);
-                     } else {
-                       if (result.rowCount > 0) {
-                         callback(null, result.rows[0].nickname);
+/**
+ * @param {string} username the email of the user to return the nickname of.
+ * @return {Promise} the first parameter contains the nickname.
+ */
+function getNicknameForUsername(username) {
+  return new Promise((resolve, reject) => {
+    pool.connect(function(err, client, done) {
+      if (err) {
+        reject(err);
+      } else {
+        client.query('SELECT nickname FROM usertable WHERE email = $1',
+                     [username],
+                     function(err, result) {
+                       // release the client back to the pool
+                       done();
+                       if (err) {
+                         reject(err);
                        } else {
-                         callback(new UserNotFoundError());
+                         if (result.rowCount > 0) {
+                           resolve(result.rows[0].nickname);
+                         } else {
+                           reject(new UserNotFoundError());
+                         }
                        }
-                     }
-                   });
-    }
+                     });
+      }
+    });
   });
 }
 
@@ -1103,6 +1124,39 @@ function getItinerary(username, id, callback) {
   });
 }
 
+/**
+ * Fetches the specified itinerary, but without checking whether the current
+ * user has rights to read it.  Must only be called after confirming the
+ * user has read rights to the itinerary.
+ * @param {number} itineraryId the ID of the itinerary to return.
+ * @return {Promise} with the first parameter being an itinerary object.
+ */
+function getItineraryWithoutAccessCheck(itineraryId) {
+  return new Promise((resolve, reject) => {
+    pool.connect(function(err, client, done) {
+      if (err) {
+        reject(err);
+      } else {
+        client.query('SELECT i.id, i.start, i.finish, i.title, i.description, u.nickname AS owned_by_nickname, null AS shared_to_nickname FROM itinerary i JOIN usertable u ON i.user_id=u.id WHERE i.id=$1',
+                     [itineraryId],
+                     function(err, result) {
+                       // release the client back to the pool
+                       done();
+                       if (err) {
+                         reject(err);
+                         return;
+                       }
+                       if (result.rowCount > 0) {
+                         resolve(result.rows[0]);
+                       } else {
+                         reject(new Error('Itinerary not found'));
+                       }
+                     });
+      }
+    });
+  });
+}
+
 function deleteItinerary(username, id, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
   pool.connect(function(err, client, done) {
@@ -1463,31 +1517,43 @@ function confirmItineraryOwnership(username, itineraryId, callback) {
   });
 }
 
-function confirmItinerarySharedAccess(username, itineraryId, callback) {
-  callback = typeof callback === 'function' ? callback : function() {};
-  pool.connect(function(err, client, done) {
-    if (err) {
-      callback(err);
-    } else {
-      client.query('SELECT COUNT(*) FROM (SELECT i.user_id FROM itinerary i JOIN usertable u ON u.id=i.user_id WHERE i.id=$2 AND u.email=$1 UNION SELECT s.shared_to_id FROM itinerary_sharing s JOIN usertable u ON u.id=s.shared_to_id WHERE s.active=true AND s.itinerary_id=$2 AND u.email=$1) as q',
-                   [username, itineraryId],
-                   function(err, result) {
-                     // release the client back to the pool
-                     done();
-                     if (err) {
-                       callback(err);
-                     } else {
-                       if (result && result.rowCount) {
-                         callback(err, result.rows[0].count > 0);
+/**
+ * Confirms whether the passed username has access, or shared access to ready
+ * the itinerary with the passed itineraryId.  The Promise is rejected if the
+ * user does not have read access to the itinerary.
+ * @param {string} username the email of the user to search for.
+ * @param {number} itineraryId the ID of the itinerary to check.
+ * @return {Promise}
+ */
+function confirmItinerarySharedAccess(username, itineraryId) {
+  return new Promise((resolve, reject) => {
+    pool.connect(function(err, client, done) {
+      if (err) {
+        reject(err);
+      } else {
+        client.query('SELECT COUNT(*) FROM (SELECT i.user_id FROM itinerary i JOIN usertable u ON u.id=i.user_id WHERE i.id=$2 AND u.email=$1 UNION SELECT s.shared_to_id FROM itinerary_sharing s JOIN usertable u ON u.id=s.shared_to_id WHERE s.active=true AND s.itinerary_id=$2 AND u.email=$1) as q',
+                     [username, itineraryId],
+                     function(err, result) {
+                       // release the client back to the pool
+                       done();
+                       if (err) {
+                         reject(err);
                        } else {
-                         callback(new Error('confirmItinerarySharedAccess() failed - reason unknown'));
+                         if (result && result.rowCount) {
+                           if (result.rows[0].count > 0) {
+                             resolve();
+                           } else {
+                             reject(new Error('Access denied'));
+                           }
+                         } else {
+                           reject(new Error('confirmItinerarySharedAccess() failed - reason unknown'));
+                         }
                        }
-                     }
-                   });
-    }
+                     });
+      }
+    });
   });
 }
-
 
 function getItinerarySharesCountByUsername(username, itineraryId, callback) {
   callback = typeof callback === 'function' ? callback : function() {};
@@ -1538,6 +1604,41 @@ function getItinerarySharesByUsername(username, itineraryId, offset, limit, call
                      }
                    });
     }
+  });
+}
+
+/**
+ * Fetches the specified itinerary shares, but without checking whether the
+ * current user has rights to read them.  Must only be called after confirming
+ * the user has read rights to the itinerary.
+ * @param {number} itineraryId the ID of the itinerary to fetch the shares for.
+ * @return {Promise} with the first parameter being an array of itineraryshare
+ * objects.
+ */
+function getItinerarySharesWithoutAccessCheck(itineraryId) {
+  return new Promise((resolve, reject) => {
+    pool.connect(function(err, client, done) {
+      if (err) {
+        reject(err);
+      } else {
+        client.query('SELECT u.nickname, s.active FROM itinerary_sharing s JOIN itinerary i ON i.id=s.itinerary_id JOIN usertable u ON u.id=s.shared_to_id WHERE i.id=$1 ORDER BY u.nickname',
+                     [itineraryId],
+                     function(err, result) {
+                       // release the client back to the pool
+                       done();
+                       if (err) {
+                         reject(err);
+                       } else {
+                         if (result && result.rows) {
+                           resolve(result.rows);
+                         } else {
+                           logger.warn('Error fetching itinerary shares', result);
+                           reject(new Error('Error fetching itinerary shares'));
+                         }
+                       }
+                     });
+      }
+    });
   });
 }
 
@@ -1850,10 +1951,7 @@ function getItineraryWaypoint(itineraryId, waypointId, callback) {
     if (err) {
       callback(err);
     } else {
-      // Parse numeric as float see https://github.com/brianc/node-pg-types
-      types.setTypeParser(NUMERIC_OID, function(val) {
-        return parseFloat(val);
-      });
+      types.setTypeParser(NUMERIC_OID, floatParser);
       client.query('SELECT id, name, ST_X(geog::geometry) as lng, ST_Y(geog::geometry) as lat, altitude, time, symbol, comment, description, color, type, avg_samples AS samples FROM itinerary_waypoint WHERE itinerary_id=$1 AND id=$2',
                    [itineraryId, waypointId],
                    function(err, result) {
@@ -1873,28 +1971,34 @@ function getItineraryWaypoint(itineraryId, waypointId, callback) {
   });
 }
 
-function getItineraryWaypoints(itineraryId, callback) {
-  callback = typeof callback === 'function' ? callback : function() {};
-  pool.connect(function(err, client, done) {
-    if (err) {
-      callback(err);
-    } else {
-      client.query('SELECT id, name,  ST_X(geog::geometry) as lng, ST_Y(geog::geometry) as lat, time, comment, symbol, altitude, type, ws.value AS symbol_text FROM itinerary_waypoint iw LEFT JOIN waypoint_symbol ws ON iw.symbol=ws.key WHERE itinerary_id=$1 ORDER BY name, symbol, id',
-                   [itineraryId],
-                   function(err, result) {
-                     // release the client back to the pool
-                     done();
-                     if (err) {
-                       callback(err);
-                     } else {
-                       if (result && result.rowCount) {
-                         callback(err, result.rows);
+/**
+ * @param {number} itineraryId the ID of the itinerary to fetch waypoints for.
+ * @return {Promise} with the first parameter an array of waypoint objects.
+ */
+function getItineraryWaypoints(itineraryId) {
+  return new Promise((resolve, reject) => {
+    pool.connect(function(err, client, done) {
+      if (err) {
+        reject(err);
+      } else {
+        types.setTypeParser(NUMERIC_OID, floatParser);
+        client.query('SELECT id, name,  ST_X(geog::geometry) as lng, ST_Y(geog::geometry) as lat, time, description, comment, symbol, altitude, type, avg_samples AS samples, color, ws.value AS symbol_text FROM itinerary_waypoint iw LEFT JOIN waypoint_symbol ws ON iw.symbol=ws.key WHERE itinerary_id=$1 ORDER BY name, symbol, id',
+                     [itineraryId],
+                     function(err, result) {
+                       // release the client back to the pool
+                       done();
+                       if (err) {
+                         reject(err);
                        } else {
-                         callback(null, []);
+                         if (result && result.rowCount) {
+                           resolve(result.rows);
+                         } else {
+                           resolve([]);
+                         }
                        }
-                     }
-                   });
-    }
+                     });
+      }
+    });
   });
 }
 
@@ -1973,6 +2077,68 @@ function getItineraryRoutes(itineraryId, routeIds, callback) {
                      }
                    });
     }
+  });
+}
+
+/**
+ * Fetches the specified itinerary routes, but without checking whether the
+ * current user has rights to read them.  Must only be called after confirming
+ * the user has read rights to the itinerary.
+ * @param {number} itineraryId the ID of the itinerary to fetch the routes for.
+ * @return {Promise} with the first parameter being an array of route objects.
+ */
+function getItineraryRoutesWithoutAccessCheck(itineraryId) {
+  var routes = [], rid, rte, rtept;
+  return new Promise((resolve, reject) => {
+    pool.connect(function(err, client, done) {
+      if (err) {
+        reject(err);
+      } else {
+        types.setTypeParser(NUMERIC_OID, floatParser);
+        client.query('SELECT r.id AS route_id, r.name AS route_name, r.color AS path_color, Rc.html_code, r.distance, r.ascent, r.descent, r.lowest, r.highest, p.id AS point_id, ST_X(p.geog::geometry) as lng, ST_Y(p.geog::geometry) as lat, p.name AS point_name, p.comment, p.description, p.symbol, p.altitude FROM itinerary_route r LEFT JOIN path_color RC ON r.color=rc.key LEFT JOIN itinerary_route_point p ON r.id=p.itinerary_route_id WHERE r.itinerary_id = $1 ORDER BY r.id, p.id',
+                     [itineraryId],
+                     function(err, result) {
+                       // release the client back to the pool
+                       done();
+                       if (err) {
+                         reject(err);
+                       } else {
+                         if (result && result.rowCount > 0) {
+                           result.rows.forEach(function(v, k) {
+                             if (rid === undefined || rid != v.route_id) {
+                               rid = v.route_id;
+                               rte = {};
+                               rte.id = rid;
+                               rte.name = v.route_name;
+                               rte.color = v.path_color;
+                               rte.htmlcolor = v.html_code;
+                               rte.distance = v.distance;
+                               rte.ascent = v.ascent;
+                               rte.descent = v.descent;
+                               rte.lowest = v.lowest;
+                               rte.highest = v.highest;
+                               rte.points = [];
+                               routes.push(rte);
+                             }
+                             if (v.point_id !== null) {
+                               rtept = {};
+                               rtept.id = v.point_id;
+                               rtept.lat = v.lat;
+                               rtept.lng = v.lng;
+                               rtept.name = v.point_name;
+                               rtept.comment = v.comment;
+                               rtept.description = v.description;
+                               rtept.symbol = v.symbol;
+                               rtept.altitude = v.altitude;
+                               rte.points.push(rtept);
+                             }
+                           });
+                         }
+                         resolve(routes);
+                       }
+                     });
+      }
+    });
   });
 }
 
@@ -2090,6 +2256,76 @@ function getItineraryTracks(itineraryId, trackIds, callback) {
                      }
                    });
     }
+  });
+}
+
+/**
+ * Fetches the specified itinerary tracks, but without checking whether the
+ * current user has rights to read them.  Must only be called after confirming
+ * the user has read rights to the itinerary.
+ * @param {number} itineraryId the ID of the itinerary to fetch the tracks for.
+ * @return {Promise} with the first parameter an array of track objects.
+ */
+function getItineraryTracksWithoutAccessCheck(itineraryId) {
+  return new Promise((resolve, reject) => {
+    var tracks = [], tid, sid, trk, trkseg, trkpt;
+    pool.connect(function(err, client, done) {
+      if (err) {
+        reject(err);
+      } else {
+        types.setTypeParser(NUMERIC_OID, floatParser);
+        client.query('SELECT t.id AS track_id, t.name AS track_name, t.color AS path_color, tc.html_code, t.distance, t.ascent, t.descent, t.lowest, t.highest, ts.id AS segment_id, p.id AS point_id, ST_X(p.geog::geometry) as lng, ST_Y(p.geog::geometry) as lat, p.time, p.hdop, p.altitude FROM itinerary_track t LEFT JOIN path_color tc ON t.color=tc.key LEFT JOIN itinerary_track_segment ts ON t.id=ts.itinerary_track_id LEFT JOIN itinerary_track_point p ON ts.id=p.itinerary_track_segment_id WHERE t.itinerary_id = $1 ORDER BY t.id, ts.id, p.id',
+                     [itineraryId],
+                     function(err, result) {
+                       // release the client back to the pool
+                       done();
+                       if (err) {
+                         logger.error('Error getting tracks', err);
+                         reject(err);
+                       } else {
+                         if (result && result.rowCount > 0) {
+                           result.rows.forEach(function(v, k) {
+                             if (tid === undefined || tid != v.track_id) {
+                               tid = v.track_id;
+                               trk = {};
+                               trk.id = tid;
+                               trk.name = v.track_name;
+                               trk.color = v.path_color;
+                               trk.htmlcolor = v.html_code;
+                               trk.distance = v.distance;
+                               trk.ascent = v.ascent;
+                               trk.descent = v.descent;
+                               trk.lowest = v.lowest;
+                               trk.highest = v.highest;
+                               trk.segments = [];
+                               tracks.push(trk);
+                             }
+                             if (v.segment_id !== null) {
+                               if (sid === undefined || sid != v.segment_id) {
+                                 sid = v.segment_id;
+                                 trkseg = {};
+                                 trkseg.id = sid;
+                                 trkseg.points =[];
+                                 trk.segments.push(trkseg);
+                               }
+                               if (v.point_id !== null) {
+                                 trkpt = {};
+                                 trkpt.id = v.point_id;
+                                 trkpt.time = v.time;
+                                 trkpt.lat = v.lat;
+                                 trkpt.lng = v.lng;
+                                 trkpt.hdop = v.hdop;
+                                 trkpt.altitude = v.altitude;
+                                 trkseg.points.push(trkpt);
+                               }
+                             }
+                           });
+                         }
+                         resolve(tracks);
+                       }
+                     });
+      }
+    });
   });
 }
 

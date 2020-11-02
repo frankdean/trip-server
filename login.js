@@ -264,7 +264,13 @@ function getUsers(offset, limit, nickname, email, searchType, callback) {
 }
 
 function getNicknameForUsername(username, callback) {
-  db.getNicknameForUsername(username, callback);
+  return new Promise((resolve, reject) => {
+    db.getNicknameForUsername(username).then((nickname) => {
+      resolve(nickname);
+    }).catch(reason => {
+      reject(reason);
+    });
+  });
 }
 
 function createUser(user, callback) {
