@@ -25,10 +25,10 @@ echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/source
 apt-get update
 apt-get install --yes yarn+ cmdtest- nodejs-
 
-NODE_VERSION="v10.20.1"
+NODE_VERSION="v10.23.0"
 NODE_FILENAME="node-${NODE_VERSION}-linux-x64"
 NODE_TAR_FILENAME="${NODE_FILENAME}.tar.xz"
-NODE_SHA256="5e0b1fbc6cf8c2c34dc33d880670ee1bc1c1e931099de3796a96143a962c92ee  ${NODE_TAR_FILENAME}"
+NODE_SHA256="3293b1ea9b9e08d9dbc5bb8717a80084e24cadfe3b030a8ebfdadea5f963dfc9  ${NODE_TAR_FILENAME}"
 NODE_EXTRACT_DIR="${NODE_FILENAME}"
 NODE_DOWNLOAD_URL="https://nodejs.org/dist/${NODE_VERSION}/${NODE_TAR_FILENAME}"
 
