@@ -2,7 +2,7 @@
 
 # Changelog
 
-## Next release
+## v1.4.0
 
 * Implemented upload and download of
   [TripLogger iOS client app][trip-web-client]
