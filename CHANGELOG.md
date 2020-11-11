@@ -2,6 +2,10 @@
 
 # Changelog
 
+## v1.4.1
+
+Add tl_settings column to usertable in database schema
+
 ## v1.4.0
 
 * Implemented upload and download of
