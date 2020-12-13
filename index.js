@@ -2046,7 +2046,6 @@ var io = require('socket.io')(myApp.server, {
                'polling']*/
 });
 
-logger.debug('Serving origins of', io.origins());
 io.on('connection', function(socket) {
   logger.debug('Client connected to socket using transport:', socket.conn.transport.name);
   socket.on('disconnect', function() {

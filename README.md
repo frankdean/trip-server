@@ -158,6 +158,19 @@ are altered.
 When making changes to the `trip-web-client` HTML or JavaScript, you will need
 to refresh the browser to replace the cached version.
 
+Stop the Docker containers with:
+
+	$ sudo docker-compose --file docker-compose-dev.yml down
+
+Optionally, add the `--volumes` parameter to remove the Docker volumes
+when shutting down.
+
+Alternatively, the Docker volumes can be removed with:
+
+	$ sudo docker volume rm trip-server_node_modules \
+	trip-server_trip-web-client trip-server_web_node_modules \
+	trip-server_trip-db-data
+
 ### Docker Swarm
 
 The source code also contains a configuration file named

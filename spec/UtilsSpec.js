@@ -260,7 +260,7 @@ describe('utils.js', function() {
 
   it('should calculate the length of another single bad route', function()  {
     Utils.fillDistanceElevationForPath(testBadRoutes[2]);
-    expect(testBadRoutes[2].distance).toBeCloseTo(725, -1);
+    expect(testBadRoutes[2].distance).toBeNaN();
     expect(testBadRoutes[2].lowest).toBeCloseTo(99, 2);
     expect(testBadRoutes[2].highest).toBeCloseTo(99, 2);
     expect(testBadRoutes[2].ascent).toBeCloseTo(0, 2);
@@ -277,7 +277,7 @@ describe('utils.js', function() {
     expect(testBadRoutes[1].ascent).toBeCloseTo(50, 2);
     expect(testBadRoutes[1].descent).toBeCloseTo(0, 2);
 
-    expect(testBadRoutes[2].distance).toBeCloseTo(725, -1);
+    expect(testBadRoutes[2].distance).toBeNaN();
     expect(testBadRoutes[2].lowest).toBeCloseTo(99, 2);
     expect(testBadRoutes[2].highest).toBeCloseTo(99, 2);
     expect(testBadRoutes[2].ascent).toBeCloseTo(0, 2);

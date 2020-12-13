@@ -20,11 +20,11 @@
 var _ = require('lodash');
 var turfHelpers = require('@turf/helpers');
 var turf = {
-  bbox: require('@turf/bbox'),
-  bearing: require('@turf/bearing'),
-  center: require('@turf/center'),
-  distance: require('@turf/distance'),
-  bboxPolygon: require('@turf/bbox-polygon'),
+  bbox: require('@turf/bbox').default,
+  bearing: require('@turf/bearing').default,
+  center: require('@turf/center').default,
+  distance: require('@turf/distance').default,
+  bboxPolygon: require('@turf/bbox-polygon').default,
   helpers: turfHelpers,
   featureCollection: turfHelpers.featureCollection,
   lineString: turfHelpers.lineString,
