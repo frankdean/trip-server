@@ -2,6 +2,22 @@
 
 # Changelog
 
+## v1.5.0
+
+Allow limiting Cross-Origin Resource Sharing (CORS).  This introduces
+a configuration setting for `app.origins` - Valid origins to handle.
+Typically this is the protocol, host domain and port,
+e.g. `https://example.com:443`.  The default is `*:*` which currently
+allows all origins to ensure backward compatibility.
+
+See
+	- [Socket.IO 2.4.0](https://socket.io/blog/socket-io-2-4-0/)
+	- [CORS Misconfiguration in socket.io · Issue #3671 · socketio/socket.io](https://github.com/socketio/socket.io/issues/3671)
+	- [Cross-Origin Resource Sharing (CORS)](https://en.wikipedia.org/wiki/Cross-origin_resource_sharing)
+
+Show an alert on the live itinerary map when the websocket is
+disconnected or fails to connect.
+
 ## v1.4.2
 
 Update some dependent packages

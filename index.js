@@ -2037,6 +2037,7 @@ myApp.server = http.createServer(function(req, res) {
 
 var io = require('socket.io')(myApp.server, {
   serveClient: config.debug ,
+  origins: (config.app.origins !== undefined) ? config.app.origins :  ['*:*'],
   path: '/socket.io' /*,
   transports: ['websocket',
                'flashsocket',

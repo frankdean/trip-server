@@ -399,6 +399,12 @@ configured to run behind an [Apache web server][Apache] using HTTPS.
 	* `app.json.indent.level` - Indent level when debugging server with pretty
 	  print enabled
 
+	* `app.origins` - Valid origins to handle
+	  [Cross-Origin Resource Sharing (CORS)](https://en.wikipedia.org/wiki/Cross-origin_resource_sharing).
+	  Typically this is the protocol, host domain and port,
+      e.g. `https://example.com:443`.  The default is `*:*` which
+      currently allows all origins.
+
 	* `jwt.signingKey` - Create a strong password to sign authentication
       tokens with
 
@@ -868,7 +874,7 @@ To see how much space is begin used by the whole database:
 
 	SELECT pg_size_pretty(pg_database_size('trip'));
 
-To see how much space is beging used the the tiles table:
+To see how much space is being used the the tiles table:
 
 	SELECT pg_size_pretty(pg_table_size('tile'));
 

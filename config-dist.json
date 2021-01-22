@@ -18,6 +18,9 @@
       "expiresIn": 43200,
       "renewWithin": 21600
     },
+    "origins": [
+      "*:*"
+    ],
     "resourceToken": {
       "expiresIn": 86400
     },
