@@ -4,6 +4,7 @@
 #set -x
 
 export DEBIAN_FRONTEND=noninteractive
+DEB_OPTIONS="--yes"
 apt-get update
 #apt-get upgrade --yes
 
@@ -18,17 +19,17 @@ apt-get install -y tzdata
 dpkg-reconfigure tzdata
 
 apt-get install apt-transport-https
-apt-get install --yes g++ git nginx postgresql postgresql-contrib postgis apg screen
+apt-get install $DEB_OPTIONS g++ git nginx postgresql postgresql-contrib postgis apg screen
 
 curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
 echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
 apt-get update
-apt-get install --yes yarn+ cmdtest- nodejs-
+apt-get install $DEB_OPTIONS yarn+ cmdtest- nodejs-
 
-NODE_VERSION="v10.23.0"
+NODE_VERSION="v10.23.2"
 NODE_FILENAME="node-${NODE_VERSION}-linux-x64"
 NODE_TAR_FILENAME="${NODE_FILENAME}.tar.xz"
-NODE_SHA256="3293b1ea9b9e08d9dbc5bb8717a80084e24cadfe3b030a8ebfdadea5f963dfc9  ${NODE_TAR_FILENAME}"
+NODE_SHA256="9a0552d8b62d60500175ff06055bebce97df3b64a5245f6727572987b4aea8e5  ${NODE_TAR_FILENAME}"
 NODE_EXTRACT_DIR="${NODE_FILENAME}"
 NODE_DOWNLOAD_URL="https://nodejs.org/dist/${NODE_VERSION}/${NODE_TAR_FILENAME}"
 

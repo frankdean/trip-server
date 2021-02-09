@@ -1,7 +1,7 @@
 # -*- mode: dockerfile; -*- vim: set ft=dockerfile:
-FROM postgres:11.7
-LABEL uk.co.fdsd.tripserver.db.version="1.4.0"
-#LABEL uk.co.fdsd.tripserver.db.release-date="2020-08-12"
+FROM postgres:11.10
+LABEL uk.co.fdsd.tripserver.db.version="1.5.0"
+#LABEL uk.co.fdsd.tripserver.db.release-date="2021-02-09"
 #LABEL uk.co.fdsd.tripserver.db.is-production=""
 
 # ENV POSTGIS_MAJOR 3
