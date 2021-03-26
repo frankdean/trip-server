@@ -1084,7 +1084,7 @@ function getItinerariesCountByUsername(username, callback) {
     if (err) {
       callback(err);
     } else {
-      client.query('SELECT sum(count) FROM (SELECT count(*) FROM itinerary i JOIN usertable u ON i.user_id=u.id WHERE i.archived != true AND u.email=$1 UNION SELECT count(*) FROM itinerary i2 JOIN usertable u3 ON u3.id=i2.user_id JOIN itinerary_sharing s ON i2.id=s.itinerary_id JOIN usertable u2 ON u2.id=s.shared_to_id WHERE i2.archived != true AND s.active=true AND u2.email=$1) as q',
+      client.query('SELECT sum(count) FROM (SELECT count(*) FROM itinerary i JOIN usertable u ON i.user_id=u.id WHERE i.archived != true AND u.email=$1 UNION ALL SELECT count(*) FROM itinerary i2 JOIN usertable u3 ON u3.id=i2.user_id JOIN itinerary_sharing s ON i2.id=s.itinerary_id JOIN usertable u2 ON u2.id=s.shared_to_id WHERE i2.archived != true AND s.active=true AND u2.email=$1) as q',
                    [username],
                    function(err, result) {
                      // release the client back to the pool
@@ -1518,7 +1518,7 @@ function confirmItineraryOwnership(username, itineraryId, callback) {
 }
 
 /**
- * Confirms whether the passed username has access, or shared access to ready
+ * Confirms whether the passed username has access, or shared access to read
  * the itinerary with the passed itineraryId.  The Promise is rejected if the
  * user does not have read access to the itinerary.
  * @param {string} username the email of the user to search for.

@@ -470,7 +470,7 @@ function doLogPoint(q, callback) {
       if (q.mstime !== undefined && _.inRange(q.mstime, Number.MAX_SAFE_INTEGER)) {
         db.findUserByUuid(q.uuid, function(err, user) {
           if (err) {
-            logger.info('User not found for UUID, %s, %s', q.uuid, q.id);
+            logger.info('User not found for UUID: %s', q.uuid);
             callback(new Error('Invalid UUID'));
           } else {
             logger.debug('Saving %j', q);

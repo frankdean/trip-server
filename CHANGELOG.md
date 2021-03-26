@@ -2,6 +2,12 @@
 
 # Changelog
 
+## v1.5.1
+
+Bug fix - The count of itineraries was half the correct value when the
+number of personal itineraries was identical to the number of shared
+itineraries, causing an incorrect page count calculation.
+
 ## v1.5.0
 
 Allow limiting Cross-Origin Resource Sharing (CORS).  This introduces
