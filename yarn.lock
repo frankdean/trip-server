@@ -184,9 +184,9 @@ arraybuffer.slice@~0.0.7:
   resolved "https://registry.yarnpkg.com/arraybuffer.slice/-/arraybuffer.slice-0.0.7.tgz#3bbc4275dd584cc1b10809b89d4e8b63a69e7675"
   integrity sha512-wGUIVQXuehL5TCqQun8OW81jGzAWycqzFF8lFp+GOM5BXLYj3bKNsYC4daB7n6XjCqxQA/qgTJ+8ANR3acjrog==
 
-"autoquit@https://www.fdsd.co.uk/trip-server/download/node-autoquit-0.1.7-rc.2.tar.gz":
+"autoquit@git+https://github.com/frankdean/node-autoquit#0.1.7-rc.2":
   version "0.1.7-rc.2"
-  resolved "https://www.fdsd.co.uk/trip-server/download/node-autoquit-0.1.7-rc.2.tar.gz#df87ca63cd723e634a34c610111b8aac16215da7"
+  resolved "git+https://github.com/frankdean/node-autoquit#dd5e9ddccddbc9c43efa6cb57589880896c12974"
 
 backo2@1.0.2:
   version "1.0.2"

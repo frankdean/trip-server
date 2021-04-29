@@ -1,6 +1,6 @@
 {
   "name": "trip-server",
-  "version": "1.6.0",
+  "version": "1.6.1-rc.1",
   "description": "TRIP - Trip Recording and Itinerary Planner RESTful server",
   "author": {
     "name": "Frank Dean",
@@ -27,6 +27,7 @@
   "scripts": {
     "nodemon": "nodemon --ext 'json,js,yaml' --ignore 'app/*' index.js",
     "config2yaml": "node ./spec/support/json2yaml.js --outfile config.yaml",
+    "start": "node index.js",
     "test": "nodemon --ext 'json,js,yaml' --ignore 'app/*' ./node_modules/jasmine/bin/jasmine.js",
     "test-single-run": "jasmine",
     "clean": "rimraf docs",
@@ -41,7 +42,7 @@
     "@turf/distance": "^6.0.1",
     "@turf/helpers": "^6.0.1",
     "@turf/invariant": "^6.0.1",
-    "autoquit": "https://www.fdsd.co.uk/trip-server/download/node-autoquit-0.1.7-rc.2.tar.gz",
+    "autoquit": "git+https://github.com/frankdean/node-autoquit#0.1.7-rc.2",
     "bcrypt": "^5.0.0",
     "formidable": "^1.1.1",
     "gdal": "^0.10.1",
