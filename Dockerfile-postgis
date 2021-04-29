@@ -1,20 +1,16 @@
 # -*- mode: dockerfile; -*- vim: set ft=dockerfile:
-FROM postgres:11.10
-LABEL uk.co.fdsd.tripserver.db.version="1.5.0"
+FROM postgres:11.11
+LABEL uk.co.fdsd.tripserver.db.version="1.6.0"
 #LABEL uk.co.fdsd.tripserver.db.release-date="2021-02-09"
 #LABEL uk.co.fdsd.tripserver.db.is-production=""
 
-# ENV POSTGIS_MAJOR 3
-# ENV POSTGIS_VERSION 3.0.1+dfsg-2.pgdg90+1
-#     postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR=$POSTGIS_VERSION \
-#     postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR-scripts=$POSTGIS_VERSION \
-
+ENV POSTGIS_MAJOR 2.5
+ENV POSTGIS_VERSION 2.5.5+dfsg-1.pgdg90+2
 RUN apt-get update \
+    && apt-cache showpkg postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR \
     && apt-get install -y --no-install-recommends \
-    postgresql-11 \
-    postgresql-11-postgis-2.5 \
-    postgresql-contrib \
-    postgis \
+    postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR=$POSTGIS_VERSION \
+    postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR-scripts=$POSTGIS_VERSION \
     && rm -rf /var/lib/apt/lists/*
 RUN localedef -i en_GB -c -f UTF-8 -A /usr/share/locale/locale.alias en_GB.UTF-8
 ENV LANG en_GB.utf8

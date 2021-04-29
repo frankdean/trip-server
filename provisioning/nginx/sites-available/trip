@@ -63,6 +63,7 @@ server {
 		# First attempt to serve request as file, then as directory, then fall
 		# back to displaying the application index page.
 		try_files $uri $uri/ /app/index.html;
+		add_header Cache-Control "no-cache";
 	}
 
 

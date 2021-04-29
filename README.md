@@ -147,6 +147,11 @@ To use a Docker container for development:
 	$ sudo docker-compose --file docker-compose-dev.yml up --build -d
 	$ sudo docker-compose logs --follow
 
+To run an interactive Bash shell in the running container:
+
+	$ sudo docker container ls
+	$ sudo docker exec -it trip-server_web_1 bash -il
+
 The environment requires both the `trip-server` and `trip-web-client` projects
 to share the same parent folder.  These folders are mounted within the Docker
 container such that changes made on the host are also reflected within the

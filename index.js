@@ -26,13 +26,19 @@ var url = require('url');
 var _ = require('lodash');
 var autoquit = require('autoquit');
 var formidable = require('formidable');
-var nstatic = require('node-static');
 var qs = require('qs');
 const systemd = require('systemd'),
       util = require('util'),
       YAML = require('yaml');
 
 var config = require('./config');
+if (config.staticFiles && config.staticFiles.allow) {
+  var send = require('send'),
+      // If it ever becomes necessary or desireable, parseurl can be relaced
+      // with the functionality from URL in Node.js core:
+      // https://nodejs.org/docs/latest-v10.x/api/url.html#url_constructor_new_url_input_base
+      parseUrl = require('parseurl');
+}
 var npm_package = require('./package.json');
 var db = require('./db');
 var itineraries = require('./itineraries.js');
@@ -50,7 +56,6 @@ module.exports = myApp;
 
 var logger = require('./logger').createLogger('index.js', config.log.level, config.log.timestamp);
 
-myApp.fileServer = new(nstatic.Server)('./', {cache: 3600});
 // Set to x to indent JSON with x spaces.  Zero: no pretty print.
 myApp.pretty = config.app.json.indent.level;
 myApp.maxItinerarySearchRadius = (config.app.maxItinerarySearchRadius) || 250000;
@@ -1918,39 +1923,35 @@ myApp.handleFullyAuthenticatedRequests = function(req, res, token) {
 };
 
 myApp.serveStaticFiles = function(req, res) {
-  var m;
-  myApp.fileServer.serve(req, res, function(err, result) {
-    if (err) {
+  var m, options = { root: './',
+                     acceptRanges: false,
+                     dotfiles: 'deny'
+                   };
+
+  send(req, parseUrl(req).pathname, options)
+    .on('error', (err) => {
       // If the URL is prefixed with /trip/ try it without the prefix
       if (err.status === 404  && /^\/trip(\/.+)$/.test(req.url)) {
         m = /^\/trip(\/.+)$/.exec(req.url);
-        logger.debug('Attempting to serve %s instead of %s', m[1], req.url);
-        req.url = m[1];
-        myApp.fileServer.serve(req, res, function(err, result) {
-          if (err) {
-            logger.debug('Error attempting to serve file: %s', req.url, err);
-            if (err.status === 404) {
-              logger.debug('Trying to return /app/index.html instead');
+        if (m) {
+          req.url = m[1];
+          send(req, parseUrl(req).pathname, options)
+            .on('error', (err) => {
               // Might be a page reload with a "pretty" URL
-              myApp.fileServer.serveFile('/app/index.html', 200, {}, req, res).addListener('error', function(err) {
-                logger.error('Error serving /app/index.html');
-                res.statusCode = 501;
-                res.end();
-              });
-            } else {
-              logger.error('Error serving static file %s - %s', req.url, err.message);
-              res.writeHead(err.status, err.headers);
-              res.end();
-            }
-          }
-        });
+              send(req, '/app/index.html', options).pipe(res);
+            })
+            .pipe(res);
+        } else {
+          // Otherwise, fetch the root index page
+          send(req, '/', options).pipe(res);
+        }
       } else {
         logger.warn('Error serving static file %s - %s', req.url, err.message);
-        res.writeHead(err.status, err.headers);
+        res.statusCode = err.statusCode;
         res.end();
       }
-    }
-  });
+    })
+    .pipe(res);
 };
 
 myApp.shutdown = function() {

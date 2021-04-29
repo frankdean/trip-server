@@ -2,6 +2,12 @@
 
 # Changelog
 
+## v.1.6.0
+
+Replaced [node-static](https://github.com/cloudhead/node-static),
+which appears to be no longer maintained, with
+[send](https://github.com/pillarjs/send).
+
 ## v1.5.1
 
 Bug fix - The count of itineraries was half the correct value when the
