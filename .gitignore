@@ -6,3 +6,4 @@
 .vagrant/
 /config.yaml
 /docs/
+/spec/support/elevation-data/

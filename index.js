@@ -1685,7 +1685,7 @@ myApp.handleGetConfigMapAttribution = function(req, res, token) {
       });
       myApp.respondWithData(null, res, layers);
     } else {
-      logger.warn('config.json is invalid - tile.providers must be defined as an array');
+      logger.warn('config file is invalid - tile.providers must be defined as an array');
       myApp.respondWithData(null, res, [ {"name": "Error", "type": "xyz", "tileAttributions": [{"text": "No map provider configured"}]} ]);
     }
   });
@@ -1996,7 +1996,7 @@ myApp.server = http.createServer(function(req, res) {
     if (config.staticFiles.allow) {
       myApp.serveStaticFiles(req, res);
     } else {
-      logger.warn('Serving static files disabled in config.json - ignoring request: %s', req.url);
+      logger.warn('Serving static files disabled in config file - ignoring request: %s', req.url);
       res.statusCode = 404;
       res.end();
     }
