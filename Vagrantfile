@@ -3,6 +3,27 @@
 
 Vagrant.configure("2") do |config|
 
+  # Set the value of :IMPORT_TEST_DATA to 'y' (lower-case) to import
+  # test data.  If a VM already exists, drop the database first by
+  # using the 'vagrant ssh' command into the running VM and drop the
+  # database with 'dropdb trip'.  It'll be recreated when you run
+  # 'vagrant reload' from the VM's host.
+  #
+  # Set :TRIP_DEV to 'y' (lower-case) to setup and run the VM as a
+  # development environment.  If the VM already exists, run or reload
+  # with the '--provision' option, e.g. 'vagrant reload --provision'.
+  #
+  # Set :VB_GUI to 'y' (lower-case) to run a GUI environment.  If the
+  # VM already exists, run or reload with the '--provision' option,
+  # e.g. 'vagrant reload --provision'.
+  #
+  # Set :WIPE_DB to 'y' (lower-case) to WIPE the database each time
+  # the VM is started.
+  myEnv = { :IMPORT_TEST_DATA => "y",
+            :TRIP_DEV => "n",
+            :VB_GUI => "n",
+            :WIPE_DB => "n" }
+
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://atlas.hashicorp.com/search.
   # Bento are one of the Vagrant recommended boxes see
@@ -34,24 +55,35 @@ Vagrant.configure("2") do |config|
   # the path on the host to the actual folder. The second argument is
   # the path on the guest to mount the folder. And the optional third
   # argument is a set of non-required options.
-  config.vm.synced_folder "../trip-web-client", "/vagrant-trip-web-client"
+  if myEnv[:TRIP_DEV] == "y"
+    config.vm.synced_folder "../trip-web-client", "/vagrant-trip-web-client"
+  end
 
   # Provider-specific configuration so you can fine-tune various
   # backing providers for Vagrant. These expose provider-specific options.
-  # Example for VirtualBox:
-  #
-  # config.vm.provider "virtualbox" do |vb|
-  #   # Display the VirtualBox GUI when booting the machine
-  #   vb.gui = true
-  #
-  #   # Customize the amount of memory on the VM:
-  #   vb.memory = "1024"
-  # end
-  #
-  # View the documentation for the provider you are using for more
-  # information on available options.
+  # View the documentation for the provider you are using (VirtualBox)
+  # for more information on available options.
+  config.vm.provider "virtualbox" do |v|
+    v.name = "Trip—Vagrant"
+    # Display the VirtualBox GUI when booting the machine
+    if myEnv[:VB_GUI] == "y"
+      v.gui = true
+    end
 
-  config.vm.provision :shell, path: "provisioning/bootstrap.sh"
-  config.vm.provision :shell, path: "provisioning/bootconfig.sh", run: "always"
+    # The amount of video ram in MB
+    # https://www.virtualbox.org/manual/ch08.html#vboxmanage-cmd-overview
+    if v.gui
+      v.customize [ "modifyvm", :id, "--vram", "32" ]
+    end
+
+    # Customize the amount of memory on the VM:
+    v.memory = "1024"
+
+    # Whether to use a master VM and linked clones
+    v.linked_clone = false
+  end
+
+  config.vm.provision :shell, path: "provisioning/bootstrap.sh", env: myEnv
+  config.vm.provision :shell, path: "provisioning/bootconfig.sh", run: "always", env: myEnv
 
 end

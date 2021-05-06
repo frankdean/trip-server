@@ -1,10 +1,5 @@
 #!/usr/bin/env bash
 
-# Uncomment following line to import test data.  If VM already exists, perform
-# 'vagrant ssh' into VM and drop the database with 'dropdb trip'.  It'll be
-# recreated when your run 'vagrant reload' from the VM's host.
-#IMPORT_TEST_DATA=y
-
 # Uncomment the following to debug the script
 #set -x
 
@@ -16,17 +11,17 @@ PG_VERSION=11
 su - postgres -c 'createuser -drs vagrant' 2>/dev/null
 su - vagrant -c 'cd /vagrant && yarn install'
 cd /vagrant
-if [ -e config.json ]; then
-	SECRET=$(grep '"uri"' /vagrant/config.json | cut -d ':' -f 4 | cut -d '@' -f 1)
+if [ -e config.yaml ]; then
+	SECRET=$(grep 'uri:' /vagrant/config.yaml | cut -d ':' -f 4 | cut -d '@' -f 1)
 else
 	SECRET=$(apg  -m 12 -x 14 -M NC -t -n 20 | tail -n 1 | cut -d ' ' -f 1 -)
 	SIGNING_KEY=$(apg  -m 12 -x 14 -M NC -t -n 20 | tail -n 1 | cut -d ' ' -f 1 -)
 	UMASK=$(umask -p)
 	umask o-rwx
-	cp config-dist.json config.json
+	cp config-dist.yaml config.yaml
 	$UMASK
 
-	sed "s/\"signingKey\".*/\"signingKey\": \"${SIGNING_KEY}\",/; s/\"maxAge\": *[0-9]\+/\"maxAge\": 999/; s/\"host\": *\".*\", */\"host\": \"localhost\",/; s/\"path\": *\".*\", *$/\"path\": \"\/DO_NOT_FETCH_TILES_IN_DEMO_UNTIL_PROPERLY_CONFIGURED\/{z}\/{x}\/{y}.png\",/; s/\"uri\": *\".*\"/\"uri\": \"postgresql:\/\/trip:${SECRET}@localhost\/trip\"/; s/\"allow\":.*/\"allow\": false/; s/\"level\": *\"info\"/\"level\": \"debug\"/" /vagrant/config-dist.json >/vagrant/config.json
+	sed "s/level: 0/level: 4/; s/signingKey.*/signingKey: ${SIGNING_KEY},/; s/maxAge: *[0-9]\+/maxAge: 999/; s/host: *.*, */host: localhost,/; s/path: .*$/path: \/DO_NOT_FETCH_TILES_IN_DEMO_UNTIL_PROPERLY_CONFIGURED\/{z}\/{x}\/{y}.png,/; s/uri: .*/uri: postgresql:\/\/trip:${SECRET}@localhost\/trip/; s/allow: +.*/allow: false/; s/level: +info/level: debug/" /vagrant/config-dist.yaml >/vagrant/config.yaml
 
 fi
 
@@ -36,6 +31,10 @@ if [ -d "/etc/postgresql/${PG_VERSION}" ]; then
 		sed -i 's/local\(.*all.*all.*$\)/local   trip            trip                                    md5\nlocal\1/' "/etc/postgresql/${PG_VERSION}/main/pg_hba.conf"
 		systemctl reload postgresql
 	fi
+fi
+if [ "$WIPE_DB" == "y" ]; then
+	su - postgres -c 'dropdb trip'
+	su - postgres -c 'dropuser trip'
 fi
 cd /vagrant/spec/support
 su - postgres -c 'createuser trip' 2>/dev/null
@@ -90,41 +89,57 @@ if [ ! -e /var/www/trip/index.html ]; then
 	cd /var/www/trip
 	ln -s /vagrant/provisioning/nginx/index.html /var/www/trip/index.html
 fi
-if [ ! -e /var/www/trip/app/node_modules ]; then
-	if [ -f /vagrant-trip-web-client/package.json ]; then
-		echo "Configuring web client to use shared folder under /vagrant-trip-web-client/"
-		cd /var/www/trip
-		if [ ! -L app ]; then
-			ln -s /vagrant-trip-web-client/app /var/www/trip/app
-		fi
-		if [ ! -d /vagrant-trip-web-client/node_modules ]; then
-			su - vagrant -c 'cd /vagrant-trip-web-client && yarn install'
-		fi
-	elif [ -f /vagrant/trip-web-client/package.json ]; then
-		echo "Configuring to run with web application under /vagrant/trip-web-client/"
-		cd /var/www/trip
-		if [ ! -L app ]; then
-			ln -s /vagrant/trip-web-client/app /var/www/trip/app
-		fi
-		if [ ! -d /vagrant/trip-web-client/node_modules ]; then
-			su - vagrant -c 'cd /vagrant/trip-web-client && yarn install'
-		fi
-	else
-		echo "Configuring to run with a downloaded version of the web application"
-		# If not, download and extract release
-		if [ ! -e /vagrant/provisioning/downloads/${TRIP_WEB_CLIENT_RELEASE} ]; then
-			cd /vagrant/provisioning/downloads
-			wget --no-verbose https://www.fdsd.co.uk/trip-server/download/${TRIP_WEB_CLIENT_RELEASE} 2>&1
-			echo "$TRIP_WEB_CLIENT_SHA256" | shasum -c -
-			if [ $? -ne "0" ]; then
-				>&2 echo "Checksum of downloaded file does not match expected value of ${TRIP_WEB_CLIENT_VERSION_SHA256}"
-				exit 1
-			fi
-		fi
-		cd /var/www/trip
-		tar --no-same-owner --no-same-permissions -xf /vagrant/provisioning/downloads/${TRIP_WEB_CLIENT_RELEASE}
-	fi
+
+# Remove any existing link and then re-create
+if [ -L app ]; then
+	rm app
 fi
+if [ -f /vagrant-trip-web-client/package.json ]; then
+	echo "Configuring web client to use shared folder under /vagrant-trip-web-client/"
+	cd /var/www/trip
+	if [ ! -L app ]; then
+		ln -f -s /vagrant-trip-web-client/app /var/www/trip/app
+	fi
+	if [ ! -d /vagrant-trip-web-client/node_modules ]; then
+		su - vagrant -c 'cd /vagrant-trip-web-client && yarn install'
+	fi
+	if [ "$TRIP_DEV" == "y" ]; then
+		if [ -L /vagrant/app ]; then
+			rm /vagrant/app
+		fi
+		ln -f -s /vagrant-trip-web-client/app /vagrant/app
+	fi
+elif [ -f /vagrant/trip-web-client/package.json ]; then
+	echo "Configuring to run with web application under /vagrant/trip-web-client/"
+	cd /var/www/trip
+	if [ ! -L app ]; then
+		ln -s /vagrant/trip-web-client/app /var/www/trip/app
+	fi
+	if [ ! -d /vagrant/trip-web-client/node_modules ]; then
+		su - vagrant -c 'cd /vagrant/trip-web-client && yarn install'
+	fi
+	if [ "$TRIP_DEV" == "y" ]; then
+		if [ -L /vagrant/app ]; then
+			rm /vagrant/app
+		fi
+		ln -s /vagrant/trip-web-client/app /vagrant/app
+	fi
+else
+	echo "Configuring to run with a downloaded version of the web application"
+	# If not, download and extract release
+	if [ ! -e /vagrant/provisioning/downloads/${TRIP_WEB_CLIENT_RELEASE} ]; then
+		cd /vagrant/provisioning/downloads
+		wget --no-verbose https://www.fdsd.co.uk/trip-server/download/${TRIP_WEB_CLIENT_RELEASE} 2>&1
+		echo "$TRIP_WEB_CLIENT_SHA256" | shasum -c -
+		if [ $? -ne "0" ]; then
+			>&2 echo "Checksum of downloaded file does not match expected value of ${TRIP_WEB_CLIENT_VERSION_SHA256}"
+			exit 1
+		fi
+	fi
+	cd /var/www/trip
+	tar --no-same-owner --no-same-permissions -xf /vagrant/provisioning/downloads/${TRIP_WEB_CLIENT_RELEASE}
+fi
+
 if [ ! -L /usr/local/trip-server ]; then
 	cd /usr/local
 	ln -s /vagrant trip-server
@@ -136,6 +151,17 @@ if [ ! -e /etc/systemd/system/trip.socket ]; then
 		systemctl enable trip.socket 2>/dev/null
 		systemctl start trip.socket 2>/dev/null
 	fi
+fi
+
+if [ "$TRIP_DEV" == "y" ]; then
+	egrep '^export\s+CHROME_BIN' /home/vagrant/.profile >/dev/null 2>&1
+	if [ $? -ne 0 ]; then
+		echo "export CHROME_BIN=/usr/bin/chromium" >>/home/vagrant/.profile
+	fi
+fi
+egrep '^export\s+EDITOR' /home/vagrant/.profile >/dev/null 2>&1
+if [ $? -ne 0 ]; then
+	echo "export EDITOR=/usr/bin/vi" >>/home/vagrant/.profile
 fi
 
 if [ ! -z "$ADMIN_PWD" ]; then

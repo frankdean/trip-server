@@ -21,6 +21,13 @@ dpkg-reconfigure tzdata
 apt-get install apt-transport-https
 apt-get install $DEB_OPTIONS g++ git nginx postgresql postgresql-contrib postgis apg screen
 
+if [ "$VB_GUI" == "y" ]; then
+	apt-get install -y lxde
+fi
+if [ "$TRIP_DEV" == "y" ]; then
+	apt-get install -y openjdk-11-jdk chromium chromium-l10n
+fi
+
 curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
 echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
 apt-get update
@@ -61,7 +68,8 @@ if [ ! -d "/usr/local/share/${NODE_FILENAME}" ]; then
 		ln -s "$NODE_EXTRACT_DIR" node-current
 		cd  /usr/local/bin
 		ln -s ../share/node-current/bin/node
-		#ln -s ../share/node-current/bin/npm
+		ln -s ../share/node-current/bin/npm
+		ln -s ../share/node-current/bin/npx
 		cd /usr/local/include
 		ln -s ../share/node-current/include/node/
 		cd /usr/local/lib

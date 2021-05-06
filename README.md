@@ -242,7 +242,7 @@ involves downloading approximately 600MB of data.  Perhaps more of an
 
 1.  Make a note of the trip-server admin user credentials displayed at the end
     of the startup process
-	
+
 1.  Use your browser to navigate to <http://localhost:8080/> on the host
     machine and login providing the above credentials
 
@@ -259,6 +259,9 @@ sub-folder exists, it is removed and the contents re-installed/rebuilt to
 ensure that all of the `yarn` installed binaries are compatible with the VM's
 operating system.  Similarly, you may need to remove and re-create this folder
 if you choose to run the trip server directly on the local guest machine.
+
+Should you need it, e.g. for running a GUI in Vagrant, the `vagrant`
+user's default password is `vagrant`.
 
 Rendering of map tiles is disabled by default, in order to respect
 [OpenStreetMap's][OpenStreetMap] [Tile Usage Policy][].  You will need to
