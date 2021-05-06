@@ -3,9 +3,9 @@
 # Uncomment the following to debug the script
 #set -x
 
-TRIP_WEB_CLIENT_VERSION='v1.6.0'
+TRIP_WEB_CLIENT_VERSION='v1.6.1-rc.1'
 TRIP_WEB_CLIENT_RELEASE="trip-web-client-release-${TRIP_WEB_CLIENT_VERSION}.tar.gz"
-TRIP_WEB_CLIENT_SHA256="0d28a173119af11124fd782403741fcae60b1029a495f9d657569d58a4ef3c91  ${TRIP_WEB_CLIENT_RELEASE}"
+TRIP_WEB_CLIENT_SHA256="8e71597a1dac9b5cb6fb69a21da55b285c952eb2e3b40136e18f5d8ce8627bdf  ${TRIP_WEB_CLIENT_RELEASE}"
 PG_VERSION=11
 
 su - postgres -c 'createuser -drs vagrant' 2>/dev/null
@@ -91,11 +91,14 @@ if [ ! -e /var/www/trip/index.html ]; then
 fi
 
 # Remove any existing link and then re-create
-if [ -L app ]; then
-	rm app
+if [ -L /vagrant/app ]; then
+	rm /vagrant/app
 fi
 if [ -f /vagrant-trip-web-client/package.json ]; then
 	echo "Configuring web client to use shared folder under /vagrant-trip-web-client/"
+	if [ -e /var/www/trip/app ]; then
+		rm -rf /var/www/trip/app
+	fi
 	cd /var/www/trip
 	if [ ! -L app ]; then
 		ln -f -s /vagrant-trip-web-client/app /var/www/trip/app
@@ -111,6 +114,9 @@ if [ -f /vagrant-trip-web-client/package.json ]; then
 	fi
 elif [ -f /vagrant/trip-web-client/package.json ]; then
 	echo "Configuring to run with web application under /vagrant/trip-web-client/"
+	if [ -e /var/www/trip/app ]; then
+		rm -rf /var/www/trip/app
+	fi
 	cd /var/www/trip
 	if [ ! -L app ]; then
 		ln -s /vagrant/trip-web-client/app /var/www/trip/app
@@ -127,14 +133,17 @@ elif [ -f /vagrant/trip-web-client/package.json ]; then
 else
 	echo "Configuring to run with a downloaded version of the web application"
 	# If not, download and extract release
+	cd /vagrant/provisioning/downloads
 	if [ ! -e /vagrant/provisioning/downloads/${TRIP_WEB_CLIENT_RELEASE} ]; then
-		cd /vagrant/provisioning/downloads
 		wget --no-verbose https://www.fdsd.co.uk/trip-server/download/${TRIP_WEB_CLIENT_RELEASE} 2>&1
-		echo "$TRIP_WEB_CLIENT_SHA256" | shasum -c -
-		if [ $? -ne "0" ]; then
-			>&2 echo "Checksum of downloaded file does not match expected value of ${TRIP_WEB_CLIENT_VERSION_SHA256}"
-			exit 1
-		fi
+	fi
+	echo "$TRIP_WEB_CLIENT_SHA256" | shasum -c -
+	if [ $? -ne "0" ]; then
+		>&2 echo "Checksum of downloaded file does not match expected value of ${TRIP_WEB_CLIENT_VERSION_SHA256}"
+		exit 1
+	fi
+	if [ -e /var/www/trip/app ]; then
+		rm -rf /var/www/trip/app
 	fi
 	cd /var/www/trip
 	tar --no-same-owner --no-same-permissions -xf /vagrant/provisioning/downloads/${TRIP_WEB_CLIENT_RELEASE}

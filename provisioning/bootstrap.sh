@@ -25,7 +25,7 @@ if [ "$VB_GUI" == "y" ]; then
 	apt-get install -y lxde
 fi
 if [ "$TRIP_DEV" == "y" ]; then
-	apt-get install -y openjdk-11-jdk chromium chromium-l10n
+	apt-get install -y openjdk-11-jdk chromium chromium-l10n zip
 fi
 
 curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
