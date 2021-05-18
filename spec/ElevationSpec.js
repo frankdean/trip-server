@@ -17,10 +17,29 @@
  */
 'use strict';
 
-var logger = require('../logger').createLogger('ElevationSpec.js');
+const logger = require('../logger').createLogger('ElevationSpec.js'),
+      fs = require('fs'),
+      config = require('../config');
 
 describe('elevation.js', function() {
-  var Elevation = require('../elevation.js');
+
+  var runElevationTests = config.elevation !== undefined && config.elevation.datasetDir;
+
+  if (runElevationTests) {
+    try {
+      runElevationTests = fs.statSync(config.elevation.datasetDir).isDirectory();
+    } catch (err) {
+      runElevationTests = false;
+      logger.alert('Elevation data directory %s not found.  Elevation tests will be skipped', config.elevation.datasetDir);
+    }
+}
+  if (!runElevationTests) {
+    logger.notice('Skipping elevation tests as elevation data not configured/found.');
+    return;
+  }
+
+  const Elevation = require('../elevation.js');
+
   var err, result;
   var p1 = {lat: 51.500194, lng: -0.134583};
   var p2 = {lat: 51.493355, lng: -0.491638};

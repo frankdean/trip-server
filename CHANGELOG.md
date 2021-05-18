@@ -2,6 +2,28 @@
 
 # Changelog
 
+## Next release
+
+Bug fix - failed to load elevation tif files after non-tif file
+encountered in the same folder.  E.g. the elevation data directory
+contains a hidden file like `.DS_Store` no tif files will be loaded.
+
+Disabled elevation tests when elevation data not configured.
+
+Updated to use newer version of xmlhttprequest-ssl re CVE-2020-28502.
+
+Updated `jsdoc` to remove `underscore` vulnerability.
+
+Can be built with either `npm` or `yarn`.  Implemented forced package
+resolutions for `npm` (this feature is included in `yarn`).  If
+`package-lock.json` doesn't already exist when `npm install` target is
+first executed, `npm install` needs to be run a second time to force
+the package resolutions.
+
+Improvements to development environment with Vagrant.
+
+Run unit and end-to-end tests with headless Chromium.
+
 ## v.1.6.0
 
 Replaced [node-static](https://github.com/cloudhead/node-static),

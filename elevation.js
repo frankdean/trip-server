@@ -144,6 +144,7 @@ function loadTiles(dir) {
 }
 
 function loadNextTile(dir, paths, tiles, done) {
+  // logger.debug('Tiles to do: %d', paths.length);
   if (paths.length > 0) {
     loadTile(dir, paths.shift(), tiles, function(err) {
       if (err) {
@@ -172,7 +173,13 @@ function loadTile(dir, f, tiles, done) {
         logger.critical('Failed to add file "%s" to tile set', dir + f, e);
         done(); // done(e); - Continue trying to process the remaining tiles
       }
+    } else {
+      logger.debug('loadTile() - ignoring %s (not a file)', f);
+      done();
     }
+  } else {
+    logger.debug('loadTile() - ignoring %s (not a .tif extenstion)', f);
+    done();
   }
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "trip-server",
-  "version": "1.6.1-rc.1",
+  "version": "1.6.1-rc.2",
   "description": "TRIP - Trip Recording and Itinerary Planner RESTful server",
   "author": {
     "name": "Frank Dean",
@@ -17,27 +17,34 @@
     "GPS"
   ],
   "resolutions": {
-    "lodash": "4.17.21",
-    "underscore": "1.12.1",
-    "xmlhttprequest-ssl": "^1.6.2"
+    "engine.io-client": "~3.5.2"
   },
   "devDependencies": {
     "jasmine": "^3.4.0",
     "jsdoc": "^3.6.6",
     "jshint": "^2.9.4",
     "nodemon": "^2.0.4",
+    "npm-force-resolutions": "0.0.10",
     "rimraf": "^3.0.2",
+    "shelljs": "^0.8.4",
     "yargs": "^16.0.3"
   },
   "scripts": {
+    "preinstall": "node -e \"const fs = require('fs'); if (fs.existsSync('package-lock.json') && '$npm_execpath'.indexOf('yarn.js') === -1) { require('child_process').execSync('npx npm-force-resolutions')} \"",
     "nodemon": "nodemon --ext 'json,js,yaml' --ignore 'app/*' index.js",
     "config2yaml": "node ./spec/support/json2yaml.js --outfile config.yaml",
     "start": "node index.js",
     "test": "nodemon --ext 'json,js,yaml' --ignore 'app/*' ./node_modules/jasmine/bin/jasmine.js",
     "test-single-run": "jasmine",
-    "clean": "rimraf docs",
+    "clean": "rimraf docs dist",
     "docs": "nodemon ./node_modules/jsdoc/jsdoc.js --ignore 'docs/*' -- --destination docs --readme README.md --package package.json ./",
-    "lint": "jshint *.js spec/*.js spec/support/*.js"
+    "lint": "jshint *.js spec/*.js spec/support/*.js",
+    "tar-release": "node -e \"const shell = require('shelljs'); shell.cd('dist'); shell.exec('tar -zcf $npm_package_name-$npm_package_version.tgz $npm_package_name-$npm_package_version') \"",
+    "zip-release": "node -e \"const shell = require('shelljs'); shell.cd('dist'); shell.exec('zip -qr $npm_package_name-$npm_package_version.zip $npm_package_name-$npm_package_version') \"",
+    "predist": "$npm_execpath run clean && $npm_execpath pack && mkdirp dist --mode=0775",
+    "dist": "node -e \"const shell = require('shelljs'), tar_pack = '$npm_execpath'.indexOf('yarn.js') > -1 ? '../${npm_package_name}-v${npm_package_version}.tgz' : '../${npm_package_name}-${npm_package_version}.tgz'; console.log('path:', '$npm_execpath'); shell.cd('dist'); shell.exec('tar -xf ' + tar_pack); shell.rm('-f', tar_pack); shell.cp('-f', '../yarn.lock', '../package-lock.json', 'package'); const files = shell.find('.').filter(function(file) { return file.match(/~$/); }); shell.rm('-f', files) \"",
+    "postdist": "node -e \"const shell = require('shelljs'); shell.cd('dist'); shell.mv('package', '$npm_package_name-$npm_package_version') \"",
+    "build-release": "$npm_execpath run dist && $npm_execpath run tar-release && $npm_execpath run zip-release"
   },
   "dependencies": {
     "@turf/bbox": "^6.0.1",
