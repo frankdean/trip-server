@@ -1,6 +1,6 @@
 {
   "name": "trip-server",
-  "version": "1.6.1-rc.2",
+  "version": "1.6.1-rc.3",
   "description": "TRIP - Trip Recording and Itinerary Planner RESTful server",
   "author": {
     "name": "Frank Dean",
@@ -16,9 +16,7 @@
     "planner",
     "GPS"
   ],
-  "resolutions": {
-    "engine.io-client": "~3.5.2"
-  },
+  "resolutions": {},
   "devDependencies": {
     "jasmine": "^3.4.0",
     "jsdoc": "^3.6.6",
@@ -65,7 +63,7 @@
     "qs": "^6.5.0",
     "sax": "^1.2.2",
     "send": "^0.17.1",
-    "socket.io": "~2.4.1",
+    "socket.io": "^3.0.0",
     "systemd": "^0.4.0",
     "uuid": "^8.3.1",
     "xmlbuilder": "^15.1.1",

@@ -8,7 +8,7 @@ services:
       - postgis
     image: fdean/trip-server:latest
     deploy:
-      replicas: 2
+      replicas: 1
       restart_policy:
         condition: any
         delay: 5s
@@ -28,17 +28,27 @@ services:
       TRIP_RESOURCE_SIGNING_KEY: niqueSlothUg
       POSTGRES_PASSWORD: EgceOvovbiag
     volumes:
-      - .:/app
-      - node_modules:/app/node_modules
-      - ../trip-web-client/app:/app/app
-      - web_node_modules:/app/app/node_modules
+      - type: bind
+        source: .
+        target: /app
+      - type: bind
+        source: ../trip-web-client/app
+        target: /app/app
+      - type: volume
+        source: web_node_modules
+        target: /app/app/node_modules
+      - type: volume
+        source: node_modules
+        target: /app/node_modules
     command: ./node_modules/nodemon/bin/nodemon.js --ignore app/ index.js
 
   postgis:
     build:
       context: .
       dockerfile: Dockerfile-postgis
+      shm_size: 256m
     image: fdean/trip-database:latest
+    shm_size: 512m
     deploy:
       replicas: 1
       restart_policy:
@@ -49,10 +59,10 @@ services:
       resources:
         limits:
           cpus: '0.50'
-          memory: 100M
+          memory: 800M
         reservations:
           cpus: '0.1'
-          memory: 20M
+          memory: 200M
     volumes:
       - trip-db-data:/var/lib/postgresql/data
     environment:
@@ -60,6 +70,5 @@ services:
 
 volumes:
   trip-db-data:
-  trip-web-client:
   web_node_modules:
   node_modules:

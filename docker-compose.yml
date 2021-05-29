@@ -6,7 +6,7 @@ services:
     build: .
     depends_on:
       - postgis
-    image: fdean/trip-server
+    image: fdean/trip-server:latest
     deploy:
       replicas: 1
       restart_policy:
@@ -32,8 +32,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-postgis
-      shm_size: '256MB'
-    image: fdean/trip-database
+      shm_size: 256m
+    image: fdean/trip-database:latest
+    shm_size: 512m
     deploy:
       replicas: 1
       restart_policy:
@@ -44,10 +45,10 @@ services:
       resources:
         limits:
           cpus: '0.50'
-          memory: 100M
+          memory: 800M
         reservations:
           cpus: '0.1'
-          memory: 20M
+          memory: 200M
     volumes:
       - trip-db-data:/var/lib/postgresql/data
     environment:
