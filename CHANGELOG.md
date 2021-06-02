@@ -2,7 +2,7 @@
 
 # Changelog
 
-## Next release
+## v1.6.1
 
 Bug fix - failed to load elevation tif files after non-tif file
 encountered in the same folder.  E.g. the elevation data directory
@@ -11,6 +11,8 @@ contains a hidden file like `.DS_Store` no tif files will be loaded.
 Disabled elevation tests when elevation data not configured.
 
 Updated to use newer version of xmlhttprequest-ssl re CVE-2020-28502.
+
+Updated some packages to use newer versions.
 
 Updated `jsdoc` to remove `underscore` vulnerability.
 
@@ -24,7 +26,7 @@ Improvements to development environment with Vagrant.
 
 Run unit and end-to-end tests with headless Chromium.
 
-## v.1.6.0
+## v1.6.0
 
 Replaced [node-static](https://github.com/cloudhead/node-static),
 which appears to be no longer maintained, with
