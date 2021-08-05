@@ -25,7 +25,7 @@ if [ "$VB_GUI" == "y" ]; then
 	apt-get install -y lxde
 fi
 if [ "$TRIP_DEV" == "y" ]; then
-	apt-get install -y openjdk-11-jdk chromium chromium-l10n zip
+	apt-get install -y openjdk-11-jdk chromium chromium-l10n firefox-esr-l10n-en-gb vim
 fi
 
 curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
@@ -33,10 +33,10 @@ echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/source
 apt-get update
 apt-get install $DEB_OPTIONS yarn+ cmdtest- nodejs-
 
-NODE_VERSION="v12.22.1"
+NODE_VERSION="v12.22.4"
 NODE_FILENAME="node-${NODE_VERSION}-linux-x64"
 NODE_TAR_FILENAME="${NODE_FILENAME}.tar.xz"
-NODE_SHA256="8b537282c222ae4a40e019a52f769ca27b6640699bdde1510375e8d72da7d041  ${NODE_TAR_FILENAME}"
+NODE_SHA256="b699789d93a8d1435bf0b90a859423c9595148830a9304a78b4795d9104a128b  ${NODE_TAR_FILENAME}"
 NODE_EXTRACT_DIR="${NODE_FILENAME}"
 NODE_DOWNLOAD_URL="https://nodejs.org/dist/${NODE_VERSION}/${NODE_TAR_FILENAME}"
 

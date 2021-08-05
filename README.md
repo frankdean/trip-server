@@ -50,7 +50,7 @@ The following features are provided:
 
 ## Requirements
 
-* [Node.js][] - v10.x.x
+* [Node.js][] - v12.x.x
 
 * [PostgreSQL][] database server - (Known to run on version 11.9)
 
@@ -87,9 +87,11 @@ providing the database and the other the application web server.
 	-e TRIP_RESOURCE_SIGNING_KEY=secret -e POSTGRES_PASSWORD=secret \
 	--publish 8080:8080 -d fdean/trip-server
 
-Once the application is running a link titled `8080` will be shown next to the
-`OPEN PORT` button at the top of the page.  Click on the `8080` link to open a
-new browser window to the running web server.
+Once the application is running a link titled `8080` will be shown
+next to the `OPEN PORT` button at the top of the page.  Click on the
+`8080` link to open a new browser window to the running web server.
+If the port number doesn't show up, click on `OPEN PORT` and enter the
+port number as `8080`.
 
 Login using one of the following users and credentials:
 
@@ -200,9 +202,9 @@ work across multiple nodes.
 
 After initialising the swarm, the secrets can be created as follows:
 
-	$ echo 'secret' | sudo docker secret create postgres_password -
-	$ echo 'secret' | sudo docker secret create jwt_signing_key -
-	$ echo 'secret' | sudo docker secret create jwt_resource_signing_key -
+	$ echo 'secret' | docker secret create postgres_password -
+	$ echo 'secret' | docker secret create jwt_signing_key -
+	$ echo 'secret' | docker secret create jwt_resource_signing_key -
 
 Note that the `postgres_password` is used to form a URI so must not contain a
 forward-slash character.
@@ -1005,7 +1007,7 @@ See [CHANGELOG](./CHANGELOG.md)
 
 [trip-web-client]: https://www.fdsd.co.uk/trip-web-client-docs/
 [AngularJS]: https://angularjs.org
-[Apache]: http://httpd.apache.org
+[Apache]: http://httpd.apache.org/ "an open-source HTTP server for modern operating systems including UNIX and Windows"
 [Debian]: https://www.debian.org "a free operating system (OS) for your computer"
 [docker]: https://www.docker.com "Securely build and share any application, anywhere"
 [Git]: http://git-scm.com/ "a free and open source distributed version control system designed to handle everything from small to very large projects with speed and efficiency"

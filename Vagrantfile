@@ -30,7 +30,7 @@ Vagrant.configure("2") do |config|
   # https://www.vagrantup.com/docs/boxes.html#official-boxes
   # https://app.vagrantup.com/bento
   config.vm.box = "bento/debian-10"
-  config.vm.box_version = "202104.19.0"
+  config.vm.box_version = "202107.08.0"
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
@@ -77,7 +77,11 @@ Vagrant.configure("2") do |config|
     end
 
     # Customize the amount of memory on the VM:
-    v.memory = "1024"
+    if myEnv[:TRIP_DEV] == "y"
+      v.memory = "4196"
+    else
+      v.memory = "1024"
+    end
 
     # Whether to use a master VM and linked clones
     v.linked_clone = false

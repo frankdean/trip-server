@@ -2,6 +2,29 @@
 
 # Changelog
 
+## v1.7.0
+
+Minimum and maximum map zoom levels are now configurable by tile
+provider.  Where these values are not set, they default to the
+previous values with a minimum zoom of zero and maximum of 17.  Check
+with your tile provider before using higher zoom levels than 17.
+These configuration settings are `tile.providers.mapLayer.minZoom` and
+`tile.providers.mapLayer.maxZoom`.  See `config-dist.yaml` for
+examples.
+
+Whether tiles should be cached or pruned is also configurable for each
+tile provider.  If you are using your own tile server, you may prefer
+to let the tile server handle caching.  Keeping stale tiles in the
+database cache by disabling pruning could be useful in the event of a
+tile provider service failing.  If fetching a remote tile fails, the
+stale tile is served from the local cache, if available.  These
+configuration settings are boolean values for `tile.providers.cache`
+and `tile.providers.prune`.  When not specified, they default to the
+previous values, with both caching and pruning being enabled (true).
+
+Release builds now use `node-tar` and `adm-zip` packages instead of
+external utilities.
+
 ## v1.6.1
 
 Bug fix - failed to load elevation tif files after non-tif file

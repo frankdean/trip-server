@@ -10,7 +10,7 @@ services:
     deploy:
       replicas: 1
       restart_policy:
-        condition: any
+        condition: on-failure
         delay: 5s
         #max_attempts: 3
         window: 90s
@@ -30,16 +30,16 @@ services:
     volumes:
       - type: bind
         source: .
-        target: /app
+        target: /app-server
       - type: bind
-        source: ../trip-web-client/app
-        target: /app/app
-      - type: volume
-        source: web_node_modules
-        target: /app/app/node_modules
+        source: ../trip-web-client
+        target: /trip-web-client
+      # - type: volume
+      #   source: web_node_modules
+      #   target: /app-server/app/node_modules
       - type: volume
         source: node_modules
-        target: /app/node_modules
+        target: /app-server/node_modules
     command: ./node_modules/nodemon/bin/nodemon.js --ignore app/ index.js
 
   postgis:

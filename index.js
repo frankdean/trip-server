@@ -244,7 +244,6 @@ myApp.passwordReset = function(req, res) {
 };
 
 myApp.handlePasswordChange = function(req, res, token) {
-  logger.debug('Password change requested');
   var body = [];
   req.on('data', function(chunk) {
     body.push(chunk);
@@ -1388,7 +1387,7 @@ myApp.handleGetTile = function(req, res) {
   var q = url.parse(req.url, true).query;
   // Must be authorized to fetch tiles - but we use URL parameter instead of authorization header
   if (q.access_token === undefined) {
-    myApp.handleError(new login.UnauthorizedError('Access token  missing fetching tile'), res);
+    myApp.handleError(new login.UnauthorizedError('Access token missing fetching tile'), res);
   } else {
     login.checkAuthenticatedForBasicResources(q.access_token, function(err, token) {
       if (err) {
@@ -1681,6 +1680,12 @@ myApp.handleGetConfigMapAttribution = function(req, res, token) {
         config.tile.providers.length > 0) {
       var layers = [];
       config.tile.providers.forEach(function(v) {
+        if (!v.mapLayer.minZoom) {
+          v.mapLayer.minZoom = 0;
+        }
+        if (!v.mapLayer.maxZoom) {
+          v.mapLayer.maxZoom = 17;
+        }
         layers.push(v.mapLayer);
       });
       myApp.respondWithData(null, res, layers);
