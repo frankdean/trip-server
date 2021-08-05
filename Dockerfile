@@ -15,8 +15,8 @@ RUN yarn
 FROM node:12.22.4-buster-slim AS trip-web-client
 WORKDIR /app-server
 
-ARG TRIP_CLIENT_VERSION=v1.7.0-rc.1
-ARG TRIP_CLIENT_SHA256=d8251dc20bbafe8d16487aaf84422ec0b6c6970f96a8ef9a4c02df8c56f4bd02
+ARG TRIP_CLIENT_VERSION=v1.7.0
+ARG TRIP_CLIENT_SHA256=b67b769ff2a201d196a3c3537d3684398da02f7d2ea1c04746fd1c5b87a4ad78
 ARG TRIP_CLIENT_FILENAME=trip-web-client-release-${TRIP_CLIENT_VERSION}.tgz
 
 ADD --chown=node:node https://www.fdsd.co.uk/trip-server/download/trip-web-client-release-${TRIP_CLIENT_VERSION}.tgz .
