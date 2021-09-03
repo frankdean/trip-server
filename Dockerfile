@@ -1,6 +1,6 @@
 # -*- mode: dockerfile; -*- vim: set ft=dockerfile:
-FROM node:12.22.4-buster-slim AS build
-LABEL uk.co.fdsd.tripserver.version="1.7.0"
+FROM node:12.22.6-buster-slim AS build
+LABEL uk.co.fdsd.tripserver.version="1.7.1-rc.1"
 #LABEL uk.co.fdsd.tripserver.release-date="2021-08-02"
 #LABEL uk.co.fdsd.tripserver.is-production=""
 WORKDIR /app-server
@@ -12,11 +12,11 @@ RUN apt-get update \
 COPY package.json yarn.lock ./
 RUN yarn
 
-FROM node:12.22.4-buster-slim AS trip-web-client
+FROM node:12.22.6-buster-slim AS trip-web-client
 WORKDIR /app-server
 
-ARG TRIP_CLIENT_VERSION=v1.7.0
-ARG TRIP_CLIENT_SHA256=b67b769ff2a201d196a3c3537d3684398da02f7d2ea1c04746fd1c5b87a4ad78
+ARG TRIP_CLIENT_VERSION=v1.7.1-rc.1
+ARG TRIP_CLIENT_SHA256=37f31ae4cdbb82250771556feedf1e0d08fe11ee759fa5efa059af2f68ac1012
 ARG TRIP_CLIENT_FILENAME=trip-web-client-release-${TRIP_CLIENT_VERSION}.tgz
 
 ADD --chown=node:node https://www.fdsd.co.uk/trip-server/download/trip-web-client-release-${TRIP_CLIENT_VERSION}.tgz .
@@ -33,7 +33,7 @@ USER root
 
 RUN rm "$TRIP_CLIENT_FILENAME"
 
-FROM node:12.22.4-buster-slim
+FROM node:12.22.6-buster-slim
 
 USER root
 

@@ -30,7 +30,8 @@ distribution.
 
 		$ vagrant plugin install vagrant-vbguest
 
-1.  Edit the `myEnv` settings to use Vagrant for Development.
+1.  Edit the `myEnv` settings in `./Vagrantfile` to use Vagrant for
+    Development.
 
 		  myEnv = { :IMPORT_TEST_DATA => "y",
 					:TRIP_DEV => "y",
@@ -63,15 +64,19 @@ distribution.
 		vagrant@debian-10:~$ yarn lint
 		vagrant@debian-10:~$ yarn test-single-run
 
-1.  Run the server:
+	As a tile provider is not configured and no tiles will have been
+    cached yet, one related test is expected to fail when run in this
+    environment.  The failure can be ignored.
+
+1.  Run the server again:
 
 		vagrant@debian-10:/vagrant$ sudo systemctl start trip.socket
 
 1.  Build and test the `trip-web-client` release:
 
+		vagrant@debian-10:~$ cd /vagrant-trip-web-client
 		vagrant@debian-10:~$ yarn lint
 		vagrant@debian-10:~$ yarn test-single-run
-		vagrant@debian-10:~$ cd /vagrant-trip-web-client
 		vagrant@debian-10:~$ yarn build-release
 
 		vagrant@debian-10:~$ cd /vagrant
@@ -97,6 +102,9 @@ distribution.
     `/var/www/trip` and served by nginx, which may well differ from
     the intended version.
 
+	Thereafter, all the `trip-web-client` Protractor tests should
+    pass.
+
 1.  Copy the `trip-web-client` release to the release server.
 
 1.  Update `./trip-server/provisioning/bootconfig.sh` to download the release
@@ -106,7 +114,8 @@ distribution.
 
 		$ vagrant halt
 
-1.  Edit the `myEnv` settings to use Vagrant with the new release.
+1.  Edit the `myEnv` settings in `./Vagrantfile` to use Vagrant with
+    the new release.
 
 		  myEnv = { :IMPORT_TEST_DATA => "y",
 					:TRIP_DEV => "n",
@@ -118,12 +127,17 @@ distribution.
 		$ vagrant up
 
 1.  Use a browser to navigate to <http://localhost:8080> on the host
-    machine and check the version reported in the status bar.
+    machine and check the version reported in the status bar.  This
+    will now be using the downloaded distribution version of
+    `trip-web-client` served by the `nginx` server.
 
 1.  Build the `trip-server` release:
 
+		$ vagrant ssh
 		vagrant@debian-10:~$ cd /vagrant
 		vagrant@debian-10:~$ yarn build-release
+
+1.  Copy the `trip-server` release to the release server.
 
 ## Docker
 
@@ -154,7 +168,7 @@ distribution.
 		$ mv config.json config-old.json
 		$ mv config.yaml config-old.yaml
 		$ rm -rf node_modules
-		$ rm -i app
+		$ rm -rf app
 		$ ln -s /trip-web-client/app
 
 	Check the `trip-db-data` volume does not exist:
@@ -171,7 +185,7 @@ distribution.
 		$ docker-compose -f docker-compose-dev.yml up -d
 		$ docker-compose logs --follow
 
-	Run `bash` in the container as follows:
+	Optionally, run `bash` in the container as follows:
 
 		$ docker container ls
 		$ docker exec -it trip-server_web_1 bash -il
@@ -184,11 +198,6 @@ distribution.
 		$ psql -U trip -d trip -h localhost -W
 
 	When prompted, enter the password echoed in the previous command.
-
-	Stop the container with (use the `--volumes` switch to also remove
-    the database volume):
-
-		$ docker-compose -f docker-compose-dev.yml down --volumes
 
 	Optionally, build the server release with:
 
@@ -206,6 +215,11 @@ distribution.
     environment variable set to `/usr/bin/chromium`.  With all the
     dependencies that are installed, we end up with a very large
     image.
+
+	Stop the container with (use the `--volumes` switch to also remove
+    the database volume):
+
+		$ docker-compose -f docker-compose-dev.yml down --volumes
 
 ## Draft Releases
 

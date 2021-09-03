@@ -2,6 +2,11 @@
 
 # Changelog
 
+## v1.7.1
+
+Updated some dependent packages, including updates for the `tar`
+package re CVE-2021-37713 and the `jszip` package re CVE-2021-23413.
+
 ## v1.7.0
 
 Minimum and maximum map zoom levels are now configurable by tile
