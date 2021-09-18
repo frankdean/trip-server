@@ -13,6 +13,9 @@
 
 		$ yarn outdated
 
+1.  Update the version in `./trip-web/client/app/js/version/version.js`
+    and in `package.json` and `Dockerfile` in both projects.
+
 ## Vagrant
 
 Update Vagrant first, if Vagrant is to build the `trip-web-client`
@@ -112,6 +115,7 @@ distribution.
 
 1.  Shutdown Vagrant:
 
+		vagrant@debian-10:~$ exit
 		$ vagrant halt
 
 1.  Edit the `myEnv` settings in `./Vagrantfile` to use Vagrant with
@@ -147,7 +151,7 @@ distribution.
 	Update `Dockerfile-postgis` to use the latest
 	[PostgreSQL build](https://hub.docker.com/_/postgres).
 
-		$ docker build -t fdean/trip-database:latest .
+		$ docker build -f Dockerfile-postgis -t fdean/trip-database:latest .
 
 1.  Build the `trip-server` image:
 
@@ -155,7 +159,7 @@ distribution.
     [node](https://hub.docker.com/_/node) build.
 
 	Also update `Dockerfile` with the latest `trip-web-client`
-    version details.
+    version and checksum details.
 
 		$ docker build -t fdean/trip-server:latest .
 
@@ -169,11 +173,11 @@ distribution.
 		$ mv config.yaml config-old.yaml
 		$ rm -rf node_modules
 		$ rm -rf app
-		$ ln -s /trip-web-client/app
+		$ ln -s ../trip-web-client/app
 
 	Check the `trip-db-data` volume does not exist:
 
-	$ docker volume ls
+		$ docker volume ls
 
 	If it does, remove it so that the container creates a new
     database, using the configured database password:
@@ -198,6 +202,11 @@ distribution.
 		$ psql -U trip -d trip -h localhost -W
 
 	When prompted, enter the password echoed in the previous command.
+
+    To test in a browser, if using `docker-machine`, use port 8080
+    together with the IP address shown by the `ip` command, e.g.:
+
+		$ docker-machine ip
 
 	Optionally, build the server release with:
 
@@ -228,6 +237,11 @@ distribution.
     of release assets.
 
 ## Final Release
+
+1.  Check in any changes made during the release process and merge
+    into master on GitHub.
+
+1.  Publish the draft releases.
 
 1.  Push Docker images:
 
