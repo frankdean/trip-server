@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<gpx xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" creator="TRIP" version="1.1" xmlns="http://www.topografix.com/GPX/1/1" xmlns:gpxx="http://www.garmin.com/xmlschemas/GpxExtensions/v3" xmlns:wptx1="http://www.garmin.com/xmlschemas/WaypointExtension/v1" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www8.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/WaypointExtension/v1 http://www8.garmin.com/xmlschemas/WaypointExtensionv1.xsd">
+<gpx xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" creator="TRIP" version="1.1" xmlns="http://www.topografix.com/GPX/1/1" xmlns:gpxx="http://www.garmin.com/xmlschemas/GpxExtensions/v3" xmlns:wptx1="http://www.garmin.com/xmlschemas/WaypointExtension/v1" xmlns:ogr="http://osgeo.org/gdal" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www8.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/WaypointExtension/v1 http://www8.garmin.com/xmlschemas/WaypointExtensionv1.xsd">
   <metadata>
     <time>2017-05-02T11:04:06.416Z</time>
   </metadata>
@@ -109,6 +109,77 @@
       <sym>Small City</sym>
     </rtept>
   </rte>
+  <rte>
+    <name>Test Three</name>
+    <extensions>
+      <ogr:section>Section Three</ogr:section>
+    </extensions>
+    <rtept lon="-43.953796" lat="30.538809">
+      <name>001</name>
+      <cmt>p1</cmt>
+      <desc>p1</desc>
+      <sym>Small City</sym>
+    </rtept>
+    <rtept lon="11.417296" lat="-33.637295">
+      <name>002</name>
+      <cmt>p2</cmt>
+      <desc>p2</desc>
+      <sym>Small City</sym>
+    </rtept>
+    <rtept lon="74.522766" lat="18.911703">
+      <name>003</name>
+      <cmt>p3</cmt>
+      <desc>p3</desc>
+      <sym>Small City</sym>
+    </rtept>
+    <rtept lon="89.11261" lat="56.130375">
+      <name>004</name>
+      <cmt>p4</cmt>
+      <desc>p4</desc>
+      <sym>Small City</sym>
+    </rtept>
+    <rtept lon="27.061827" lat="17.743677">
+      <name>005</name>
+      <cmt>p5</cmt>
+      <desc>p5</desc>
+      <sym>Small City</sym>
+    </rtept>
+  </rte>
+  <rte>
+    <extensions>
+      <ogr:section>Section Four</ogr:section>
+    </extensions>
+    <rtept lon="-43.953796" lat="30.538809">
+      <name>001</name>
+      <cmt>p1</cmt>
+      <desc>p1</desc>
+      <sym>Small City</sym>
+    </rtept>
+    <rtept lon="11.417296" lat="-33.637295">
+      <name>002</name>
+      <cmt>p2</cmt>
+      <desc>p2</desc>
+      <sym>Small City</sym>
+    </rtept>
+    <rtept lon="74.522766" lat="18.911703">
+      <name>003</name>
+      <cmt>p3</cmt>
+      <desc>p3</desc>
+      <sym>Small City</sym>
+    </rtept>
+    <rtept lon="89.11261" lat="56.130375">
+      <name>004</name>
+      <cmt>p4</cmt>
+      <desc>p4</desc>
+      <sym>Small City</sym>
+    </rtept>
+    <rtept lon="27.061827" lat="17.743677">
+      <name>005</name>
+      <cmt>p5</cmt>
+      <desc>p5</desc>
+      <sym>Small City</sym>
+    </rtept>
+  </rte>
   <trk>
     <name>Test track one</name>
     <extensions>
@@ -180,6 +251,45 @@
       <gpxx:TrackExtension>
         <gpxx:DisplayColor>Yellow</gpxx:DisplayColor>
       </gpxx:TrackExtension>
+    </extensions>
+    <trkseg>
+      <trkpt lon="-54.45214081" lat="17.49486923">
+        <ele>100.00000</ele>
+        <time>1970-01-01T00:00:01.000Z</time>
+        <hdop>140.0</hdop>
+      </trkpt>
+      <trkpt lon="-75.49706268" lat="42.40974808">
+        <ele>100.00000</ele>
+        <time>1970-01-01T00:00:02.000Z</time>
+      </trkpt>
+    </trkseg>
+  </trk>
+  <trk>
+    <name>Test track three</name>
+    <extensions>
+      <gpxx:TrackExtension>
+        <gpxx:DisplayColor>Yellow</gpxx:DisplayColor>
+      </gpxx:TrackExtension>
+      <ogr:section>Track section three</ogr:section>
+    </extensions>
+    <trkseg>
+      <trkpt lon="-54.45214081" lat="17.49486923">
+        <ele>100.00000</ele>
+        <time>1970-01-01T00:00:01.000Z</time>
+        <hdop>140.0</hdop>
+      </trkpt>
+      <trkpt lon="-75.49706268" lat="42.40974808">
+        <ele>100.00000</ele>
+        <time>1970-01-01T00:00:02.000Z</time>
+      </trkpt>
+    </trkseg>
+  </trk>
+  <trk>
+    <extensions>
+      <gpxx:TrackExtension>
+        <gpxx:DisplayColor>Yellow</gpxx:DisplayColor>
+      </gpxx:TrackExtension>
+      <ogr:section>Track section four</ogr:section>
     </extensions>
     <trkseg>
       <trkpt lon="-54.45214081" lat="17.49486923">

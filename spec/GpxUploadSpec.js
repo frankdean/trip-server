@@ -18,12 +18,74 @@
 'use strict';
 
 describe('gpx-upload.js', function() {
+
+  const db = require('../db.js'),
+        // logger = require('../logger').createLogger('GpxUploadSpec.js'),
+        GpxUpload = require('../gpx-upload.js'),
+        // Whether to write to DB for debugging purposes
+        writeToDb = false,
+        testItineraryId = 929;
   var err, result;
-  var db = require('../db.js');
-  var GpxUpload = require('../gpx-upload.js');
-  // Whether to write to DB for debugging purposes
-  var writeToDb = false;
-  var testItineraryId = 929;
+
+  var customMatchers = {
+    toHaveBeenCalledWithTrackNames: function(util, customEqualityTesters) {
+      return {
+        compare: function(actual, expected) {
+          var result = {},
+              actualNames = [];
+
+          if (actual.calls.allArgs().length > 0 &&
+              actual.calls.allArgs()[0].length > 1 &&
+              actual.calls.allArgs()[0][1].length > 0) {
+
+            actual.calls.allArgs()[0][1].forEach(function(v) {
+              actualNames.push(v.name);
+            });
+          }
+
+          result.pass = util.equals(actualNames, expected, customEqualityTesters);
+          if (result.pass) {
+            result.message = "Was called with the expected track names";
+          } else {
+            result.message = "Expected track names of " + util.pp(expected) + " but the actual track names were " + util.pp(actualNames);
+          }
+          return result;
+        }
+      };
+    },
+    toHaveBeenCalledWithRouteNames: function(util, customEqualityTesters) {
+      return {
+        compare: function(actual, expected) {
+          var result = {},
+              actualNames = [];
+
+          if (actual.calls.allArgs().length > 0 &&
+              actual.calls.allArgs()[0].length > 1 &&
+              actual.calls.allArgs()[0][1].length > 0) {
+
+            actual.calls.allArgs()[0][1].forEach(function(v) {
+              actualNames.push(v.name);
+            });
+          }
+
+          result.pass = util.equals(actualNames, expected, customEqualityTesters);
+          if (result.pass) {
+            result.message = "Was called with the expected route names";
+          } else {
+            result.message = "Expected route names of " + util.pp(expected) + " but the actual route names were " + util.pp(actualNames);
+          }
+          return result;
+        }
+      };
+    }
+  };
+
+  beforeAll(function(done) {
+    // Elevation data is loaded asynchronously.  When this is the first unit
+    // being tested, we need a little delay to ensure the elevation data loads
+    // before executing the tests.
+    setTimeout(done, 1000);
+  });
 
   beforeEach(function() {
     if (writeToDb) {
@@ -69,6 +131,10 @@ describe('gpx-upload.js', function() {
 
   describe('Test import waypoints, tracks and routes', function() {
 
+    beforeEach(function() {
+      jasmine.addMatchers(customMatchers);
+    });
+
     beforeEach(function(done) {
       GpxUpload.importFile(testItineraryId, './spec/TestWaypointRouteTrack.gpx', false, function(_err_, _result_) {
         err = _err_;
@@ -81,8 +147,8 @@ describe('gpx-upload.js', function() {
       expect(err).toBeFalsy();
       expect(result).toBeDefined();
       expect(result.waypointCount).toEqual(3);
-      expect(result.routeCount).toEqual(2);
-      expect(result.trackCount).toEqual(2);
+      expect(result.routeCount).toEqual(4);
+      expect(result.trackCount).toEqual(4);
       expect(db.createItineraryWaypoints).toHaveBeenCalledTimes(1);
       expect(db.createItineraryRoutes).toHaveBeenCalledTimes(1);
       expect(db.createItineraryTracks).toHaveBeenCalledTimes(1);
@@ -93,6 +159,10 @@ describe('gpx-upload.js', function() {
 
       expect(db.createItineraryWaypoints).toHaveBeenCalledWith(testItineraryId, jasmine.any(Object), jasmine.any(Function));
 
+      // The third route should ignore the section name and use the route name, the fourth route should pick the section name
+      expect(db.createItineraryRoutes).toHaveBeenCalledWithRouteNames(['Test One', 'Test Two', 'Test Three', 'Section Four']);
+      // The third track should ignore the section name and use the track name, the fourth track should pick the section name
+      expect(db.createItineraryTracks).toHaveBeenCalledWithTrackNames(['Test track one', 'Test track two', 'Test track three', 'Track section four']);
     });
 
   });

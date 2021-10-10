@@ -2,6 +2,13 @@
 
 # Changelog
 
+## v1.8.0
+
+- Implement option to convert itinerary tracks to routes.
+- Implemented option to assign separate colours to a selection of routes and tracks.
+- If no specific track name, uses the track name in the `section`
+  attribute of the `ogr` namespace when importing GPX created by GDAL.
+
 ## v1.7.1
 
 Updated some dependent packages, including updates for the `tar`

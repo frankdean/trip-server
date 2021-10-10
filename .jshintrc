@@ -10,6 +10,7 @@
     "pending": false,
     "it": false,
     "expect": false,
+    "beforeAll": false,
     "beforeEach": false,
     "afterEach": false,
     "spyOn": false,

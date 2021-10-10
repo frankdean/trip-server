@@ -13,8 +13,8 @@
 
 		$ yarn outdated
 
-1.  Update the version in `./trip-web/client/app/js/version/version.js`
-    and in `package.json` and `Dockerfile` in both projects.
+1.  Update the version number in `package.json` and `Dockerfile` in
+    both projects.
 
 ## Vagrant
 
@@ -78,6 +78,8 @@ distribution.
 1.  Build and test the `trip-web-client` release:
 
 		vagrant@debian-10:~$ cd /vagrant-trip-web-client
+		vagrant@debian-10:~$ rm -rf node_modules
+		vagrant@debian-10:~$ yarn
 		vagrant@debian-10:~$ yarn lint
 		vagrant@debian-10:~$ yarn test-single-run
 		vagrant@debian-10:~$ yarn build-release

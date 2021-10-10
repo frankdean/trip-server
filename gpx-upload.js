@@ -147,6 +147,22 @@ function parseFile(itineraryId, pathname, callback) {
     case 'trkpt':
       currentTag = trackPoint = null;
       break;
+    case 'ogr:section':
+      // http://osgeo.org/gdal
+      // https://github.com/OSGeo/gdal/blob/bcadaf0a530715db604aaddcd66362c25b71e58c/gdal/doc/source/drivers/vector/gpx.rst
+      if (currentTag.parent && currentTag.parent.name === 'extensions') {
+        if (currentTag.parent.parent && currentTag.parent.parent.name === 'trk') {
+          if (track.name ==  null) {
+            track.name = lastText;
+          }
+        } else if (currentTag.parent.parent && currentTag.parent.parent.name === 'rte') {
+          if (route.name ==  null) {
+            route.name = lastText;
+          }
+        }
+      }
+      currentTag = currentTag.parent;
+      break;
     default:
       if (currentTag && currentTag.parent) {
         switch (currentTag.parent.name) {
