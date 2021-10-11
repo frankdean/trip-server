@@ -32,11 +32,11 @@ services:
         source: .
         target: /app-server
       - type: bind
-        source: ../trip-web-client
-        target: /trip-web-client
-      # - type: volume
-      #   source: web_node_modules
-      #   target: /app-server/app/node_modules
+        source: ../trip-web-client/app
+        target: /app-server/app
+      - type: volume
+        source: web_node_modules
+        target: /app-server/app/node_modules
       - type: volume
         source: node_modules
         target: /app-server/node_modules
