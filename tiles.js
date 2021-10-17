@@ -17,15 +17,16 @@
  */
 'use strict';
 
-var http = require('http');
-var util = require('util');
-
-var _ = require('lodash');
-
-var db = require('./db');
-var config = require('./config');
-
-var logger = require('./logger').createLogger('tiles.js', config.log.level, config.log.timestamp);
+const fs = require('fs'),
+      http = require('http'),
+      util = require('util'),
+      { createCanvas, loadImage } = require('canvas'),
+      _ = require('lodash'),
+      db = require('./db'),
+      config = require('./config'),
+      logger = require('./logger').createLogger('tiles.js', config.log.level, config.log.timestamp),
+      INVALID_XYZ_VALUES = 'Invalid values for fetching tile id=%d x=%d y=%d z=%d',
+      NO_TILE_PROVIDER = 'No map tile provider configured in config file';
 
 /**
  * Primarily contains functions for handling map tiles.
@@ -147,6 +148,69 @@ function fetchRemoteTile(id, x, y, z, callback) {
 }
 
 /**
+ * @param {number} x the x coordinate of the tile
+ * @param {number} y the y coordinate of the tile
+ * @param {number} z the zoom level of the tile
+ */
+function createXYZimage(x, y, z) {
+  return new Promise((resolve, reject) => {
+    const canvas  = createCanvas(256, 256);
+    const ctx = canvas.getContext('2d');
+    var label = util.format('x=%d y=%d z=%d', x, y, z);
+    try {
+      ctx.setLineDash([1, 3]);
+      ctx.strokeStyle = 'green';
+      ctx.strokeRect(0, 0, 256, 256);
+      ctx.font = '18px sans-serif';
+      ctx.fillStyle = 'white';
+      ctx.textAlign = "center";
+      var tm = ctx.measureText(label);
+      let height = tm.emHeightAscent + tm.emHeightDescent + Math.abs(tm.alphabeticBaseline);
+      let boxHeight = height * 1.5;
+      let boxWidth = tm.width * 1.1;
+      ctx.fillRect(127 - (boxWidth / 2), 127 - (boxHeight / 2), boxWidth, boxHeight);
+      ctx.fillStyle = 'black';
+      ctx.fillText(label, 127, 127 + (height / 2) - tm.emHeightDescent, 256);
+      canvas.toBuffer((err, buffer) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(buffer);
+        }
+      });
+    } catch (error) {
+      logger.error('Error rendering tile:', error);
+      reject(error);
+    }
+  });
+}
+
+/**
+ * @param {number} id 78 the ID of the tile source.  Each source has it's own
+ * set of tiles.
+ * @param {number} x the x coordinate of the tile
+ * @param {number} y the y coordinate of the tile
+ * @param {number} z the zoom level of the tile
+ * @return {Promise} with the first paramater containing a 'tile' object.  The
+ * tile object has attributes of `expires`, containing and expiry date set to
+ * 10 minutes in the future and an `image` attribute containing a Buffer
+ * containing the image.
+ */
+function loadTestTile(id, x, y, z) {
+  return new Promise((resolve, reject) => {
+    createXYZimage(x, y, z).then(buffer => {
+      let tile = {
+        expires: new Date(Date.now() + 600000),
+        image: buffer
+      };
+      resolve(tile);
+    }).catch(reason => {
+      reject(reason);
+    });
+  });
+}
+
+/**
  * @param {number} id the ID of the tile source.  Each source has it's own set of
  * tiles.
  * @param {number} x the x coordinate of the tile
@@ -160,9 +224,19 @@ function fetchTile(id, x, y, z, callback) {
     logger.error('config.tile.cache.maxAge in config file must be an integer and less than %d', Number.MAX_SAFE_INTEGER);
     config.tile.cache.maxAge = 0;
   }
+  if (!(_.isInteger(Number(x)) && _.inRange(x, Number.MAX_SAFE_INTEGER) &&
+        _.isInteger(Number(y)) && _.inRange(y, Number.MAX_SAFE_INTEGER))) {
+    logger.warn(util.format(INVALID_XYZ_VALUES, id, x, y, z));
+    callback(new Error(util.format(INVALID_XYZ_VALUES, id, x, y, z)));
+    return;
+  }
   if (config.tile.providers === undefined) {
-    logger.warn('No map tile provider configured in config file');
-    callback(new Error('No map tile provider configured in config file'));
+    logger.warn(NO_TILE_PROVIDER);
+    loadTestTile(id, x, y, z).then((image) => {
+      callback(null, image);
+    }).catch(reason => {
+      callback(reason);
+    });
     return;
   }
   if (_.isInteger(Number(id)) && _.inRange(id, config.tile.providers.length)) {
@@ -172,11 +246,13 @@ function fetchTile(id, x, y, z, callback) {
       // OSM discourage zoom above 17 - you can configure higher maxZoom in config.yaml
       maxZoom = 17;
     }
+    if (!(_.isInteger(Number(z)) && _.inRange(z, maxZoom +1))) {
+      logger.warn(util.format(INVALID_XYZ_VALUES, id, x, y, z));
+      callback(new Error(util.format(INVALID_XYZ_VALUES, id, x, y, z)));
+      return;
+    }
   }
-  if (tileProvider !== undefined &&
-      _.isInteger(Number(x)) && _.inRange(x, Number.MAX_SAFE_INTEGER) &&
-      _.isInteger(Number(y)) && _.inRange(y, Number.MAX_SAFE_INTEGER) &&
-      _.isInteger(Number(z)) && _.inRange(z, maxZoom +1)) {
+  if (tileProvider !== undefined) {
     // tileProvider.cache should be treated as true if undefined
     if (tileProvider.cache !== false) {
       // logger.debug('Checking tile cache');
@@ -228,7 +304,7 @@ function fetchTile(id, x, y, z, callback) {
       });
     }
   } else {
-    logger.warn(util.format('Invalid values for fetching tile id=%d x=%d y=%d z=%d', id, x, y, z));
-    callback(new Error(util.format('Invalid values for fetching tile id=%d x=%d y=%d z=%d', id, x, y, z)));
+    logger.warn(NO_TILE_PROVIDER);
+    callback(new Error(NO_TILE_PROVIDER));
   }
 }

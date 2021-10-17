@@ -169,6 +169,7 @@ module.exports = {
   updateTripLoggerSettingsByUsername: updateTripLoggerSettingsByUsername,
   getTripLoggerSettingsByUsername: getTripLoggerSettingsByUsername,
   getTileCount: getTileCount,
+  getTileMetricSummary: getTileMetricSummary,
   unitTests: {convertArrayToSqlArray: convertArrayToSqlArray},
   shutdown: shutdown
 };
@@ -3365,6 +3366,44 @@ function getTileCount(callback) {
                      }
                    });
     }
+  });
+}
+
+/**
+ * @return {number} the number of preceeding months to fetch.
+ * @return {Promise} with the first parameter an array of tile metric
+ * objects with the attributes, 'year', 'month' and
+ * 'cumulative_total'.
+ */
+function getTileMetricSummary(months) {
+  return new Promise((resolve, reject) => {
+    pool.connect(function(err, client, done) {
+      if (err) {
+        reject(err);
+      } else {
+        var sql = 'SELECT year, month, max(count) AS cumulative_total FROM (';
+        sql += 'SELECT time, extract(year from time) AS year, ';
+        sql += 'extract(month from time) AS month, ';
+        sql += 'extract(day from time) AS day, ';
+        sql += 'count FROM tile_metric ORDER BY time DESC) AS q ';
+        sql += 'GROUP BY q.year, q.month ORDER BY q.year desc, q.month DESC LIMIT $1';
+        client.query(sql,
+                     [months],
+                     function(err, result) {
+                       // release the client back to the pool
+                       done();
+                       if (err) {
+                         reject(err);
+                       } else {
+                         if (result && result.rowCount) {
+                           resolve(result.rows);
+                         } else {
+                           resolve([]);
+                         }
+                       }
+                     });
+      }
+    });
   });
 }
 

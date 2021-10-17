@@ -20,6 +20,7 @@
 describe('tiles.js', function() {
   var Tiles = require('../tiles.js');
   var db = require('../db.js');
+  var config = require('../config.js');
 
   describe('Tile URL transliteration', function() {
     var url;
@@ -72,8 +73,16 @@ describe('tiles.js', function() {
 
       it('should allow zero tile values for x, y and z', function() {
         expect(err).toBeNull();
-        expect(db.tileExists).toHaveBeenCalled();
-        expect(db.fetchTile).toHaveBeenCalled();
+        if (config.tile.providers === undefined) {
+          // These will only be called when a tile provider has been
+          // configured, which may not be the case in many test
+          // scenarios.
+          expect(db.tileExists).not.toHaveBeenCalled();
+          expect(db.fetchTile).not.toHaveBeenCalled();
+        } else {
+          expect(db.tileExists).toHaveBeenCalled();
+          expect(db.fetchTile).toHaveBeenCalled();
+        }
       });
 
     });
@@ -98,7 +107,7 @@ describe('tiles.js', function() {
       var err;
 
       describe('string', function() {
-        
+
         beforeEach(function(done) {
           Tiles.fetchTile(0, 0, 'x', 0, function(_err_, _tile_) {
             err = _err_;

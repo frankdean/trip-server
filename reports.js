@@ -25,7 +25,8 @@ var utils = require('./utils');
  * @module reports
  */
 module.exports = {
-  getSystemStatus: getSystemStatus
+  getSystemStatus: getSystemStatus,
+  getTileMetricSummary: getTileMetricSummary
 };
 
 function getSystemStatus(callback) {
@@ -34,5 +35,22 @@ function getSystemStatus(callback) {
     if (utils.handleError(err, callback)) {
       callback(err, {tileUsage: result});
     }
+  });
+}
+
+/**
+ * @return {number} the number of preceeding months to fetch.
+ * @return {Promise} with the first parameter an array of tile metric
+ * objects for the most recent number of specified months, with the
+ * attributes, 'year', 'month' and 'cumulative_total'.
+ */
+function getTileMetricSummary(months) {
+  return new Promise((resolve, reject) => {
+    db.getTileMetricSummary(months)
+      .then((metrics) => {
+        resolve(metrics);
+      }).catch(reason => {
+        reject(reason);
+      });
   });
 }

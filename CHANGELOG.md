@@ -2,6 +2,18 @@
 
 # Changelog
 
+## v1.8.1
+
+Status page now shows map tile usage per month for the past 12 months.
+
+- Updated Docker configurations and improved using Docker container
+  for developement.
+- When no map tile provider is defined, return tiles showing the x, y, z
+  coordinates of the tile.  This may be useful during development if a
+  tile server is not available.
+- Show the last 12 months recorded tile usage on the admin status
+  report.
+
 ## v1.8.0
 
 - Implement option to convert itinerary tracks to routes.

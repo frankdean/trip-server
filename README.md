@@ -212,6 +212,70 @@ forward-slash character.
 See [DockerTips](https://www.fdsd.co.uk/wiki/Tech/DockerTips.html) which
 contains some notes on running a Docker swarm.
 
+### Using Docker for Development
+
+It is possible to develop the application using a Docker container, by
+working in the directory containing the current `trip-server` source
+code and with the `trip-web-client` source code in a directory of that
+name, sharing the same parent directory.  These folders will be bind
+mounted to `/app-server` and `/webapp` in the running container.
+
+To ensure there are no conflicts between the state of the source
+folders and the container, it is best to have a clean source tree as
+shown by `git clean -dxn`.  You may want to backup some files, such as
+the configuration files, `config.json` or `config.yaml` before running
+`git clean -dxf` to remove any files not under source control.
+
+Use `docker-compose` to start up the containers:
+
+	$ sudo docker-compose -f docker-compose-dev up --build -d
+
+To stop the container:
+
+	$ sudo docker-compose -f docker-compose-dev down
+
+Add the `--volumes` parameter to the end of the command to also remove
+the container's volumes which are used to keep the state of the
+database and `node_modules` folders between sessions.
+
+Modify `./test/karm.conf.js` to use the `ChromeNoSandbox` configuration.
+
+Modify `./test/protractor.conf` to `chromeDockerConfig` configuration.
+
+You may also need to alter `package.json` to call
+`update-webdriver-90` if you get an error running `protractor` re an
+incorrect driver version.  I.e.
+
+    "preprotractor": "$npm_execpath run update-webdriver-90",
+
+To start and connect to a Bash shell in the running container:
+
+	$ docker exec -it -w /webapp -e LANG=en_GB.UTF-8 -e LC_ALL=en_GB.UTF-8 \
+	trip-server_web_1 bash -il
+
+Then, in the container, run the tests:
+
+	$ cd /webapp
+	$ yarn
+	$ yarn run lint
+	$ yarn run test-single-run
+	$ yarn run protractor
+
+Alternatively, run the test directly from the host:
+
+	$ docker exec -it -w /webapp -e LANG=en_GB.UTF-8 -e LC_ALL=en_GB.UTF-8 \
+	trip-web yarn run protractor
+
+To connect to the datbase using `psql` within the container:
+
+	$ docker exec -it trip-server_postgis_1 bash -il
+	# su - postgres
+	$ id
+	$ psql -h postgis -d trip -U trip
+
+When prompted, enter the password from the connect string shown in
+`./trip-server/config.yaml` under the `db: uri:` entry.
+
 ## Quick Start Using [Vagrant][]
 
 This option provides a working example of the application running in a

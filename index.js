@@ -279,6 +279,28 @@ myApp.handleGetSystemStatus = function(req, res) {
   });
 };
 
+/**
+ * Responds with an array of tile metric objects for the most recent
+ * number of specified months, with the attributes, 'year', 'month'
+ * and 'cumulative_total'.
+ */
+myApp.handleGetTileMetricsReport = function(req, res) {
+  var q;
+  req.on('data', function() {
+  }).on('end', function() {
+    q = url.parse(req.url, true).query;
+    if (Number(q.months) > 1 && Number(q.months) < 999) {
+      reports.getTileMetricSummary(Number(q.months)).then((metrics) => {
+        myApp.respondWithData2(res, metrics);
+      }).catch(reason => {
+        myApp.handleError(reason, res);
+      });
+    } else {
+      myApp.handleError(new BadRequestError('Parameters failed validation'), res);
+    }
+  });
+};
+
 myApp.handleGetItinerary = function(req, res, token) {
   var match, id;
   req.on('data', function() {
@@ -1921,6 +1943,8 @@ myApp.handleFullyAuthenticatedRequests = function(req, res, token) {
     myApp.passwordReset(req, res);
   } else if (token.uk_co_fdsd_trip_admin && req.method === 'GET' && /\/admin\/system\/status\/?(\?.*)?$/.test(req.url)) {
     myApp.handleGetSystemStatus(req, res);
+  } else if (token.uk_co_fdsd_trip_admin && req.method === 'GET' && /\/admin\/report\/tile\/metrics\/?(\?.*)?$/.test(req.url)) {
+    myApp.handleGetTileMetricsReport(req, res);
   } else {
     logger.warn('URL path not recognised: %s', req.url);
     myApp.handleError(new BadRequestError('URL path not recognised: ' + req.url), res);

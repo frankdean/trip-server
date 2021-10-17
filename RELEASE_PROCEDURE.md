@@ -67,10 +67,6 @@ distribution.
 		vagrant@debian-10:~$ yarn lint
 		vagrant@debian-10:~$ yarn test-single-run
 
-	As a tile provider is not configured and no tiles will have been
-    cached yet, one related test is expected to fail when run in this
-    environment.  The failure can be ignored.
-
 1.  Run the server again:
 
 		vagrant@debian-10:/vagrant$ sudo systemctl start trip.socket
@@ -110,15 +106,15 @@ distribution.
 	Thereafter, all the `trip-web-client` Protractor tests should
     pass.
 
-1.  Copy the `trip-web-client` release to the release server.
-
-1.  Update `./trip-server/provisioning/bootconfig.sh` to download the release
-    version of `trip-web-client` and update the SHA256 checksum.
-
 1.  Shutdown Vagrant:
 
 		vagrant@debian-10:~$ exit
 		$ vagrant halt
+
+1.  Copy the `trip-web-client` release to the release server.
+
+1.  Update `./trip-server/provisioning/bootconfig.sh` to download the release
+    version of `trip-web-client` and update the SHA256 checksum.
 
 1.  Edit the `myEnv` settings in `./Vagrantfile` to use Vagrant with
     the new release.
@@ -153,6 +149,7 @@ distribution.
 	Update `Dockerfile-postgis` to use the latest
 	[PostgreSQL build](https://hub.docker.com/_/postgres).
 
+		$ cd ./trip-server
 		$ docker build -f Dockerfile-postgis -t fdean/trip-database:latest .
 
 1.  Build the `trip-server` image:
@@ -167,7 +164,7 @@ distribution.
 
 1.  Optionally, run the Docker container for development:
 
-	Prepare the development environmnet.  Remove any symlinks or
+	Prepare the development environment.  Remove any symlinks or
     folders named `app` from `./trip-server/`:
 
 		$ cd ./trip-server
@@ -175,7 +172,6 @@ distribution.
 		$ mv config.yaml config-old.yaml
 		$ rm -rf node_modules
 		$ rm -rf app
-		$ ln -s ../trip-web-client/app
 
 	Check the `trip-db-data` volume does not exist:
 
@@ -188,7 +184,7 @@ distribution.
 
 	Start the containers:
 
-		$ docker-compose -f docker-compose-dev.yml up -d
+		$ docker-compose -f docker-compose-dev.yml up --build -d
 		$ docker-compose logs --follow
 
 	Optionally, run `bash` in the container as follows:
@@ -217,15 +213,8 @@ distribution.
 
 	Optionally, build `trip-web-client` with:
 
-		$ cd /trip-web-client
+		$ cd /webapp
 		$ yarn build-release
-
-	It's not possible to run the tests within the container as it
-    would also need `openjdk-11-jdk`, `chromium' and 'chromium-l10n`
-    packages installed.  It would also need the `CHROME_BIN`
-    environment variable set to `/usr/bin/chromium`.  With all the
-    dependencies that are installed, we end up with a very large
-    image.
 
 	Stop the container with (use the `--volumes` switch to also remove
     the database volume):
