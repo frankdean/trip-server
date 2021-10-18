@@ -3,9 +3,9 @@
 # Uncomment the following to debug the script
 #set -x
 
-TRIP_WEB_CLIENT_VERSION='v1.8.1-rc.2'
+TRIP_WEB_CLIENT_VERSION='v1.8.1'
 TRIP_WEB_CLIENT_RELEASE="trip-web-client-release-${TRIP_WEB_CLIENT_VERSION}.tgz"
-TRIP_WEB_CLIENT_SHA256="eed9282128a15ce2d3f9d4f8ed4d6304ff04fd9103d48b87b5e734a6108f01c9  ${TRIP_WEB_CLIENT_RELEASE}"
+TRIP_WEB_CLIENT_SHA256=ede19e2cdaffa58ed6253fc8e0bb17370cb2a02ac46fcf4d6d8c28c192097976
 PG_VERSION=11
 
 su - postgres -c 'createuser -drs vagrant' 2>/dev/null
@@ -137,7 +137,7 @@ else
 	if [ ! -e /vagrant/provisioning/downloads/${TRIP_WEB_CLIENT_RELEASE} ]; then
 		wget --no-verbose https://www.fdsd.co.uk/trip-server/download/${TRIP_WEB_CLIENT_RELEASE} 2>&1
 	fi
-	echo "$TRIP_WEB_CLIENT_SHA256" | shasum -c -
+	echo "$TRIP_WEB_CLIENT_SHA256  ${TRIP_WEB_CLIENT_RELEASE}" | shasum -c -
 	if [ $? -ne "0" ]; then
 		>&2 echo "Checksum of downloaded file does not match expected value of ${TRIP_WEB_CLIENT_VERSION_SHA256}"
 		exit 1

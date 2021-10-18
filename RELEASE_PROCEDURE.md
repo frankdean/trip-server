@@ -33,6 +33,10 @@ distribution.
 
 		$ vagrant plugin install vagrant-vbguest
 
+1.  If the plugin was already installed, ensure it is up-to-date:
+
+		$ vagrant plugin update vagrant-vbguest
+
 1.  Edit the `myEnv` settings in `./Vagrantfile` to use Vagrant for
     Development.
 
@@ -116,6 +120,9 @@ distribution.
 1.  Update `./trip-server/provisioning/bootconfig.sh` to download the release
     version of `trip-web-client` and update the SHA256 checksum.
 
+1.  Update `Dockerfile`, `Dockerfile-dev` and `Dockerfile-postgis`
+    with the new SHA256 checksum for `trip-web-client`.
+
 1.  Edit the `myEnv` settings in `./Vagrantfile` to use Vagrant with
     the new release.
 
@@ -157,10 +164,25 @@ distribution.
 	Update `Dockerfile` to use the latest appropriate
     [node](https://hub.docker.com/_/node) build.
 
-	Also update `Dockerfile` with the latest `trip-web-client`
-    version and checksum details.
+	Also update `Dockerfile` and `Dockerfile-dev` with the latest
+    `trip-web-client` version and checksum details.
 
 		$ docker build -t fdean/trip-server:latest .
+
+1.	Test the Dockerfile
+
+		$ docker-compose up -d
+		$ docker-compose logs --follow
+
+    To test in a browser, if using `docker-machine`, use port 8080
+    together with the IP address shown by the `ip` command, e.g.:
+
+		$ docker-machine ip
+
+	Stop the container with (use the `--volumes` switch to also remove
+    the database volume):
+
+		$ docker-compose down --volumes
 
 1.  Optionally, run the Docker container for development:
 
@@ -185,7 +207,7 @@ distribution.
 	Start the containers:
 
 		$ docker-compose -f docker-compose-dev.yml up --build -d
-		$ docker-compose logs --follow
+		$ docker-compose  -f docker-compose-dev.yml logs --follow
 
 	Optionally, run `bash` in the container as follows:
 

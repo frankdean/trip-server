@@ -33,10 +33,10 @@ echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/source
 apt-get update
 apt-get install $DEB_OPTIONS yarn+ cmdtest- nodejs-
 
-NODE_VERSION="v12.22.6"
+NODE_VERSION="v12.22.7"
 NODE_FILENAME="node-${NODE_VERSION}-linux-x64"
 NODE_TAR_FILENAME="${NODE_FILENAME}.tar.xz"
-NODE_SHA256="80fc80cdb3d829ea4d752c2e52067a426f6c4fd629ecca5a858d268af8d5ec7e  ${NODE_TAR_FILENAME}"
+NODE_SHA256=2768bc01d2f97ab8135b8c03b275b9689573964b426b5dd9082334fd70dcc583
 NODE_EXTRACT_DIR="${NODE_FILENAME}"
 NODE_DOWNLOAD_URL="https://nodejs.org/dist/${NODE_VERSION}/${NODE_TAR_FILENAME}"
 
@@ -47,7 +47,7 @@ if [ ! -d "/usr/local/share/${NODE_FILENAME}" ]; then
 		fi
 		cd /vagrant/provisioning/downloads
 		wget --no-verbose $NODE_DOWNLOAD_URL 2>&1
-		echo "$NODE_SHA256" | shasum -c -
+		echo "$NODE_SHA256  $NODE_TAR_FILENAME" | shasum -c -
 		if [ $? -ne "0" ]; then
 			>&2 echo "Checksum of downloaded file does not match expected value of ${NODE_SHA256}"
 			exit 1
@@ -55,7 +55,7 @@ if [ ! -d "/usr/local/share/${NODE_FILENAME}" ]; then
 	fi
 	if [ -e "/vagrant/provisioning/downloads/${NODE_TAR_FILENAME}" ]; then
 		cd /vagrant/provisioning/downloads
-		echo "$NODE_SHA256" | shasum -c -
+		echo "$NODE_SHA256  $NODE_TAR_FILENAME" | shasum -c -
 		if [ $? -ne "0" ]; then
 			>&2 echo "Checksum of downloaded file does not match expected value of ${NODE_SHA256}"
 			exit 1
