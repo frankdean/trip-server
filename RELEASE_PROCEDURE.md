@@ -207,7 +207,7 @@ distribution.
 	Start the containers:
 
 		$ docker-compose -f docker-compose-dev.yml up --build -d
-		$ docker-compose  -f docker-compose-dev.yml logs --follow
+		$ docker-compose -f docker-compose-dev.yml logs --follow
 
 	Optionally, run `bash` in the container as follows:
 

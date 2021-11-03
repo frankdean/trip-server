@@ -2,6 +2,17 @@
 
 # Changelog
 
+## v1.9.0
+
+Implemented an option to simplify (reduce the number of points) of an
+itinerary track.
+
+Added a `goto page` option to all paging controls.  The `goto page` option is
+only shown once there are at least 10 pages.
+
+- Format numerical values with commas on `System Status` page.
+- Update `nodemon` package to newer version.
+
 ## v1.8.1
 
 Status page now shows map tile usage per month for the past 12 months.

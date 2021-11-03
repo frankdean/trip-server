@@ -30,7 +30,6 @@ Vagrant.configure("2") do |config|
   # https://www.vagrantup.com/docs/boxes.html#official-boxes
   # https://app.vagrantup.com/bento
   config.vm.box = "bento/debian-10"
-  config.vm.box_version = "202107.08.0"
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs

@@ -1,6 +1,6 @@
 # -*- mode: dockerfile; -*- vim: set ft=dockerfile:
 FROM postgres:11.13-buster
-LABEL uk.co.fdsd.tripserver.db.version="1.8.1"
+LABEL uk.co.fdsd.tripserver.db.version="1.9.0"
 #LABEL uk.co.fdsd.tripserver.db.release-date="2021-09-18"
 #LABEL uk.co.fdsd.tripserver.db.is-production=""
 
