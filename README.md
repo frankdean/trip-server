@@ -389,8 +389,29 @@ package.
 
 		$ vagrant plugin install vagrant-vbguest
 
-See also <https://stackoverflow.com/questions/20308794/how-to-upgrade-to-virtualbox-guest-additions-on-vm-box>
+However, if that fails:
 
+1.  Check the vagrant-vbguest plugin status:
+
+		$ vagrant vbguest --status
+
+2.  If the guest version does not match the host, do:
+
+		$ vagrant vbguest --do install
+
+3.  This may fail.  Halt and restart Vagrant:
+
+		$ vagrant halt
+
+4.  Restart Vagrant and check the status again:
+
+		$ vagrant up
+		$ vagrant vbguest --status
+
+The vbguest plugin host and guest versions should now match.
+
+For further information, see the
+[stackoverflow answer, "Existing VM"](https://stackoverflow.com/questions/20308794/how-to-upgrade-to-virtualbox-guest-additions-on-vm-box#35678489)
 
 #### Vagrant has detected a configuration issue which exposes a vulnerability with the installed version of VirtualBox
 

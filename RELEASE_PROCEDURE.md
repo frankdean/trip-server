@@ -59,7 +59,7 @@ distribution.
 		$ vagrant destroy
 		$ vagrant up
 
-1.  Stop `trip-server` System D services:
+1.  Stop `trip-server` systemd services:
 
 		$ vagrant ssh
 		vagrant@debian-10:~$ sudo systemctl stop trip.socket
