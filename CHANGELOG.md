@@ -6,8 +6,10 @@
 
 - Updated some packages to later versions including some with security
   vulnerabilities.
-- Pinned jsdoc to the latest version that supports Node.js 12 and used forced
-  package resolution to deal with audit warnings.
+- Temporarily removed the `jsdoc` package, as version 3.6.7 had reported
+  security vulnerabilities in some dependent packages.  Unfortunately version
+  3.6.8 updates the `klaw` package which requires upgrading from Node.js 12.x
+  to 14.x.
 
 ## v1.9.0
 
