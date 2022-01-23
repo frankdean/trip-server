@@ -17,14 +17,13 @@
     "GPS"
   ],
   "resolutions": {
-    "engine.io": ">=4.1.2",
     "markdown-it": ">=12.3.2",
     "marked": ">=4.0.10"
   },
   "devDependencies": {
     "adm-zip": "^0.5.5",
     "jasmine": "^3.4.0",
-    "jsdoc": "^3.6.6",
+    "jsdoc": "3.6.7",
     "jshint": "^2.9.4",
     "nodemon": "^2.0.4",
     "npm-force-resolutions": "0.0.10",
@@ -41,7 +40,8 @@
     "test": "nodemon --ext 'json,js,yaml' --ignore 'app/*' ./node_modules/jasmine/bin/jasmine.js",
     "test-single-run": "jasmine",
     "clean": "rimraf docs dist",
-    "docs": "nodemon ./node_modules/jsdoc/jsdoc.js --ignore 'docs/*' -- --destination docs --readme README.md --package package.json ./",
+    "docs-nodemon": "nodemon ./node_modules/jsdoc/jsdoc.js --ignore 'docs/*' -- --destination docs --readme README.md --package package.json ./",
+    "docs": "node ./node_modules/jsdoc/jsdoc.js --destination docs --readme README.md --package package.json ./",
     "lint": "jshint *.js spec/*.js spec/support/*.js",
     "tar-release": "node -e \"require('shelljs').cd('dist'); require('tar').c({gzip: true, sync: true, file: '$npm_package_name-$npm_package_version.tgz'},['$npm_package_name-$npm_package_version'])\"",
     "zip-release": "node -e \"require('shelljs').cd('dist');const Zip=require('adm-zip');const zip=new Zip();zip.addLocalFolder('$npm_package_name-$npm_package_version','$npm_package_name-$npm_package_version');zip.writeZip('$npm_package_name-$npm_package_version.zip');\"",

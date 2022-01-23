@@ -2,6 +2,13 @@
 
 # Changelog
 
+## next release
+
+- Updated some packages to later versions including some with security
+  vulnerabilities.
+- Pinned jsdoc to the latest version that supports Node.js 12 and used forced
+  package resolution to deal with audit warnings.
+
 ## v1.9.0
 
 Implemented an option to simplify (reduce the number of points) of an
