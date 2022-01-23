@@ -16,15 +16,11 @@
     "planner",
     "GPS"
   ],
-  "resolutions": {
-    "markdown-it": ">=12.3.2",
-    "marked": ">=4.0.10"
-  },
+  "resolutions": {},
   "devDependencies": {
     "adm-zip": "^0.5.5",
     "eslint": "^8.7.0",
     "jasmine": "^3.4.0",
-    "jsdoc": "3.6.7",
     "nodemon": "^2.0.4",
     "npm-force-resolutions": "0.0.10",
     "rimraf": "^3.0.2",
