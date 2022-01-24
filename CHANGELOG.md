@@ -2,7 +2,7 @@
 
 # Changelog
 
-## next release
+## v1.9.1
 
 - Updated some packages to later versions including some with security
   vulnerabilities.
