@@ -16,7 +16,7 @@ FROM node:12.22.9-buster-slim AS trip-web-client
 WORKDIR /app-server
 
 ARG TRIP_CLIENT_VERSION=v1.9.1
-ARG TRIP_CLIENT_SHA256=42d36743d2a6e7db52dda1bc087ae5ae6a84576f2047c606377d443ea2bdb9d1
+ARG TRIP_CLIENT_SHA256=2b09583c394205b5cc5eb281dc4ee316f5f26ccb15dcb6bf88ada2ad548dccbe
 ARG TRIP_CLIENT_FILENAME=trip-web-client-release-${TRIP_CLIENT_VERSION}.tgz
 
 ADD --chown=node:node https://www.fdsd.co.uk/trip-server/download/trip-web-client-release-${TRIP_CLIENT_VERSION}.tgz .

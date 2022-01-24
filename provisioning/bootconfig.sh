@@ -5,7 +5,7 @@
 
 TRIP_WEB_CLIENT_VERSION='v1.9.1'
 TRIP_WEB_CLIENT_RELEASE="trip-web-client-release-${TRIP_WEB_CLIENT_VERSION}.tgz"
-TRIP_WEB_CLIENT_SHA256=42d36743d2a6e7db52dda1bc087ae5ae6a84576f2047c606377d443ea2bdb9d1
+TRIP_WEB_CLIENT_SHA256=2b09583c394205b5cc5eb281dc4ee316f5f26ccb15dcb6bf88ada2ad548dccbe
 PG_VERSION=11
 
 su - postgres -c 'createuser -drs vagrant' 2>/dev/null
@@ -147,6 +147,8 @@ else
 	fi
 	cd /var/www/trip
 	tar --no-same-owner --no-same-permissions -xf /vagrant/provisioning/downloads/${TRIP_WEB_CLIENT_RELEASE}
+	chown -R vagrant:vagrant .
+	chmod -R o+r .
 fi
 
 if [ ! -L /usr/local/trip-server ]; then
