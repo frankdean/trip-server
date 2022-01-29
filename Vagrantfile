@@ -29,7 +29,7 @@ Vagrant.configure("2") do |config|
   # Bento are one of the Vagrant recommended boxes see
   # https://www.vagrantup.com/docs/boxes.html#official-boxes
   # https://app.vagrantup.com/bento
-  config.vm.box = "bento/debian-10"
+  config.vm.box = "bento/debian-11"
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs

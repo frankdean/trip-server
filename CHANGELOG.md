@@ -2,6 +2,18 @@
 
 # Changelog
 
+## v1.10.0
+
+Updated to support Node.js v14.
+
+- Updated `pg` package to latest.
+- Fix double-release of pooled database connection.
+- Lazy loading of elevation tiles.
+- Updated packages re audit warnings.
+- Rebuild `yarn.lock` files to update sub-dependencies to later versions.
+- Updated deprecated Jasmine custom matchers used in tests.
+- Updated Vagrant build to use Node.js v14 and Debian 11.
+
 ## v1.9.1
 
 - Updated some packages to later versions including some with security

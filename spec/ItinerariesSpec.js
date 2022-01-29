@@ -27,8 +27,52 @@ describe('itinerary.js', function() {
 
   describe('KML snippet date formatter', function() {
 
-    it('should match the format exported by Google Earth in the document snippet', function() {
+    it('should match the format exported by Google Earth in the document snippet for January', function() {
+      expect(Itineraries.unitTests.formatKmlSnippetDate(new Date(2022, 0, 28, 13, 30, 45))).toEqual('Fri Jan 28 13:30:45 2022');
+    });
+
+    it('should match the format exported by Google Earth in the document snippet for February', function() {
+      expect(Itineraries.unitTests.formatKmlSnippetDate(new Date(2021, 1, 28, 13, 30, 45))).toEqual('Sun Feb 28 13:30:45 2021');
+    });
+
+    it('should match the format exported by Google Earth in the document snippet for March', function() {
+      expect(Itineraries.unitTests.formatKmlSnippetDate(new Date(2021, 2, 28, 13, 30, 45))).toEqual('Sun Mar 28 13:30:45 2021');
+    });
+
+    it('should match the format exported by Google Earth in the document snippet for April', function() {
+      expect(Itineraries.unitTests.formatKmlSnippetDate(new Date(2021, 3, 28, 13, 30, 45))).toEqual('Wed Apr 28 13:30:45 2021');
+    });
+
+    it('should match the format exported by Google Earth in the document snippet for May', function() {
+      expect(Itineraries.unitTests.formatKmlSnippetDate(new Date(2021, 4, 28, 13, 30, 45))).toEqual('Fri May 28 13:30:45 2021');
+    });
+
+    it('should match the format exported by Google Earth in the document snippet for June', function() {
+      expect(Itineraries.unitTests.formatKmlSnippetDate(new Date(2021, 5, 28, 13, 30, 45))).toEqual('Mon Jun 28 13:30:45 2021');
+    });
+
+    it('should match the format exported by Google Earth in the document snippet for July', function() {
+      expect(Itineraries.unitTests.formatKmlSnippetDate(new Date(2021, 6, 28, 13, 30, 45))).toEqual('Wed Jul 28 13:30:45 2021');
+    });
+
+    it('should match the format exported by Google Earth in the document snippet for August', function() {
+      expect(Itineraries.unitTests.formatKmlSnippetDate(new Date(2021, 7, 28, 13, 30, 45))).toEqual('Sat Aug 28 13:30:45 2021');
+    });
+
+    it('should match the format exported by Google Earth in the document snippet for September', function() {
       expect(Itineraries.unitTests.formatKmlSnippetDate(new Date(2017, 8, 2, 13, 30, 45))).toEqual('Sat Sep 2 13:30:45 2017');
+    });
+
+    it('should match the format exported by Google Earth in the document snippet for October', function() {
+      expect(Itineraries.unitTests.formatKmlSnippetDate(new Date(2021, 9, 28, 13, 30, 45))).toEqual('Thu Oct 28 13:30:45 2021');
+    });
+
+    it('should match the format exported by Google Earth in the document snippet for November', function() {
+      expect(Itineraries.unitTests.formatKmlSnippetDate(new Date(2021, 10, 28, 13, 30, 45))).toEqual('Sun Nov 28 13:30:45 2021');
+    });
+
+    it('should match the format exported by Google Earth in the document snippet for December', function() {
+      expect(Itineraries.unitTests.formatKmlSnippetDate(new Date(2021, 11, 28, 13, 30, 45))).toEqual('Tue Dec 28 13:30:45 2021');
     });
 
   });
@@ -121,7 +165,6 @@ describe('itinerary.js', function() {
         spyOn(db, 'getUserIdByUsername').and.callFake(
           function(username, callback) {
             callback(null, testUserId);
-            done();
           });
         spyOn(db, 'createItinerary').and.callFake(
           function(username, itinerary, callback) {
@@ -189,7 +232,6 @@ describe('itinerary.js', function() {
         spyOn(db, 'getUserIdByUsername').and.callFake(
           function(username, callback) {
             callback(null, testUserId);
-            done();
           });
         spyOn(db, 'createItinerary').and.callFake(
           function(username, itinerary, callback) {
@@ -260,16 +302,15 @@ describe('itinerary.js', function() {
       spyOn(db, 'getItinerariesCountByUsername').and.callFake(
         function(username, callback) {
           callback(null, testCount);
-          done();
         });
       spyOn(db, 'getItinerariesByUsername').and.callFake(
         function(username, offset, limit, callback) {
           callback(null, testPayload);
-          done();
         });
       Itineraries.getItineraries(testUsername, 0, 10, function(_err_, _result_) {
         err = _err_;
         result = _result_;
+        done();
       });
     });
 

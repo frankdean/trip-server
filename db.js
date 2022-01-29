@@ -2709,8 +2709,6 @@ function updateItineraryTrackDistanceElevation(itineraryId, trackId, track, call
                     track.lowest,
                     track.highest],
                    function(err, result) {
-                     // release the client back to the pool
-                     done();
                      if (err) {
                        callback(err);
                      } else {

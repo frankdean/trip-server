@@ -1,11 +1,11 @@
 # -*- mode: dockerfile; -*- vim: set ft=dockerfile:
-FROM postgres:11.13-buster
-LABEL uk.co.fdsd.tripserver.db.version="1.9.0"
-#LABEL uk.co.fdsd.tripserver.db.release-date="2021-09-18"
+FROM postgres:13.5-bullseye
+LABEL uk.co.fdsd.tripserver.db.version="1.10.0"
+#LABEL uk.co.fdsd.tripserver.db.release-date="2022-02-29"
 #LABEL uk.co.fdsd.tripserver.db.is-production=""
 
-ENV POSTGIS_MAJOR 2.5
-ENV POSTGIS_VERSION 2.5.5+dfsg-1.pgdg100+2
+ENV POSTGIS_MAJOR 3
+ENV POSTGIS_VERSION 3.1.1+dfsg-1
 RUN apt-get update \
     && apt-cache showpkg postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR \
     && apt-get install -y --no-install-recommends \

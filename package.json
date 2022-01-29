@@ -1,6 +1,6 @@
 {
   "name": "trip-server",
-  "version": "1.9.1",
+  "version": "1.10.0",
   "description": "TRIP - Trip Recording and Itinerary Planner RESTful server",
   "author": {
     "name": "Frank Dean",
@@ -16,7 +16,9 @@
     "planner",
     "GPS"
   ],
-  "resolutions": {},
+  "resolutions": {
+    "simple-get": ">=4.0.1"
+  },
   "devDependencies": {
     "adm-zip": "^0.5.5",
     "eslint": "^8.7.0",
@@ -26,7 +28,7 @@
     "rimraf": "^3.0.2",
     "shelljs": "^0.8.5",
     "tar": "^6.1.11",
-    "yargs": "^16.0.3"
+    "yargs": "^17.3.1"
   },
   "scripts": {
     "preinstall": "node -e \"const fs = require('fs'); if (fs.existsSync('package-lock.json') && '$npm_execpath'.indexOf('yarn.js') === -1) { require('child_process').execSync('npx npm-force-resolutions')} \"",
@@ -62,7 +64,7 @@
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.14",
     "parseurl": "^1.3.3",
-    "pg": "~6.2.5",
+    "pg": "~8.7.1",
     "qs": "^6.5.0",
     "sax": "^1.2.2",
     "send": "^0.17.1",

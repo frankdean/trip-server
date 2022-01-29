@@ -46,7 +46,7 @@ distribution.
 					:WIPE_DB => "n" }
 
 1.  Update `./provisioning/bootstrap.sh` to download the latest
-    version of [Node.js](https://nodejs.org/dist/latest-v12.x/) and
+    version of [Node.js](https://nodejs.org/dist/latest-v14.x/) and
     update the SHA256 checksum.
 
 1.  Create a new Vagrant VM
@@ -237,6 +237,12 @@ distribution.
 
 		$ cd /webapp
 		$ yarn build-release
+
+	Execute the following style of command on the container host, to
+    copy the release from the container to the current working
+    directory, E.g.:
+
+		$ docker cp trip-server_web_1:/app-server/dist/trip-server-1.10.0.tgz .
 
 	Stop the container with (use the `--volumes` switch to also remove
     the database volume):

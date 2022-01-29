@@ -32,7 +32,17 @@ describe('elevation.js', function() {
       runElevationTests = false;
       logger.alert('Elevation data directory %s not found.  Elevation tests will be skipped', config.elevation.datasetDir);
     }
-}
+  }
+
+  it('should always run at least one test', function() {
+    // We get a deprecation warning if we skip running these tests.
+    //
+    // DEPRECATION: describe with no children (describe() or it()) is
+    // deprecated and will be removed in a future version of
+    // Jasmine. Please either remove the describe or add children to
+    // it.
+  });
+
   if (!runElevationTests) {
     logger.notice('Skipping elevation tests as elevation data not configured/found.');
     return;

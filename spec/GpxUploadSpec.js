@@ -28,7 +28,7 @@ describe('gpx-upload.js', function() {
   var err, result;
 
   var customMatchers = {
-    toHaveBeenCalledWithTrackNames: function(util, customEqualityTesters) {
+    toHaveBeenCalledWithTrackNames: function(util) {
       return {
         compare: function(actual, expected) {
           var result = {},
@@ -43,7 +43,7 @@ describe('gpx-upload.js', function() {
             });
           }
 
-          result.pass = util.equals(actualNames, expected, customEqualityTesters);
+          result.pass = util.equals(actualNames, expected);
           if (result.pass) {
             result.message = "Was called with the expected track names";
           } else {
@@ -53,7 +53,7 @@ describe('gpx-upload.js', function() {
         }
       };
     },
-    toHaveBeenCalledWithRouteNames: function(util, customEqualityTesters) {
+    toHaveBeenCalledWithRouteNames: function(util) {
       return {
         compare: function(actual, expected) {
           var result = {},
@@ -68,7 +68,7 @@ describe('gpx-upload.js', function() {
             });
           }
 
-          result.pass = util.equals(actualNames, expected, customEqualityTesters);
+          result.pass = util.equals(actualNames, expected);
           if (result.pass) {
             result.message = "Was called with the expected route names";
           } else {

@@ -33,10 +33,12 @@ echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/source
 apt-get update
 apt-get install $DEB_OPTIONS yarn+ cmdtest- nodejs-
 
-NODE_VERSION="v12.22.9"
+#NODE_VERSION="v12.22.9"
+#NODE_SHA256=33fbab8033d7356932fa0103d9aabd0f07e59672847f5ffa22a4108258345e52
+NODE_VERSION="v14.18.3"
+NODE_SHA256=57c36dc742cd09a31b93f3e89af0c780349f8256c117976f9309c6f8dfcca867
 NODE_FILENAME="node-${NODE_VERSION}-linux-x64"
 NODE_TAR_FILENAME="${NODE_FILENAME}.tar.xz"
-NODE_SHA256=33fbab8033d7356932fa0103d9aabd0f07e59672847f5ffa22a4108258345e52
 NODE_EXTRACT_DIR="${NODE_FILENAME}"
 NODE_DOWNLOAD_URL="https://nodejs.org/dist/${NODE_VERSION}/${NODE_TAR_FILENAME}"
 
@@ -65,25 +67,25 @@ if [ ! -d "/usr/local/share/${NODE_FILENAME}" ]; then
 		if [ -L /usr/local/share/node-current ]; then
 		    rm -f /usr/local/share/node-current
 		fi
-		ln -s "$NODE_EXTRACT_DIR" node-current
+		ln -sf "$NODE_EXTRACT_DIR" node-current
 		cd  /usr/local/bin
-		ln -s ../share/node-current/bin/node
-		ln -s ../share/node-current/bin/npm
-		ln -s ../share/node-current/bin/npx
+		ln -sf ../share/node-current/bin/node
+		ln -sf ../share/node-current/bin/npm
+		ln -sf ../share/node-current/bin/npx
 		cd /usr/local/include
-		ln -s ../share/node-current/include/node/
+		ln -sf ../share/node-current/include/node/
 		cd /usr/local/lib
-		ln -s ../share/node-current/lib/node_modules/
+		ln -sf ../share/node-current/lib/node_modules/
 		mkdir -p /usr/local/share/doc
 		cd /usr/local/share/doc
-		ln -s ../node-current/share/doc/node/
+		ln -sf ../node-current/share/doc/node/
 		mkdir -p /usr/local/share/man/man1/
 		cd /usr/local/share/man/man1/
-		ln -s ../../node-current/share/man/man1/node.1
+		ln -sf ../../node-current/share/man/man1/node.1
 		cd /usr/local/share/
 		mkdir -p systemtap/tapset
 		cd systemtap/tapset
-		ln -s ../../node-current/share/systemtap/tapset/node.stp
+		ln -sf ../../node-current/share/systemtap/tapset/node.stp
 	fi
 	if [ -e /vagrant/node_modules ]; then
 		cd /vagrant

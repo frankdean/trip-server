@@ -27,8 +27,7 @@ const _ = require('lodash'),
 
 // an array containing ElevationTile instances with coordinates of all elevation data tiles on the system
 var elevationTiles,
-    unitLoaded = false,
-    unitReady = false;
+    unitLoaded = false;
 
 /**
  * Handles loading tiles containing elevation (altitude/height) data.
@@ -127,12 +126,13 @@ function loadTiles(dir) {
     }
     fs.readdir(dir, null, function(err, paths) {
       if (err) {
-        reject(err);
+        logger.alert('Error reading directory "' + dir + '"');
+        reject(new Error(err));
       } else {
         logger.debug('There are %d tiles to load', paths.length);
         loadNextTile(dir, paths, myTiles, function(err, tiles) {
           if (err) {
-            reject(err);
+            reject(new Error(err));
           } else {
             resolve(tiles);
           }
@@ -184,21 +184,29 @@ function loadTile(dir, f, tiles, done) {
 }
 
 function tileFor(longitude, latitude) {
-  var tile = null;
-  elevationTiles.forEach(function(t) {
-    // logger.debug('Considering whether tile %s covers lat: %d, lng: %d', t.path, latitude, longitude);
-    if (longitude >= t.left && longitude <= t.right && latitude >= t.bottom && latitude <= t.top) {
-      tile = t;
-    } else {
-      t.closeIfOld();
-    }
+  return new Promise((resolve, reject) => {
+    getElevationTiles()
+      .then(function(tiles) {
+        var tile = null;
+        tiles.forEach(function(t) {
+          // logger.debug('Considering whether tile %s covers lat: %d, lng: %d', t.path, latitude, longitude);
+          if (longitude >= t.left && longitude <= t.right && latitude >= t.bottom && latitude <= t.top) {
+            tile = t;
+          } else {
+            t.closeIfOld();
+          }
+        });
+        if (tile === null) {
+          logger.debug('Failed to find tile containing latitude: %d and longitude: %d', latitude, longitude);
+          reject(new Error('Failed to find tile containing latitude: ' + latitude + ' and longitude: ' + longitude));
+        } else {
+          logger.debug('Tile %s covers lat: %d, lng: %d', tile.path, latitude, longitude);
+          resolve(tile);
+        }
+      }).catch(function(err) {
+        reject(err);
+      });
   });
-  if (tile === null) {
-    logger.debug('Failed to find tile containing latitude: %d and longitude: %d', latitude, longitude);
-  } else {
-    logger.debug('Tile %s covers lat: %d, lng: %d', tile.path, latitude, longitude);
-  }
-  return tile;
 }
 
 function fetchRemoteElevations(points, callback) {
@@ -277,24 +285,32 @@ function getCorners2(elevationTile) {
 function calculateElevations(points, callback) {
   var retval, tile;
   logger.debug('Filling elevations using internal service');
+  var i = points.length;
+  // logger.debug('calculating elevations for %d points', i);
   points.forEach(function(pt) {
     logger.debug('Transforming point: %j', pt);
-    tile = tileFor(pt.longitude, pt.latitude);
-    if (tile !== null) {
-      pt.elevation = tile.elevation(pt.longitude, pt.latitude);
-    }
+    tileFor(pt.longitude, pt.latitude)
+      .then(function(tile) {
+        if (tile !== null) {
+          pt.elevation = tile.elevation(pt.longitude, pt.latitude);
+        }
+        if (--i <= 0) {
+          // logger.debug('Finished calculating points (in then): %j', points);
+          callback(null, {results: points});
+        }
+      })
+      .catch(function(err) {
+        if (--i <= 0) {
+          // logger.debug('Finished calculating points (in catch): %j', points);
+          callback(null, {results: points});
+        }
+      });
   });
-  callback(null, {results: points});
 }
 
 function fillElevations(points, options, callback) {
   var fetchElevations = fetchRemoteElevations, skipIfAnyExist, force, i, elevationCount = 0, queryPoints = [], locations, myErr = null;
   if (config.elevation !== undefined && config.elevation.datasetDir !== undefined) {
-    if (!unitReady) {
-      logger.warn('Elevation data not loaded yet');
-      callback(new Error('Elevation data not loaded yet'));
-      return;
-    }
     fetchElevations = calculateElevations;
   } else if (!config.elevation || !config.elevation.provider) {
     logger.debug('elevation.datasetDir not configured - skipping reading elevation data');
@@ -347,13 +363,12 @@ function fillElevations(points, options, callback) {
   } else {
     callback(null, points);
     if (skipIfAnyExist && elevationCount !== 0) {
-      logger.debug('One or more altitudes exist in route, skipping update');
+      logger.debug('One or more altitudes exist in path, skipping update');
     } else {
-      logger.debug('All altitudes exist in route, not updating');
+      logger.debug('All altitudes exist in path, not updating');
     }
   }
 }
-
 
 function fillElevationsForRoutes(routes, options, callback) {
   var counter = routes.length, firstError = null;
@@ -368,21 +383,43 @@ function fillElevationsForRoutes(routes, options, callback) {
   });
 }
 
+/**
+ * Lazy getter for Elevation Tiles.
+ * @return {Promise} containing an array of ElevationTile instances
+ * with coordinates of all elevation data tiles on the system.
+ */
+function getElevationTiles() {
+  return new Promise((resolve, reject) => {
+    logger.debug('Searching for tif files in %s', config.elevation.datasetDir);
+    if (elevationTiles !== undefined) {
+      // logger.debug('Returning previously loaded tiles');
+      resolve(elevationTiles);
+    } else {
+      // logger.debug('Tiles not previously loaded.  Loading');
+      logger.debug("Memory before processing tiles", process.memoryUsage());
+      loadTiles(config.elevation.datasetDir)
+        .then(function(tiles) {
+          elevationTiles = tiles;
+          logger.debug('Memory after processing tiles', process.memoryUsage());
+          logger.info('Loaded %d elevation data tiles', tiles.length);
+          resolve(tiles);
+        })
+        .catch(function(err) {
+          reject(err);
+        });
+    }
+  });
+}
+
 // Initialise the module
 if (config.elevation != null && config.elevation.datasetDir != null && !unitLoaded ) {
   unitLoaded = true;
-  logger.debug('Searching for tif files in %s', config.elevation.datasetDir);
-  logger.debug("Memory before processing tiles", process.memoryUsage());
-  //      console.time('load-tiles');
-  loadTiles(config.elevation.datasetDir)
-    .then(function(tiles) {
-      //          console.timeEnd('load-tiles');
-      elevationTiles = tiles;
-      unitReady = true;
-      logger.debug("Memory after processing tiles", process.memoryUsage());
-      logger.info('Loaded %d elevation data tiles', tiles.length);
-    })
-    .catch(function(err) {
-      logger.alert('Failed to load elevation data: %s', err);
+  // logger.debug('Loading unit');
+  // console.time('load-tiles');
+  getElevationTiles()
+    .then(function(elevationTiles) {
+      // console.timeEnd('load-tiles');
+    }).catch(function(err) {
+      logger.alert(err);
     });
 }

@@ -102,15 +102,21 @@ function formatKmlSnippetDate(date) {
   s = dtf.format(date);
   // node v6.11.3 "Sat, Sep 02, 2017, 13:30:45"
   // node v6.11.4 "Sat, 02 Sep 2017, 13:30:45"
-  parts = /^(\D{3}),?\s+(\d+)\s+(\D+)\s+(\d+),?\s+(.*)$/.exec(s);
+  // node v14.18.3 "Sat, 02 Sept 2017, 13:30:45"
+  parts = /^(\D{3}),?\s+(\d+)\s+(\D{4})\s+(\d+),?\s+(.*)$/.exec(s);
   if (parts && parts.length > 0) {
-    // logger.debug('Successfully parsed as Node v6.11.4 format');
-    return parts[1] + ' ' + parts[3] + ' ' + Number(parts[2]) + ' ' + parts[5] + ' ' + parts[4];
-  } else {
-    logger.warn('Failed to parse date "%s", trying Node v6.11.3 format', s);
-    parts = /^(\D{3}),?\s+(\D+)\s+(\d+),?\s+(\d+),?\s+(.*)$/.exec(s);
+    logger.debug('Successfully parsed as Node v14.18.3 format');
+    return parts[1] + ' ' + parts[3].substr(0, 3) + ' ' + Number(parts[2]) + ' ' + parts[5] + ' ' + parts[4];
   }
+  parts = /^(\D{3}),?\s+(\d+)\s+(\D{3})\s+(\d+),?\s+(.*)$/.exec(s);
   if (parts && parts.length > 0) {
+    logger.debug('Successfully parsed as Node v6.11.4 format');
+    return parts[1] + ' ' + parts[3] + ' ' + Number(parts[2]) + ' ' + parts[5] + ' ' + parts[4];
+  }
+  logger.warn('Failed to parse date "%s", trying Node v6.11.3 format', s);
+  parts = /^(\D{3}),?\s+(\D+)\s+(\d+),?\s+(\d+),?\s+(.*)$/.exec(s);
+  if (parts && parts.length > 0) {
+    logger.debug('Parsed using Node v6.11.3 format');
     return parts[1] + ' ' + parts[2] + ' ' + Number(parts[3]) + ' ' + parts[5] + ' ' + parts[4];
   } else {
     return s;
