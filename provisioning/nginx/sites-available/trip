@@ -56,6 +56,12 @@ server {
 	}
 
 	location / {
+		# Workaround for error,
+		# `sendfile() failed (22: Invalid argument) while sending response to client`
+		# when running under Vagrant.  May be this bug:
+		# https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=f8ad8187c3b536ee2b10502a8340c014204a1af0
+		sendfile off;
+
 		if ($args ~* "^(id=[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}&timestamp=\d+&lat=[-.\d]+&lon=[-.\d]+)") {
 			rewrite ^.*$ /trip/rest/log_point?$1;
 		}
