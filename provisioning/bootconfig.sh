@@ -3,9 +3,9 @@
 # Uncomment the following to debug the script
 #set -x
 
-TRIP_WEB_CLIENT_VERSION='v1.10.0'
+TRIP_WEB_CLIENT_VERSION='v1.10.1'
 TRIP_WEB_CLIENT_RELEASE="trip-web-client-release-${TRIP_WEB_CLIENT_VERSION}.tgz"
-TRIP_WEB_CLIENT_SHA256=bf43619f0679276a7c0753d3072ab75fcb78a0843606ebc898cb09ffc07bfdd0
+TRIP_WEB_CLIENT_SHA256=f04f568c803f821d1621deb2f5ea0f5621d6580e6614da7ca3f800857f695948
 PG_VERSION=13
 
 su - postgres -c 'createuser -drs vagrant' 2>/dev/null
@@ -79,7 +79,6 @@ cd /etc/nginx/sites-enabled
 if [ -e default ]; then
 	rm -f default
 	ln -fs ../sites-available/trip
-	systemctl reload nginx
 fi
 if [ ! -d /var/www/trip ]; then
 	mkdir /var/www/trip
@@ -89,6 +88,7 @@ if [ ! -e /var/www/trip/index.html ]; then
 	cd /var/www/trip
 	ln -s /vagrant/provisioning/nginx/index.html /var/www/trip/index.html
 fi
+systemctl restart nginx
 
 # Remove any existing link and then re-create
 if [ -L /vagrant/app ]; then

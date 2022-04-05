@@ -49,15 +49,19 @@ distribution.
     version of [Node.js](https://nodejs.org/dist/latest-v14.x/) and
     update the SHA256 checksum.
 
-1.  Create a new Vagrant VM
+1.  Ideally, create a new Vagrant VM
 
 		$ cd ./trip-server
 		$ mv config.json config-old.json
 		$ mv config.yaml config-old.yaml
-		$ rm -rf node_modules
-		$ rm app
+		$ rm -rf app node_modules
 		$ vagrant destroy
 		$ vagrant up
+
+1.  If not creating a new vagrant machine, start Vagrant with provisioning
+    enabled.
+
+		$ vagrant up --provision
 
 1.  Stop `trip-server` systemd services:
 
@@ -85,7 +89,7 @@ distribution.
 		vagrant@debian-10:~$ yarn build-release
 
 		vagrant@debian-10:~$ cd /vagrant
-		vagrant@debian-10:~$ rm app
+		vagrant@debian-10:~$ rm -rf app
 		vagrant@debian-10:~$ tar -xf /vagrant-trip-web-client/dist/trip-web-client-release-$VERSION.tgz
 
 		vagrant@debian-10:~$ cd /vagrant-trip-web-client

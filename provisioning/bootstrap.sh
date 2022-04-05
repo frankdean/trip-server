@@ -6,7 +6,7 @@
 export DEBIAN_FRONTEND=noninteractive
 DEB_OPTIONS="--yes"
 apt-get update
-apt-get upgrade $DEB_OPTIONS
+apt-get full-upgrade $DEB_OPTIONS
 
 sed -i -e 's/# en_GB.UTF-8 UTF-8/en_GB.UTF-8 UTF-8/' /etc/locale.gen
 locale-gen
@@ -35,8 +35,8 @@ apt-get install $DEB_OPTIONS yarn+ cmdtest- nodejs-
 
 #NODE_VERSION="v12.22.9"
 #NODE_SHA256=33fbab8033d7356932fa0103d9aabd0f07e59672847f5ffa22a4108258345e52
-NODE_VERSION="v14.19.0"
-NODE_SHA256=daac84812f9815c5040561cb3a4c73ced26a490019d503432c7da17847389c55
+NODE_VERSION="v14.19.1"
+NODE_SHA256=2a28ee68c58e2c3a2a4deecdf9ee1d7080afd69ebe211cf5141d45df8f4ecc77
 NODE_FILENAME="node-${NODE_VERSION}-linux-x64"
 NODE_TAR_FILENAME="${NODE_FILENAME}.tar.xz"
 NODE_EXTRACT_DIR="${NODE_FILENAME}"

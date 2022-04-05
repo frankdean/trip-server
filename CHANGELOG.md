@@ -2,6 +2,17 @@
 
 # Changelog
 
+## v1.10.1
+
+- Update packages to latest versions by recreating `yarn.lock` files,
+  including updating `minimist` package re security vulnerability.
+- Updated Vagrant configuration to use PostgreSQL version 13 and Node.js
+  version 14.19.1.
+- Updated Vagrant configuration for Chrome web driver to match current
+  Debian 11 version.
+- Configure workaround for errors when running Nginx in Vagrant.
+- Fix failure in trip-web-client to fetch Leaflet.draw package from GitHub.
+
 ## v1.10.0
 
 Updated to support Node.js v14.
