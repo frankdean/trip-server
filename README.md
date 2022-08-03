@@ -2,6 +2,28 @@
 
 # TRIP - Trip Recording and Itinerary Planner
 
+## AngularJS Support
+
+This web application uses the [AngularJS][] framework, support for which,
+officially ended as of January 2022.
+
+Converting the application to Angular appears to be a substantial piece of
+work.
+
+I have spent a not inconsiderable amount of time and effort maintaining the
+application, not least due to a frequent need to upgrade dependant packages,
+due to security vulnerabilities, forced upgrades etc.
+
+Considering these factors, coupled with the question of how long the newer
+Angular may be supported for, I am considering re-writing the application in
+another language (most likely C++ running on Unix/Linux/macOS, with
+fundamentally the same PostgreSQL database), with minimal dependencies, but
+this will also take some time, if I go ahead at all.
+
+In the mean time, I'm not in a position to handle any security vulnerabilities
+reported in AngularJS.  Consequently, consider using one of the commercial
+services that offer similar functionality.  Indeed, I may do so myself.
+
 ## Introduction
 
 TRIP is a JavaScript web-based application supporting trip recording and

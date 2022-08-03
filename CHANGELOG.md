@@ -2,6 +2,15 @@
 
 # Changelog
 
+## next release
+
+- Updated `nodemon` package to latest version re security vulnerability in
+  `got` package.
+
+## v1.10.2
+
+- Update packages to latest versions by recreating `yarn.lock` files.
+
 ## v1.10.1
 
 - Update packages to latest versions by recreating `yarn.lock` files,
