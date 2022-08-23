@@ -206,7 +206,7 @@ distribution.
 	If it does, remove it so that the container creates a new
     database, using the configured database password:
 
-		$ sudo docker volume rm trip-server_trip-db-data
+		$ docker volume rm trip-server_trip-db-data
 
 	Start the containers:
 

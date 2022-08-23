@@ -1,6 +1,6 @@
 /**
  * @license TRIP - Trip Recording and Itinerary Planning application.
- * (c) 2016-2018 Frank Dean <frank@fdsd.co.uk>
+ * (c) 2016-2022 Frank Dean <frank@fdsd.co.uk>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -264,6 +264,10 @@ function getLocationsByUserId(userId, from, to, maxHdop, notesOnlyFlag, order, o
 }
 
 /**
+ * Reflects the constraints based on both how long before now, and how long
+ * before the most recently shared track location another user can see the
+ * shared track locations for the specified user ID.
+ *
  * @param {number} sharedById - The user ID of the user to retrieve locations for.
  * @param {string} from - Range start datetime value in ISO 8601 format.
  * @param {string} to - Range end datetime value in ISO 8601 format.
@@ -274,22 +278,48 @@ function getLocationsByUserId(userId, from, to, maxHdop, notesOnlyFlag, order, o
  */
 function constrainSharedLocationDates(sharedById, from, to, maxMinutes, recentMinutes, callback) {
   var earliestPossible, mostRecentFrom, fromMs, toMs;
+  // logger.debug('Constraining date range %s to %s', from, to);
   fromMs = Date.parse(from);
   toMs = Date.parse(to);
+  // logger.debug('From 01: %s', new Date(fromMs).toLocaleString());
+  // logger.debug('To   01: %s', new Date(toMs).toLocaleString());
   db.getMostRecentLocationTime(sharedById, function(err, latestTime) {
     if (err) {
       callback(err);
     } else {
+      // logger.debug('maxMinutes: %d, recentMinutes: %d', maxMinutes, recentMinutes);
+      // If maxMinutes is set, calculate the earliest possible date as max
+      // minutes before now
       if (maxMinutes) {
+        // logger.debug('Setting earliestPossible based on maxMinutes of %d before now', maxMinutes);
         earliestPossible = Date.now() - maxMinutes * 60000;
       }
+      // If recent_minutes is set, calculate the mostRecentFrom based on the
+      // most recently recorded location.
       if (recentMinutes) {
-        mostRecentFrom = latestTime ? latestTime.getTime() - recentMinutes * 60000 : earliestPossible;
+        if (latestTime) {
+          // logger.debug('Setting mostRecentFrom based on maxMinutes of %d before now', maxMinutes);
+          mostRecentFrom = latestTime.getTime() - recentMinutes * 60000;
+        } else {
+          // logger.debug('Setting mostRecentFrom to earliestPossible');
+          mostRecentFrom = earliestPossible;
+        }
       }
-      earliestPossible = (earliestPossible && earliestPossible > mostRecentFrom) ?
-        earliestPossible : mostRecentFrom;
+      // If earliest date (based on minutes before now) is more recent than the
+      // date based on most recently recorded location, the most recently recorded
+      // location criteria takes precedence.
+      if (mostRecentFrom && (!earliestPossible || earliestPossible < mostRecentFrom)) {
+        // logger.debug('Setting earliestPossible to mostRecentFrom');
+        earliestPossible = mostRecentFrom;
+      }
+      // earliest possible now reflects the earliest date the user can see the
+      // shared track location for, by either criteria.
+      // If query from_date is earlier than the earliest allowed, set it to the
+      // earliest allowed.
       fromMs = (earliestPossible && fromMs < earliestPossible) ? earliestPossible : fromMs;
       toMs = (fromMs > toMs) ? fromMs : toMs;
+      // logger.debug('From 02: %s', new Date(fromMs).toLocaleString());
+      // logger.debug('To   02: %s', new Date(toMs).toLocaleString());
       callback(null, new Date(fromMs), new Date(toMs));
     }
   });

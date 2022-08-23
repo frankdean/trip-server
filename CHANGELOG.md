@@ -2,14 +2,13 @@
 
 # Changelog
 
-## next release
+## v1.11.0
 
+- Bug fix - Shared tracks were only constrained to the maximum period if a
+  constraint value was entered for the most recently logged location.
 - Updated `nodemon` package to latest version re security vulnerability in
   `got` package.
-
-## v1.10.2
-
-- Update packages to latest versions by recreating `yarn.lock` files.
+- Updated packages to latest versions by recreating `yarn.lock` files.
 
 ## v1.10.1
 
