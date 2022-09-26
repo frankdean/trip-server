@@ -4,8 +4,8 @@
 
 ## AngularJS Support
 
-This web application uses the [AngularJS][] framework, support for which,
-officially ended as of January 2022.
+This web application uses the [AngularJS][] framework, Google's support for
+which, officially ended as of January 2022.
 
 Converting the application to Angular appears to be a substantial piece of
 work.
@@ -15,10 +15,11 @@ application, not least due to a frequent need to upgrade dependant packages,
 due to security vulnerabilities, forced upgrades etc.
 
 Considering these factors, coupled with the question of how long the newer
-Angular may be supported for, I am considering re-writing the application in
-another language (most likely C++ running on Unix/Linux/macOS, with
-fundamentally the same PostgreSQL database), with minimal dependencies, but
-this will also take some time, if I go ahead at all.
+Angular may be supported for, I am rewriting the application in C++ running on
+Unix/Linux/macOS, with fundamentally the same PostgreSQL database, with
+minimal dependencies.  This will take some time.  For anyone interested in
+following the progress or testing the new version, it is hosted
+[here](https://www.fdsd.co.uk/trip-server-2/).
 
 In the mean time, I'm not in a position to handle any security vulnerabilities
 reported in AngularJS.  Consequently, consider using one of the commercial

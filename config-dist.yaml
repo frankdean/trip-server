@@ -17,6 +17,10 @@ app:
     expiresIn: 86400
   maxItinerarySearchRadius: 50000
   averageFlatSpeedKph: 4
+  worker_count: 10 #For trip v2 only
+  pg_pool_size: 12  #For trip v2 only
+  prefix_url: /trip2/app  #For trip v2 only
+  messages_path: /usr/local/share/locale #For trip v2 only
 jwt:
   signingKey: secret
   resourceSigningKey: different-secret
@@ -26,7 +30,7 @@ tile:
   providers_READ_TILE_USAGE_POLICY_BELOW_AND_SET_USER_AGENT_AND_REFERRER_INFO_BEFORE_USING:
     - cache: true
       prune: true
-      _help: " see http://wiki.openstreetmap.org/wiki/Tile_usage_policy"
+      # see http://wiki.openstreetmap.org/wiki/Tile_usage_policy
       userAgentInfo: (mailto:your.contact@email.address)
       refererInfo: http://link_to_deployed_application_information
       options:
