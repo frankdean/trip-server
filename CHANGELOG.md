@@ -2,6 +2,11 @@
 
 # Changelog
 
+## v1.11.1
+
+- Updated some packages to later versions.
+- Update Vagrant to use Node.js 14.21.1
+
 ## v1.11.0
 
 - Bug fix - Shared tracks were only constrained to the maximum period if a

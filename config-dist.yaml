@@ -3,18 +3,22 @@ app:
     indent:
       level: 0
   gpx:
+    # This option allows the waypoint color attribute used by OsmAnd to be
+    # included in the downloaded GPX file.  When it is included, the GPX file
+    # will fail XSD validation, which *might* be required by some
+    # applications.
     allowInvalidXsd: false
-  autoQuit:
-    timeOut: 300
-    nonSystemd:
-      enabled: false
-  token:
-    expiresIn: 43200
-    renewWithin: 21600
-  origins:
-    - "*:*"
-  resourceToken:
-    expiresIn: 86400
+  autoQuit: # Ignored in trip v2
+    timeOut: 300 # Ignored in trip v2
+    nonSystemd: # Ignored in trip 2v
+      enabled: false # Ignored in trip v2
+  token: # Ignored in trip v2
+    expiresIn: 43200 # Ignored in trip v2
+    renewWithin: 21600 # Ignored in trip v2
+  origins: # Ignored in trip v2
+    - "*:*" # Ignored in trip v2
+  resourceToken: # Ignored in trip v2
+    expiresIn: 86400 # Ignored in trip v2
   maxItinerarySearchRadius: 50000
   averageFlatSpeedKph: 4
   worker_count: 10 #For trip v2 only
@@ -22,8 +26,8 @@ app:
   prefix_url: /trip2/app  #For trip v2 only
   messages_path: /usr/local/share/locale #For trip v2 only
 jwt:
-  signingKey: secret
-  resourceSigningKey: different-secret
+  signingKey: secret # Ignored in trip v2
+  resourceSigningKey: different-secret # Ignored in trip v2
 tile:
   cache:
     maxAge: 0
@@ -52,10 +56,12 @@ tile:
           - text: CC-BY-SA
             link: http://creativecommons.org/licenses/by-sa/2.0/
 db:
-  uri: postgresql://trip:secret@localhost/trip
-  poolSize: 10
-  poolIdleTimeout: 10000
-  connectionTimeoutMillis: 0
+  #uri: postgresql://trip:secret@localhost/trip
+  # connect via default socket under /var/run/postgresql
+  uri: "postgresql://%2Fvar%2Frun%2Fpostgresql/trip"
+  poolSize: 10 # Ignored in trip v2
+  poolIdleTimeout: 10000 # Ignored in trip v2
+  connectionTimeoutMillis: 0 # Ignored in trip v2
 elevation-local-disabled:
   tileCacheMs: 60000
   datasetDir: ./elevation-data/
@@ -96,19 +102,19 @@ tripLogger:
       httpsEnabled: true
       httpPostEnabled: true
       postJson: false
-      hostname: 192.168.1.8
+      hostname: localhost
       hostPort: "8080"
       hostPath: /trip/rest/log_point
       userId: null
       noteSuggestions:
         - Parked here
-staticFiles:
+staticFiles: # This is a compile time option in trip v2
   allow: true
-debug: false
-log:
+debug: false # Ignored in trip v2
+log: # Ignored in trip v2
   level: info
   timestamp: false
-validation:
+validation: # Ignored in trip v2
   headers:
     contentType:
       warn: true

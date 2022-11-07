@@ -33,8 +33,8 @@ echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/source
 apt-get update
 apt-get install $DEB_OPTIONS yarn+ cmdtest- nodejs-
 
-NODE_VERSION="v14.20.1"
-NODE_SHA256=2938c38c3654810f99101c9dc91e4783f14ed94eba878fef2906b6a9b95868a8
+NODE_VERSION="v14.21.1"
+NODE_SHA256=bee17ec1387048537db6404be7af96655f358012a46d152323ee510f892fbb53
 NODE_FILENAME="node-${NODE_VERSION}-linux-x64"
 NODE_TAR_FILENAME="${NODE_FILENAME}.tar.xz"
 NODE_EXTRACT_DIR="${NODE_FILENAME}"
