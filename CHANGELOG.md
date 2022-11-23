@@ -2,6 +2,11 @@
 
 # Changelog
 
+## v1.11.2
+
+- Upgrade `socket.io` to `4.5.4` re CVE-2022-2421 and CVE-2022-41940
+- Updated some other packages to later versions.
+
 ## v1.11.1
 
 - Updated some packages to later versions.

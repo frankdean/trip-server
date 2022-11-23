@@ -1263,7 +1263,11 @@ function downloadItineraryGpx(username, itineraryId, params, callback) {
                   }
                 }); // forEach track
               }
-              callback(null, root.end({pretty: false}));
+              const indent = config.app && config.app.gpx && config.app.gpx.indent ? config.app.gpx.indent : 2;
+              callback(null, root.end({
+                pretty: (config.app && config.app.gpx && config.app.gpx.pretty),
+                indent: ' '.repeat(indent),
+              }));
             });
           }
         });

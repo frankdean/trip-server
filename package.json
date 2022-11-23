@@ -1,6 +1,6 @@
 {
   "name": "trip-server",
-  "version": "1.11.1",
+  "version": "1.11.2",
   "description": "TRIP - Trip Recording and Itinerary Planner RESTful server",
   "author": {
     "name": "Frank Dean",
@@ -66,7 +66,7 @@
     "qs": "^6.5.0",
     "sax": "^1.2.2",
     "send": "^0.18.0",
-    "socket.io": "^3.0.0",
+    "socket.io": "^4.5.4",
     "systemd": "^0.4.0",
     "uuid": "^8.3.1",
     "xmlbuilder": "^15.1.1",
