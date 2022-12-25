@@ -66,8 +66,7 @@ distribution.
 1.  Stop `trip-server` systemd services:
 
 		$ vagrant ssh
-		vagrant@debian-10:~$ sudo systemctl stop trip.socket
-		vagrant@debian-10:~$ sudo systemctl stop trip.service
+		vagrant@debian-10:~$ sudo systemctl stop 'trip.*'
 
 1.  Run tests for `trip-server`:
 

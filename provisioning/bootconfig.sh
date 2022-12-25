@@ -3,9 +3,9 @@
 # Uncomment the following to debug the script
 #set -x
 
-TRIP_WEB_CLIENT_VERSION='v1.11.2'
+TRIP_WEB_CLIENT_VERSION='v1.11.3'
 TRIP_WEB_CLIENT_RELEASE="trip-web-client-release-${TRIP_WEB_CLIENT_VERSION}.tgz"
-TRIP_WEB_CLIENT_SHA256=fbab39bcca32995578c8fc37bcb7eeee4580fc025ce3556cee7349653c02b4fb
+TRIP_WEB_CLIENT_SHA256=dbabd2e7d0e1c67eebd98f70e678f1491e3c5c81a9e67875a3d21425ff0ba7e6
 PG_VERSION=13
 
 su - postgres -c 'createuser -drs vagrant' 2>/dev/null

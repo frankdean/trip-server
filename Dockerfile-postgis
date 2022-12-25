@@ -1,6 +1,6 @@
 # -*- mode: dockerfile; -*- vim: set ft=dockerfile:
 FROM postgres:13.5-bullseye
-LABEL uk.co.fdsd.tripserver.db.version="1.10.0"
+LABEL uk.co.fdsd.tripserver.db.version="1.11.3"
 #LABEL uk.co.fdsd.tripserver.db.release-date="2022-02-29"
 #LABEL uk.co.fdsd.tripserver.db.is-production=""
 

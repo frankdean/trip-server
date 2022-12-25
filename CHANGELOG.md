@@ -2,6 +2,11 @@
 
 # Changelog
 
+## v1.11.3
+
+- Upgrade `jsonwebtoken` package re various CVEs
+- Updated packages to latest versions by recreating `yarn.lock` files.
+
 ## v1.11.2
 
 - Upgrade `socket.io` to `4.5.4` re CVE-2022-2421 and CVE-2022-41940
