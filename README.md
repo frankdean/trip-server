@@ -1108,6 +1108,12 @@ a release of the web client.
 
 1.  If necessary run `yarn upgrade`
 
+## Known Issues
+
+1.  [Error: Cannot find module '../build/Release/canvas.node'](https://github.com/Automattic/node-canvas/issues/1499)
+	This error occurs when running tests after upgrading to `canvas` version
+	2.11.0 when running on Debian under Vagrant.  Ignoring as currently no
+	need to upgrade.
 
 ## Next Release
 

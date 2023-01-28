@@ -21,11 +21,14 @@
 Update Vagrant first, if Vagrant is to build the `trip-web-client`
 distribution.
 
-1.  It may be necessary to update VirtualBox to the latest version to
-    avoid conflicts between the guest versions downloaded by Vagrant
-    and the guest version on the host machine.
+1.  It may be necessary to update VirtualBox to the latest version to avoid
+    conflicts between the guest versions downloaded by Vagrant and the guest
+    version on the host machine.
 
 1.  Check the Debian Vagrant box is the latest:
+
+	**Note:** the `vagrant box update` command only shows newer boxes when a
+    `*.vm.box_version` is not specified.
 
 		$ vagrant box update
 

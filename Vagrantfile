@@ -63,7 +63,7 @@ Vagrant.configure("2") do |config|
   # View the documentation for the provider you are using (VirtualBox)
   # for more information on available options.
   config.vm.provider "virtualbox" do |v|
-    v.name = "Trip—Vagrant"
+    v.name = "trip—server-2"
     # Display the VirtualBox GUI when booting the machine
     if myEnv[:VB_GUI] == "y"
       v.gui = true
