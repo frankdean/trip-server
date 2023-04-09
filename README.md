@@ -2,28 +2,29 @@
 
 # TRIP - Trip Recording and Itinerary Planner
 
-## AngularJS Support
+## AngularJS Unsupported
 
 This web application uses the [AngularJS][] framework, Google's support for
-which, officially ended as of January 2022.
+which, officially ended as of January 2022.  There are now a number of
+vulnerabilities in the sub-dependencies of the unsupported AngularJS which I
+am not in a position to fix.  Use `yarn audit` to list them.
 
-Converting the application to Angular appears to be a substantial piece of
-work.
+Converting the application to the newer Angular appears to be a substantial
+piece of work.
 
 I have spent a not inconsiderable amount of time and effort maintaining the
 application, not least due to a frequent need to upgrade dependant packages,
 due to security vulnerabilities, forced upgrades etc.
 
 Considering these factors, coupled with the question of how long the newer
-Angular may be supported for, I am rewriting the application in C++ running on
-Unix/Linux/macOS, with fundamentally the same PostgreSQL database, with
-minimal dependencies.  This will take some time.  For anyone interested in
-following the progress or testing the new version, it is hosted
-[here](https://www.fdsd.co.uk/trip-server-2/).
+Angular may be supported for, I have mostly rewritten the application in C++
+running on Unix/Linux/macOS, with fundamentally the same PostgreSQL database,
+with minimal dependencies.
 
-In the mean time, I'm not in a position to handle any security vulnerabilities
-reported in AngularJS.  Consequently, consider using one of the commercial
-services that offer similar functionality.  Indeed, I may do so myself.
+The rewrite in C++ of [Trip Server v2][trip-server-2] is now mostly complete,
+supporting all the key user use cases of v1.  See the
+[README](https://www.fdsd.co.uk/trip-server-2/readme.html) for details of
+which functionality is still incomplete.  It can be run alongside v1.
 
 ## Introduction
 
@@ -1119,6 +1120,7 @@ a release of the web client.
 
 See [CHANGELOG](./CHANGELOG.md)
 
+[trip-server-2]: https://www.fdsd.co.uk/trip-server-2/
 [trip-web-client]: https://www.fdsd.co.uk/trip-web-client-docs/
 [AngularJS]: https://angularjs.org
 [Apache]: http://httpd.apache.org/ "an open-source HTTP server for modern operating systems including UNIX and Windows"
