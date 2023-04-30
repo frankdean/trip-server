@@ -6,8 +6,10 @@
 
 This web application uses the [AngularJS][] framework, Google's support for
 which, officially ended as of January 2022.  There are now a number of
-vulnerabilities in the sub-dependencies of the unsupported AngularJS which I
-am not in a position to fix.  Use `yarn audit` to list them.
+vulnerabilities in the dependencies and sub-dependencies of the unsupported
+AngularJS which I am not in a position to fix.  Use `yarn audit` to list them
+and evaluate the vulnerabilities in terms of how you build and deploy the
+application.
 
 Converting the application to the newer Angular appears to be a substantial
 piece of work.
@@ -17,14 +19,17 @@ application, not least due to a frequent need to upgrade dependant packages,
 due to security vulnerabilities, forced upgrades etc.
 
 Considering these factors, coupled with the question of how long the newer
-Angular may be supported for, I have mostly rewritten the application in C++
+Angular may be supported for, I have rewritten the application, mostly in C++
 running on Unix/Linux/macOS, with fundamentally the same PostgreSQL database,
 with minimal dependencies.
 
-The rewrite in C++ of [Trip Server v2][trip-server-2] is now mostly complete,
-supporting all the key user use cases of v1.  See the
-[README](https://www.fdsd.co.uk/trip-server-2/readme.html) for details of
-which functionality is still incomplete.  It can be run alongside v1.
+The rewrite in C++ of [Trip Server v2][trip-server-2] is now complete,
+supporting all the use cases of this version (Trip Server v1).  See the
+[README](https://www.fdsd.co.uk/trip-server-2/readme.html) for further
+details.  It can be run alongside v1.
+
+You should migrate to v2 which should be relatively easy in most environments.
+This project (Trip Server v1) will be archived in the near future.
 
 ## Introduction
 
@@ -74,7 +79,7 @@ The following features are provided:
 
 ## Requirements
 
-* [Node.js][] - v12.x.x
+* [Node.js][] - v16.x.x
 
 * [PostgreSQL][] database server - (Known to run on version 11.9)
 
@@ -1111,10 +1116,7 @@ a release of the web client.
 
 ## Known Issues
 
-1.  [Error: Cannot find module '../build/Release/canvas.node'](https://github.com/Automattic/node-canvas/issues/1499)
-	This error occurs when running tests after upgrading to `canvas` version
-	2.11.0 when running on Debian under Vagrant.  Ignoring as currently no
-	need to upgrade.
+1.  [Node.js v18 not currently supported by node-gdal](https://github.com/naturalatlas/node-gdal/issues/298)
 
 ## Next Release
 
