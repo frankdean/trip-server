@@ -2,6 +2,21 @@
 
 # Changelog
 
+## v1.11.6
+
+- Re-create `yarn.lock` re vulnerability in `engine.io`
+
+## v1.11.5
+
+- Rebuild `yarn.lock` re `yaml` package vulnerability
+- Updated Vagrant and Docker environments to use Node.js v16
+
+## v1.11.4
+
+- Force resolution tor `xml2js` to v0.5.0 re vulnerability
+- Upgrade `canvas` package to 2.11.x
+- Re-create `yarn.lock` to update sub-depencencies
+
 ## v1.11.3
 
 - Upgrade `jsonwebtoken` package re various CVEs
