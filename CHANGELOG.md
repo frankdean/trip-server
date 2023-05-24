@@ -2,6 +2,10 @@
 
 # Changelog
 
+## v1.11.7
+
+- Upgrade `engine.io-parser` re CVE-2023-32695
+
 ## v1.11.6
 
 - Re-create `yarn.lock` re vulnerability in `engine.io`

@@ -1,8 +1,5 @@
 # -*- mode: dockerfile; -*- vim: set ft=dockerfile:
 FROM node:16.20.0-bullseye-slim AS build
-LABEL uk.co.fdsd.tripserver.version="1.11.6"
-#LABEL uk.co.fdsd.tripserver.release-date="2023-04-09"
-#LABEL uk.co.fdsd.tripserver.is-production=""
 WORKDIR /app-server
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -15,8 +12,8 @@ RUN yarn
 FROM node:16.20.0-bullseye-slim AS trip-web-client
 WORKDIR /app-server
 
-ARG TRIP_CLIENT_VERSION=v1.11.6
-ARG TRIP_CLIENT_SHA256=dd03693bf517c913f1706621f217f7978c52b8e08e4b3c5df450e676d42f51c8
+ARG TRIP_CLIENT_VERSION=v1.11.7
+ARG TRIP_CLIENT_SHA256=d9af5ff1c93547ff8f570f0264578e466fb996de4861f6364b032330d4f25adc
 ARG TRIP_CLIENT_FILENAME=trip-web-client-release-${TRIP_CLIENT_VERSION}.tgz
 
 ADD --chown=node:node https://www.fdsd.co.uk/trip-server/download/trip-web-client-release-${TRIP_CLIENT_VERSION}.tgz .

@@ -13,8 +13,7 @@
 
 		$ yarn outdated
 
-1.  Update the version number in `package.json` and `Dockerfile` in
-    both projects.
+1.  Update the version number in `package.json` in both projects.
 
 ## Vagrant
 
@@ -126,8 +125,8 @@ distribution.
 1.  Update `./trip-server/provisioning/bootconfig.sh` to download the release
     version of `trip-web-client` and update the SHA256 checksum.
 
-1.  Update `Dockerfile`, `Dockerfile-dev` and `Dockerfile-postgis`
-    with the new SHA256 checksum for `trip-web-client`.
+1.  Update `Dockerfile` and `Dockerfile-dev` with the new SHA256 checksum for
+    `trip-web-client`.
 
 1.  Edit the `myEnv` settings in `./Vagrantfile` to use Vagrant with
     the new release.

@@ -20,7 +20,7 @@ Vagrant.configure("2") do |config|
   # Set :WIPE_DB to 'y' (lower-case) to WIPE the database each time
   # the VM is started.
   myEnv = { :IMPORT_TEST_DATA => "y",
-            :TRIP_DEV => "n",
+            :TRIP_DEV => "y",
             :VB_GUI => "n",
             :WIPE_DB => "n" }
 
