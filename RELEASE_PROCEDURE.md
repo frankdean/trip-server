@@ -7,11 +7,11 @@
 
 1.  Run `audit` command for both applications:
 
-		$ yarn audit
+		$ npm audit
 
 1.  Check for outdated packages:
 
-		$ yarn outdated
+		$ npm outdated
 
 1.  Update the version number in `package.json` in both projects.
 
@@ -73,8 +73,8 @@ distribution.
 1.  Run tests for `trip-server`:
 
 		vagrant@debian-10:~$ cd /vagrant
-		vagrant@debian-10:~$ yarn lint
-		vagrant@debian-10:~$ yarn test-single-run
+		vagrant@debian-10:~$ npm run lint
+		vagrant@debian-10:~$ npm run test-single-run
 
 1.  Run the server again:
 
@@ -84,17 +84,17 @@ distribution.
 
 		vagrant@debian-10:~$ cd /vagrant-trip-web-client
 		vagrant@debian-10:~$ rm -rf node_modules
-		vagrant@debian-10:~$ yarn
-		vagrant@debian-10:~$ yarn lint
-		vagrant@debian-10:~$ yarn test-single-run
-		vagrant@debian-10:~$ yarn build-release
+		vagrant@debian-10:~$ npm install
+		vagrant@debian-10:~$ npm run lint
+		vagrant@debian-10:~$ npm run test-single-run
+		vagrant@debian-10:~$ npm run build-release
 
 		vagrant@debian-10:~$ cd /vagrant
 		vagrant@debian-10:~$ rm -rf app
 		vagrant@debian-10:~$ tar -xf /vagrant-trip-web-client/dist/trip-web-client-release-$VERSION.tgz
 
 		vagrant@debian-10:~$ cd /vagrant-trip-web-client
-		vagrant@debian-10:~$ yarn protractor
+		vagrant@debian-10:~$ npm run protractor
 
 	The `protractor` tests may fail with an error due to the browser
     and web driver versions conflicting.  The error message will
@@ -149,7 +149,7 @@ distribution.
 
 		$ vagrant ssh
 		vagrant@debian-10:~$ cd /vagrant
-		vagrant@debian-10:~$ yarn build-release
+		vagrant@debian-10:~$ npm run build-release
 
 1.  Copy the `trip-server` release to the release server.
 
@@ -236,12 +236,12 @@ distribution.
 	Optionally, build the server release with:
 
 		$ docker exec -it trip-server_web_1 bash -il
-		$ yarn build-release
+		$ npm run build-release
 
 	Optionally, build `trip-web-client` with:
 
 		$ cd /webapp
-		$ yarn build-release
+		$ npm run build-release
 
 	Execute the following style of command on the container host, to
     copy the release from the container to the current working

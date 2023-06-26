@@ -1,7 +1,7 @@
 // vim: set ts=2 sts=-1 sw=2 et ft=javascript norl:
 /**
  * @license TRIP - Trip Recording and Itinerary Planning application.
- * (c) 2016-2018 Frank Dean <frank@fdsd.co.uk>
+ * (c) 2016-2023 Frank Dean <frank@fdsd.co.uk>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,8 +27,7 @@ var _ = require('lodash');
 var autoquit = require('autoquit');
 var formidable = require('formidable');
 var qs = require('qs');
-const systemd = require('systemd'),
-      util = require('util'),
+const util = require('util'),
       YAML = require('yaml');
 
 var config = require('./config');
@@ -2084,16 +2083,27 @@ io.on('connection', function(socket) {
   });
 });
 
-var port = process.env.LISTEN_PID > 0 ? 'systemd' : 8080;
-if (config.app.autoQuit && (config.app.autoQuit.nonSystemd && config.app.autoQuit.nonSystemd.enabled === true || port === 'systemd') && config.app.autoQuit.timeOut > 0) {
+const port = 8080;
+// https://www.freedesktop.org/software/systemd/man/sd_listen_fds.html
+const SD_LISTEN_FDS_START = 3;
+
+// If `LISTEN_FDS` environment variable is set, we were called by systemd.  It
+// specifies the number of file descriptors passed.  There is normally one.
+if (config.app.autoQuit && (config.app.autoQuit.nonSystemd && config.app.autoQuit.nonSystemd.enabled === true || process.env.LISTEN_FDS) && config.app.autoQuit.timeOut > 0) {
   myApp.server.autoQuit({ timeOut: config.app.autoQuit.timeOut, exitFn: myApp.shutdown });
   logger.info('TRIP v%s running with autoQuit after %d seconds', myApp.version, config.app.autoQuit.timeOut);
 } else {
   logger.info('TRIP v%s running in normal mode', myApp.version);
 }
+
+myApp.server.on('error', function(err) {
+  logger.error('[index.js] server error:', err);
+  process.exit(1);
+});
 myApp.server.on('close', function() {
   logger.info('[index.js] server closed');
 });
-logger.info('Listening on port %s', port);
-myApp.server.listen(port);
+
+logger.info('Listening on port %s', process.env.LISTEN_FDS ? 'systemd' : port);
+myApp.server.listen(process.env.LISTEN_FDS ? {fd: SD_LISTEN_FDS_START} : {port: port});
 // console.timeEnd('app-init');

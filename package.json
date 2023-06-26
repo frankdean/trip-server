@@ -1,6 +1,6 @@
 {
   "name": "trip-server",
-  "version": "1.11.7",
+  "version": "1.11.8",
   "description": "TRIP - Trip Recording and Itinerary Planner RESTful server",
   "author": {
     "name": "Frank Dean",
@@ -16,20 +16,23 @@
     "planner",
     "GPS"
   ],
-  "resolutions": {},
+  "overrides": {
+    "semver": "^7.5.2"
+  },
+  "resolutions": {
+    "semver": "^7.5.2"
+  },
   "devDependencies": {
     "adm-zip": "^0.5.5",
     "eslint": "^8.7.0",
     "jasmine": "^3.4.0",
     "nodemon": "^2.0.4",
-    "npm-force-resolutions": "0.0.10",
     "rimraf": "^4.1.1",
     "shelljs": "^0.8.5",
     "tar": "^6.1.11",
     "yargs": "^17.3.1"
   },
   "scripts": {
-    "preinstall": "node -e \"const fs = require('fs'); if (fs.existsSync('package-lock.json') && '$npm_execpath'.indexOf('yarn.js') === -1) { require('child_process').execSync('npx npm-force-resolutions')} \"",
     "nodemon": "nodemon --ext 'json,js,yaml' --ignore 'app/*' index.js",
     "config2yaml": "node ./spec/support/json2yaml.js --outfile config.yaml",
     "start": "node index.js",
@@ -67,7 +70,6 @@
     "sax": "^1.2.2",
     "send": "^0.18.0",
     "socket.io": "^4.5.4",
-    "systemd": "^0.4.0",
     "uuid": "^9.0.0",
     "xmlbuilder": "^15.1.1",
     "yaml": "^2.2.1"

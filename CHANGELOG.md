@@ -2,6 +2,13 @@
 
 # Changelog
 
+## v1.11.8
+
+- Force resolution of `semver` to `^7.5.2` re `CVE-2022-25883`.
+- Update some package dependencies to later versions.
+- Switch to primarily using `npm` instead of `yarn` as audit summary is clearer.
+- Replaced `systemd` package with a couple of lines of code.
+
 ## v1.11.7
 
 - Upgrade `engine.io-parser` re CVE-2023-32695

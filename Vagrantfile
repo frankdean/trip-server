@@ -30,6 +30,7 @@ Vagrant.configure("2") do |config|
   # https://www.vagrantup.com/docs/boxes.html#official-boxes
   # https://app.vagrantup.com/bento
   config.vm.box = "bento/debian-11"
+  # config.vm.box_version = "202303.13.0"
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
@@ -63,7 +64,7 @@ Vagrant.configure("2") do |config|
   # View the documentation for the provider you are using (VirtualBox)
   # for more information on available options.
   config.vm.provider "virtualbox" do |v|
-    v.name = "trip—server-2"
+    v.name = "trip-server-1"
     # Display the VirtualBox GUI when booting the machine
     if myEnv[:VB_GUI] == "y"
       v.gui = true

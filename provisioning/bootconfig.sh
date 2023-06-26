@@ -3,15 +3,15 @@
 # Uncomment the following to debug the script
 #set -x
 
-TRIP_WEB_CLIENT_VERSION='v1.11.7'
+TRIP_WEB_CLIENT_VERSION='v1.11.8'
 TRIP_WEB_CLIENT_RELEASE="trip-web-client-release-${TRIP_WEB_CLIENT_VERSION}.tgz"
-TRIP_WEB_CLIENT_SHA256=d9af5ff1c93547ff8f570f0264578e466fb996de4861f6364b032330d4f25adc
+TRIP_WEB_CLIENT_SHA256=15440f181aedf877963ecfbb1c8431ad6f2ce434a0929b74fd056a68f5089e26
 PG_VERSION=13
 
 su - postgres -c 'createuser -drs vagrant' 2>/dev/null
-su - vagrant -c 'cd /vagrant && yarn install'
+su - vagrant -c 'cd /vagrant && npm install'
 cd /vagrant
-if [ -e config.yaml ]; then
+if [ -e /vagrant/config.yaml ]; then
 	SECRET=$(grep 'uri:' /vagrant/config.yaml | cut -d ':' -f 4 | cut -d '@' -f 1)
 else
 	SECRET=$(apg  -m 12 -x 14 -M NC -t -n 20 | tail -n 1 | cut -d ' ' -f 1 -)
@@ -21,7 +21,7 @@ else
 	cp config-dist.yaml config.yaml
 	$UMASK
 
-	sed "s/level: 0/level: 4/; s/signingKey.*/signingKey: ${SIGNING_KEY},/; s/maxAge: *[0-9]\+/maxAge: 999/; s/host: *.*, */host: localhost,/; s/path: .*$/path: \/DO_NOT_FETCH_TILES_IN_DEMO_UNTIL_PROPERLY_CONFIGURED\/{z}\/{x}\/{y}.png,/; s/uri: .*/uri: postgresql:\/\/trip:${SECRET}@localhost\/trip/; s/allow: +.*/allow: false/; s/level: +info/level: debug/" /vagrant/config-dist.yaml >/vagrant/config.yaml
+	sed "s/level: 0/level: 4/; s/signingKey.*/signingKey: ${SIGNING_KEY},/; s/maxAge: *[0-9]\+/maxAge: 999/; s/host: *.*, */host: localhost,/; s/path: .*$/path: \/DO_NOT_FETCH_TILES_IN_DEMO_UNTIL_PROPERLY_CONFIGURED\/{z}\/{x}\/{y}.png,/; s/allow: +.*/allow: false/; s/level: +info/level: debug/" /vagrant/config-dist.yaml >/vagrant/config.yaml
 
 fi
 
@@ -104,7 +104,7 @@ if [ -f /vagrant-trip-web-client/package.json ]; then
 		ln -f -s /vagrant-trip-web-client/app /var/www/trip/app
 	fi
 	if [ ! -d /vagrant-trip-web-client/node_modules ]; then
-		su - vagrant -c 'cd /vagrant-trip-web-client && yarn install'
+		su - vagrant -c 'cd /vagrant-trip-web-client && npm install'
 	fi
 	if [ "$TRIP_DEV" == "y" ]; then
 		if [ -L /vagrant/app ]; then
@@ -122,7 +122,7 @@ elif [ -f /vagrant/trip-web-client/package.json ]; then
 		ln -s /vagrant/trip-web-client/app /var/www/trip/app
 	fi
 	if [ ! -d /vagrant/trip-web-client/node_modules ]; then
-		su - vagrant -c 'cd /vagrant/trip-web-client && yarn install'
+		su - vagrant -c 'cd /vagrant/trip-web-client && npm install'
 	fi
 	if [ "$TRIP_DEV" == "y" ]; then
 		if [ -L /vagrant/app ]; then
@@ -173,6 +173,13 @@ fi
 egrep '^export\s+EDITOR' /home/vagrant/.profile >/dev/null 2>&1
 if [ $? -ne 0 ]; then
 	echo "export EDITOR=/usr/bin/vi" >>/home/vagrant/.profile
+fi
+
+# Defining `TMPDIR` is a workaround to an issue that surfaces when `npm`
+# (seemingly unnecessarily) attempts to build PhantomJS.
+egrep '^export\s+TMPDIR' /home/vagrant/.profile >/dev/null 2>&1
+if [ $? -ne 0 ]; then
+	echo "export TMPDIR=/tmp" >>/home/vagrant/.profile
 fi
 
 if [ ! -z "$ADMIN_PWD" ]; then

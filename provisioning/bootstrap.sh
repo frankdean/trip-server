@@ -28,13 +28,8 @@ if [ "$TRIP_DEV" == "y" ]; then
 	apt-get install -y openjdk-11-jdk chromium chromium-l10n firefox-esr-l10n-en-gb vim
 fi
 
-curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
-echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
-apt-get update
-apt-get install $DEB_OPTIONS yarn+ cmdtest- nodejs-
-
-NODE_VERSION="v16.20.0"
-NODE_SHA256=dff21020b555cc165a1ac36da7d4f6c810b35409c94e00afc51d5d370aae47ae
+NODE_VERSION="v16.20.1"
+NODE_SHA256=b6c60e1e106ad7d8881e83945a5208c1b1d1b63e6901c04b9dafa607aff3a154
 NODE_FILENAME="node-${NODE_VERSION}-linux-x64"
 NODE_TAR_FILENAME="${NODE_FILENAME}.tar.xz"
 NODE_EXTRACT_DIR="${NODE_FILENAME}"
@@ -90,3 +85,4 @@ if [ ! -d "/usr/local/share/${NODE_FILENAME}" ]; then
 		rm -rf node_modules
 	fi
 fi
+npm install -g npm
