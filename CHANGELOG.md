@@ -2,6 +2,11 @@
 
 # Changelog
 
+## v1.11.9
+
+- Updated packages to latest versions re vulnerability in `word-wrap` package
+- Reverted to using `yarn` for builds
+
 ## v1.11.8
 
 - Force resolution of `semver` to `^7.5.2` re `CVE-2022-25883`.

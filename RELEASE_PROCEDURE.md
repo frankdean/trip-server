@@ -48,7 +48,7 @@ distribution.
 					:WIPE_DB => "n" }
 
 1.  Update `./provisioning/bootstrap.sh` to download the latest
-    version of [Node.js](https://nodejs.org/dist/latest-v14.x/) and
+    version of [Node.js](https://nodejs.org/dist/latest-v16.x/) and
     update the SHA256 checksum.
 
 1.  Ideally, create a new Vagrant VM

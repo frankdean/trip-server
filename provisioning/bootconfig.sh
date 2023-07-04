@@ -5,11 +5,11 @@
 
 TRIP_WEB_CLIENT_VERSION='v1.11.9'
 TRIP_WEB_CLIENT_RELEASE="trip-web-client-release-${TRIP_WEB_CLIENT_VERSION}.tgz"
-TRIP_WEB_CLIENT_SHA256=3d0013ca3db15a124908a9620223bd5fb456a63550b22a6a23b640d270f01996
+TRIP_WEB_CLIENT_SHA256=3e758f91f62745de06375ff1edbb23e746de6834ac80da18f89d778671a83923
 PG_VERSION=13
 
 su - postgres -c 'createuser -drs vagrant' 2>/dev/null
-su - vagrant -c 'cd /vagrant && npm install'
+su - vagrant -c 'cd /vagrant && yarn install'
 cd /vagrant
 if [ -e /vagrant/config.yaml ]; then
 	SECRET=$(grep 'uri:' /vagrant/config.yaml | cut -d ':' -f 4 | cut -d '@' -f 1)
@@ -104,7 +104,7 @@ if [ -f /vagrant-trip-web-client/package.json ]; then
 		ln -f -s /vagrant-trip-web-client/app /var/www/trip/app
 	fi
 	if [ ! -d /vagrant-trip-web-client/node_modules ]; then
-		su - vagrant -c 'cd /vagrant-trip-web-client && npm install'
+		su - vagrant -c 'cd /vagrant-trip-web-client && yarn install'
 	fi
 	if [ "$TRIP_DEV" == "y" ]; then
 		if [ -L /vagrant/app ]; then
@@ -122,7 +122,7 @@ elif [ -f /vagrant/trip-web-client/package.json ]; then
 		ln -s /vagrant/trip-web-client/app /var/www/trip/app
 	fi
 	if [ ! -d /vagrant/trip-web-client/node_modules ]; then
-		su - vagrant -c 'cd /vagrant/trip-web-client && npm install'
+		su - vagrant -c 'cd /vagrant/trip-web-client && yarn install'
 	fi
 	if [ "$TRIP_DEV" == "y" ]; then
 		if [ -L /vagrant/app ]; then
