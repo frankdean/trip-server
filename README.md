@@ -23,12 +23,46 @@ Angular may be supported for, I have rewritten the application, mostly in C++
 running on Unix/Linux/macOS, with fundamentally the same PostgreSQL database,
 with minimal dependencies.
 
+Maintaining support for Trip v1 required a not inconsiderable amount of work,
+mostly relating to upgrading dependencies, frequently due to security
+vulnerabilities in underlying components.  Coupled with supply-chain attacks
+within the [npm](https://www.npmjs.com) eco-system, I'm of the view that the
+ongoing support impact of development in such an architecture is unacceptably
+high.
+
+As migrating to Angular 2+ is not trivial and with no reassurance that a
+similar upgrade will not be necessary in the future, I was extremely
+reluctant to simply follow the upgrade path.
+
+Consequently, I wanted a solution that has as few dependencies as practical,
+ideally with those minimal dependencies being on widely used libraries which
+are unlikely to force much re-work of any application code.  I've used many
+languages and experimented with some of the more popular modern languages, but
+I don't see any meeting my desire for something that will remain largely
+backward compatible, well supported for years to come and with low maintenance
+overheads.
+
+Reviewing the version history of a GUI application I previously wrote in C++,
+I've only had one occasion where I *needed* to make a change in over a decade,
+caused by the deprecation of [GConf](https://en.wikipedia.org/wiki/GConf)
+(used for holding configuration settings).  It was a trivial change, and an
+improvement to replace it with a [YAML](https://yaml.org) configuration file.
+
+C++ scores highly on backwards compatibility, is governed by a good standards
+committee process (ISO) and has steadily evolved into a powerful and widely
+supported development language.  Using modern C++ practices *can* produce
+stable, reliable, easy to maintain code.  With plenty of mature, stable
+libraries for the more significant things we need; primarily support for
+[PostgreSQL database][PostgreSQL], [PostGIS][], XML, JSON and YAML.  So far,
+I am very satisfied with the results.
+
 The rewrite in C++ of [Trip Server v2][trip-server-2] is now complete,
 supporting all the use cases of this version (Trip Server v1).  See the
 [README](https://www.fdsd.co.uk/trip-server-2/readme.html) for further
 details.  It can be run alongside v1.
 
 You should migrate to v2 which should be relatively easy in most environments.
+
 This project (Trip Server v1) will be archived in the near future.
 
 ## Introduction

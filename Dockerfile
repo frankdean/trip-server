@@ -12,8 +12,8 @@ RUN yarn
 FROM node:16.20.0-bullseye-slim AS trip-web-client
 WORKDIR /app-server
 
-ARG TRIP_CLIENT_VERSION=v1.11.8
-ARG TRIP_CLIENT_SHA256=15440f181aedf877963ecfbb1c8431ad6f2ce434a0929b74fd056a68f5089e26
+ARG TRIP_CLIENT_VERSION=v1.11.9
+ARG TRIP_CLIENT_SHA256=3d0013ca3db15a124908a9620223bd5fb456a63550b22a6a23b640d270f01996
 ARG TRIP_CLIENT_FILENAME=trip-web-client-release-${TRIP_CLIENT_VERSION}.tgz
 
 ADD --chown=node:node https://www.fdsd.co.uk/trip-server/download/trip-web-client-release-${TRIP_CLIENT_VERSION}.tgz .
