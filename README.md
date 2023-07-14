@@ -5,11 +5,20 @@
 ## AngularJS Unsupported
 
 This web application uses the [AngularJS][] framework, Google's support for
-which, officially ended as of January 2022.  There are now a number of
-vulnerabilities in the dependencies and sub-dependencies of the unsupported
-AngularJS which I am not in a position to fix.  Use `yarn audit` to list them
-and evaluate the vulnerabilities in terms of how you build and deploy the
-application.
+which, officially ended as of January 2022.  Consequently, this project is now
+archived and is no longer supported.  It has been replaced with
+[a C++ rewrite as Trip Server v2][trip-server-2], which supports all the use
+cases of this version (Trip Server v1) and should suffer far less from the
+impact of dependency changes.  See the
+[README](https://www.fdsd.co.uk/trip-server-2/readme.html) for further
+details.  It can be run alongside v1.
+
+Migrating to v2 should be relatively easy in most environments.
+
+There are now a number of vulnerabilities in the dependencies and
+sub-dependencies of the unsupported AngularJS which I am not in a position to
+fix.  Use `yarn audit` to list them and evaluate the vulnerabilities in terms
+of how you build and deploy the application.
 
 Converting the application to the newer Angular appears to be a substantial
 piece of work.
@@ -55,15 +64,6 @@ stable, reliable, easy to maintain code.  With plenty of mature, stable
 libraries for the more significant things we need; primarily support for
 [PostgreSQL database][PostgreSQL], [PostGIS][], XML, JSON and YAML.  So far,
 I am very satisfied with the results.
-
-The rewrite in C++ of [Trip Server v2][trip-server-2] is now complete,
-supporting all the use cases of this version (Trip Server v1).  See the
-[README](https://www.fdsd.co.uk/trip-server-2/readme.html) for further
-details.  It can be run alongside v1.
-
-You should migrate to v2 which should be relatively easy in most environments.
-
-This project (Trip Server v1) will be archived in the near future.
 
 ## Introduction
 
